@@ -5,7 +5,7 @@
         public static class Network
         {
             public const int DeviceTimeoutMs = 1000;
-            
+
             public const string UdpFilter = "udp";
             public const string UdpPortFilter = "udp and ({0})";
             public const string DestinationPortFilter = "dst port {0}";
