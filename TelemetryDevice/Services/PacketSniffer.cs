@@ -20,71 +20,73 @@ namespace TelemetryDevice.Services
             _logger = logger;
             _networkingConfig = networkingConfig;
 
-            var devices = CaptureDeviceList.Instance;
-            _logger.LogInformation("Found {DeviceCount} network devices", devices.Count);
-
-            _device = GetCaptureDevice(devices);
-
-            _device.Open();
-            _device.OnPacketArrival += OnPacketArrival;
-            ApplyFilterLocked();
-            _device.StartCapture();
-            _logger.LogInformation("Packet capture started on {DeviceName}", _device.Description);
+            var availableDevices = CaptureDeviceList.Instance;
+            InitializeDevices(availableDevices);
         }
 
-        private ICaptureDevice GetCaptureDevice(CaptureDeviceList devices)
+        private void InitializeDevices(CaptureDeviceList availableDevices)
         {
             var config = _networkingConfig.Value;
 
             foreach (var interfaceName in config.Interfaces)
             {
-                var matchedDevice = devices.FirstOrDefault(d =>
-                    d.Description.Contains(interfaceName, StringComparison.OrdinalIgnoreCase) ||
-                    d.Name.Contains(interfaceName, StringComparison.OrdinalIgnoreCase));
-
+                var matchedDevice = GetCaptureDevice(availableDevices, interfaceName);
                 if (matchedDevice != null)
-                    return matchedDevice;
+                {
+                    InitializeDevice(matchedDevice);
+                    _devices.Add(matchedDevice);
+                }
             }
 
-            return devices.First();
+            if (_devices.Count == 0)
+            {
+                _logger.LogWarning("No devices found for configured interfaces, using first available device");
+                var fallbackDevice = availableDevices.First();
+                InitializeDevice(fallbackDevice);
+                _devices.Add(fallbackDevice);
+            }
+        }
+
+        private ICaptureDevice? GetCaptureDevice(CaptureDeviceList availableDevices, string interfaceName)
+        {
+            return availableDevices.FirstOrDefault(d =>
+                d.Description.Contains(interfaceName, StringComparison.OrdinalIgnoreCase) ||
+                d.Name.Contains(interfaceName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private void InitializeDevice(ICaptureDevice device)
+        {
+            device.Open();
+            device.OnPacketArrival += OnPacketArrival;
+            ApplyFilterToDevice(device);
+            device.StartCapture();
+            _logger.LogInformation("Started capture on device: {DeviceName}", device.Description);
         }
 
         public void AddPort(int port)
         {
-            lock (_sync)
-            {
-                if (!_ports.Add(port)) return;
-                ApplyFilterLocked();
-                _logger.LogInformation("Added port {Port} to monitoring. Total ports: {Count}", port, _ports.Count);
-            }
+            if (!_ports.Add(port)) return;
+            ApplyFilterToAllDevices();
         }
 
         public void RemovePort(int port)
         {
-            lock (_sync)
-            {
-                if (!_ports.Remove(port)) return;
-                ApplyFilterLocked();
-                _logger.LogInformation("Removed port {Port} from monitoring. Total ports: {Count}", port, _ports.Count);
-            }
+            if (!_ports.Remove(port)) return;
+            ApplyFilterToAllDevices();
         }
 
         public void ClearPorts()
         {
-            lock (_sync)
-            {
-                _ports.Clear();
-                ApplyFilterLocked();
-            }
-            _logger.LogInformation("Cleared all ports from monitoring");
+            _ports.Clear();
+            ApplyFilterToAllDevices();
         }
 
         public List<int> GetPorts()
         {
-            lock (_sync) return _ports.ToList();
+            return _ports.ToList();
         }
 
-        private void ApplyFilterLocked()
+        private void ApplyFilterToAllDevices()
         {
             var config = _networkingConfig.Value;
             var baseFilter = BuildProtocolFilter(config.Protocols);
