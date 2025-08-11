@@ -113,10 +113,9 @@ namespace TelemetryDevice.Services
             var payloadLength = payload.Length;
 
             var hexPreview =
-                payloadLength > TelemetryDeviceConstants.PacketProcessing.MaxHexPreviewLength
-                    ? Convert.ToHexString(
-                        payload[..TelemetryDeviceConstants.PacketProcessing.MaxHexPreviewLength]
-                    ) + TelemetryDeviceConstants.PacketProcessing.HexPreviewSuffix
+                payloadLength > TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH
+                    ? Convert.ToHexString(payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]) +
+                      TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
                     : Convert.ToHexString(payload);
 
             _logger.LogInformation(
