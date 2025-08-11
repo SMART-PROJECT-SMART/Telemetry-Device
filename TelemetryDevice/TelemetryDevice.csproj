@@ -7,5 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
     <PackageReference Include="SharpPcap" Version="6.3.1" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="10.0.0-preview.6.25358.103" />
   </ItemGroup>
 </Project>

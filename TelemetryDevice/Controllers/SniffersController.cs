@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TelemetryDevice.Services;
+using TelemetryDevice.Services.PacketSniffer;
 
 namespace TelemetryDevice.Controllers
 {

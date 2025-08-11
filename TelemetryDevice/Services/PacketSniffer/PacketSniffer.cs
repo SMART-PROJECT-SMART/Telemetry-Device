@@ -4,8 +4,9 @@ using PacketDotNet;
 using SharpPcap;
 using TelemetryDevice.Common;
 using TelemetryDevice.Config;
+using TelemetryDevice.Models;
 
-namespace TelemetryDevice.Services
+namespace TelemetryDevice.Services.PacketSniffer
 {
     public class PacketSniffer : IDisposable, IPacketSniffer
     {
@@ -181,7 +182,7 @@ namespace TelemetryDevice.Services
             HandlePacket(udp);
         }
 
-        private void HandlePacket(UdpPacket udp)
+        private async void HandlePacket(UdpPacket udp)
         {
             var ipPacket = udp.ParentPacket as IPPacket;
             var sourceIp = ipPacket?.SourceAddress?.ToString();
@@ -196,14 +197,16 @@ namespace TelemetryDevice.Services
                         payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]
                     ) + TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
                     : Convert.ToHexString(payload);
-
+            var pipeLine = new PipeLine(payload);
+            var isValid = await pipeLine.ProccessData();
             _logger.LogInformation(
-                "UDP Packet: {SourceIp}:{SourcePort} -> {DestIp}:{DestPort}, Length: {Length} bytes, Data: {HexPreview}",
+                "UDP Packet: {SourceIp}:{SourcePort} -> {DestIp}:{DestPort}, Length: {Length} bytes,checksum: {valid}, Data: {HexPreview} ",
                 sourceIp,
                 udp.SourcePort,
                 destIp,
                 udp.DestinationPort,
                 payloadLength,
+                isValid,
                 hexPreview
             );
         }
