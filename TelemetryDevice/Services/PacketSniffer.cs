@@ -136,8 +136,7 @@ namespace TelemetryDevice.Services
             var raw = e.GetPacket();
             var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
             var udp = packet.Extract<UdpPacket>();
-            if (udp == null)
-                return;
+            if (udp == null) return;
 
             HandlePacket(udp);
         }

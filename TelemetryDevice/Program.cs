@@ -25,5 +25,8 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+var sniffer = app.Services.GetRequiredService<IPacketSniffer>();
+sniffer.AddPort(8000);
 
 app.Run();
+
