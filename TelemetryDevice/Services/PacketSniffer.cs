@@ -17,70 +17,60 @@ namespace TelemetryDevice.Services
             _logger = logger;
 
             var devices = CaptureDeviceList.Instance;
-            _logger.LogInformation("Found {DeviceCount} network devices", devices.Count);
 
-            _device = devices.FirstOrDefault(d =>
-                d.Description.Contains(TelemetryDeviceConstants.LoopbackInterface.LoopbackDescription)
-                || d.Name.Contains(TelemetryDeviceConstants.LoopbackInterface.LoopbackDescription)
+            _captureDevice = devices.FirstOrDefault(d =>
+                d.Description.Contains(
+                    TelemetryDeviceConstants.LoopbackInterface.LoopbackDescription
+                ) || d.Name.Contains(TelemetryDeviceConstants.LoopbackInterface.LoopbackDescription)
             )!;
 
-            _device.Open();
-            _device.OnPacketArrival += OnPacketArrival;
-            _device.Filter = TelemetryDeviceConstants.Network.UdpFilter;
-            _lastAppliedFilter = _device.Filter;
-            _device.StartCapture();
-            _logger.LogInformation("Packet capture started on {DeviceName}", _device.Description);
+            _captureDevice.Open();
+            _captureDevice.OnPacketArrival += OnPacketArrival;
+            _captureDevice.Filter = TelemetryDeviceConstants.Network.UdpFilter;
+            _lastAppliedFilter = _captureDevice.Filter;
+            _captureDevice.StartCapture();
         }
 
         public void AddPort(int port)
         {
-            lock (_sync)
-            {
-                if (!_ports.Add(port)) return;
-                ApplyFilterLocked();
-                _logger.LogInformation("Added port {Port} to monitoring. Total ports: {Count}", port, _ports.Count);
-            }
+            if (!_ports.Add(port))
+                return;
+            ApplyFilterLocked();
         }
 
         public void RemovePort(int port)
         {
-            lock (_sync)
-            {
-                if (!_ports.Remove(port)) return;
-                ApplyFilterLocked();
-                _logger.LogInformation("Removed port {Port} from monitoring. Total ports: {Count}", port, _ports.Count);
-            }
+            if (!_ports.Remove(port))
+                return;
+            ApplyFilterLocked();
         }
 
         public void ClearPorts()
         {
-            lock (_sync)
-            {
-                _ports.Clear();
-                ApplyFilterLocked();
-            }
-            _logger.LogInformation("Cleared all ports from monitoring");
+            _ports.Clear();
+            ApplyFilterLocked();
         }
 
         public List<int> GetPorts()
         {
-            lock (_sync) return _ports.ToList();
+            return _ports.ToList();
         }
-
 
         private void ApplyFilterLocked()
         {
-            var newFilter = BuildFilterFromPorts(_ports, TelemetryDeviceConstants.Network.UdpFilter);
+            var newFilter = BuildFilterFromPorts(
+                _ports,
+                TelemetryDeviceConstants.Network.UdpFilter
+            );
 
-            if (newFilter == _lastAppliedFilter) return;
+            if (newFilter == _lastAppliedFilter)
+                return;
 
-            _device.Filter = newFilter;
+            _captureDevice.Filter = newFilter;
             _lastAppliedFilter = newFilter;
-
-            _logger.LogDebug("Updated filter: {Filter}", newFilter);
         }
 
-        private static string BuildFilterFromPorts(IReadOnlyCollection<int> ports, string baseUdpFilter)
+        private string BuildFilterFromPorts(IReadOnlyCollection<int> ports, string baseUdpFilter)
         {
             if (ports.Count == 0)
                 return baseUdpFilter;
@@ -93,7 +83,8 @@ namespace TelemetryDevice.Services
             bool first = true;
             foreach (var p in ordered)
             {
-                if (!first) sb.Append(" or ");
+                if (!first)
+                    sb.Append(" or ");
                 sb.Append("dst port ").Append(p);
                 first = false;
             }
@@ -101,13 +92,13 @@ namespace TelemetryDevice.Services
             return sb.ToString();
         }
 
-
         private void OnPacketArrival(object sender, PacketCapture e)
         {
             var raw = e.GetPacket();
             var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
             var udp = packet.Extract<UdpPacket>();
-            if (udp == null) return;
+            if (udp == null)
+                return;
 
             HandlePacket(udp);
         }
@@ -123,8 +114,9 @@ namespace TelemetryDevice.Services
 
             var hexPreview =
                 payloadLength > TelemetryDeviceConstants.PacketProcessing.MaxHexPreviewLength
-                    ? Convert.ToHexString(payload[..TelemetryDeviceConstants.PacketProcessing.MaxHexPreviewLength]) +
-                      TelemetryDeviceConstants.PacketProcessing.HexPreviewSuffix
+                    ? Convert.ToHexString(
+                        payload[..TelemetryDeviceConstants.PacketProcessing.MaxHexPreviewLength]
+                    ) + TelemetryDeviceConstants.PacketProcessing.HexPreviewSuffix
                     : Convert.ToHexString(payload);
 
             _logger.LogInformation(
@@ -140,9 +132,9 @@ namespace TelemetryDevice.Services
 
         public void Dispose()
         {
-            _device.OnPacketArrival -= OnPacketArrival;
-            _device.StopCapture();
-            _device.Close();
+            _captureDevice.OnPacketArrival -= OnPacketArrival;
+            _captureDevice.StopCapture();
+            _captureDevice.Close();
         }
     }
 }

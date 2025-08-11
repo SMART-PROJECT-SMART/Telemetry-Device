@@ -5,9 +5,6 @@
         public static class Network
         {
             public const string UdpFilter = "udp";
-            public const string UdpPortFilter = "udp and ({0})";
-            public const string DestinationPortFilter = "dst port {0}";
-            public const string FilterSeparator = " or ";
         }
 
         public static class LoopbackInterface
