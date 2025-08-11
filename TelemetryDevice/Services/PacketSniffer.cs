@@ -94,15 +94,30 @@ namespace TelemetryDevice.Services
 
             if (newFilter == _lastAppliedFilter) return;
 
-            _device.Filter = newFilter;
-            _lastAppliedFilter = newFilter;
+            foreach (var device in _devices)
+            {
+                ApplyFilterToDevice(device, newFilter);
+            }
 
-            _logger.LogDebug("Updated filter: {Filter}", newFilter);
+            _lastAppliedFilter = newFilter;
+            _logger.LogDebug("Updated filter on {DeviceCount} devices: {Filter}", _devices.Count, newFilter);
+        }
+
+        private void ApplyFilterToDevice(ICaptureDevice device, string? filter = null)
+        {
+            if (filter == null)
+            {
+                var config = _networkingConfig.Value;
+                var baseFilter = BuildProtocolFilter(config.Protocols);
+                filter = BuildFilterFromPorts(_ports, baseFilter);
+            }
+
+            device.Filter = filter;
         }
 
         private string BuildProtocolFilter(List<string> protocols)
         {
-            if (protocols == null || protocols.Count == 0)
+            if (protocols.Count == 0)
                 return TelemetryDeviceConstants.Network.UDP_FILTER;
 
             if (protocols.Count == 1)
