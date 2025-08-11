@@ -1,14 +1,22 @@
+using Microsoft.Extensions.Options;
+using TelemetryDevice.Common;
+using TelemetryDevice.Config;
+using TelemetryDevice.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddLogging();
 builder.Services.AddOpenApi();
+
+builder.Services.Configure<NetworkingConfiguration>(
+    builder.Configuration.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION));
+
+builder.Services.AddSingleton<IPacketSniffer, PacketSniffer>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -17,5 +25,8 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+var sniffer = app.Services.GetRequiredService<IPacketSniffer>();
+sniffer.AddPort(8000);
 
 app.Run();
+
