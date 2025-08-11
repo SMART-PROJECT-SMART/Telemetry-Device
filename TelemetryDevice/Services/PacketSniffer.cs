@@ -1,9 +1,9 @@
+using System.Text;
+using Microsoft.Extensions.Options;
 using PacketDotNet;
 using SharpPcap;
 using TelemetryDevice.Common;
 using TelemetryDevice.Config;
-using Microsoft.Extensions.Options;
-using System.Text;
 
 namespace TelemetryDevice.Services
 {
@@ -15,7 +15,10 @@ namespace TelemetryDevice.Services
         private readonly HashSet<int> _ports = new();
         private string _lastAppliedFilter = string.Empty;
 
-        public PacketSniffer(ILogger<PacketSniffer> logger, IOptions<NetworkingConfiguration> networkingConfig)
+        public PacketSniffer(
+            ILogger<PacketSniffer> logger,
+            IOptions<NetworkingConfiguration> networkingConfig
+        )
         {
             _logger = logger;
             _networkingConfig = networkingConfig;
@@ -28,30 +31,37 @@ namespace TelemetryDevice.Services
         {
             var config = _networkingConfig.Value;
 
-            foreach (var interfaceName in config.Interfaces)
+            foreach (
+                var matchedDevice in config
+                    .Interfaces.Select(interfaceName =>
+                        GetCaptureDevice(availableDevices, interfaceName)
+                    )
+                    .OfType<ICaptureDevice>()
+            )
             {
-                var matchedDevice = GetCaptureDevice(availableDevices, interfaceName);
-                if (matchedDevice != null)
-                {
-                    InitializeDevice(matchedDevice);
-                    _devices.Add(matchedDevice);
-                }
+                InitializeDevice(matchedDevice);
+                _devices.Add(matchedDevice);
             }
 
-            if (_devices.Count == 0)
-            {
-                _logger.LogWarning("No devices found for configured interfaces, using first available device");
-                var fallbackDevice = availableDevices.First();
-                InitializeDevice(fallbackDevice);
-                _devices.Add(fallbackDevice);
-            }
+            if (_devices.Count != 0)
+                return;
+            _logger.LogWarning(
+                "No devices found for configured interfaces, using first available device"
+            );
+            var fallbackDevice = availableDevices.First();
+            InitializeDevice(fallbackDevice);
+            _devices.Add(fallbackDevice);
         }
 
-        private ICaptureDevice? GetCaptureDevice(CaptureDeviceList availableDevices, string interfaceName)
+        private ICaptureDevice? GetCaptureDevice(
+            CaptureDeviceList availableDevices,
+            string interfaceName
+        )
         {
             return availableDevices.FirstOrDefault(d =>
-                d.Description.Contains(interfaceName, StringComparison.OrdinalIgnoreCase) ||
-                d.Name.Contains(interfaceName, StringComparison.OrdinalIgnoreCase));
+                d.Description.Contains(interfaceName, StringComparison.OrdinalIgnoreCase)
+                || d.Name.Contains(interfaceName, StringComparison.OrdinalIgnoreCase)
+            );
         }
 
         private void InitializeDevice(ICaptureDevice device)
@@ -65,13 +75,15 @@ namespace TelemetryDevice.Services
 
         public void AddPort(int port)
         {
-            if (!_ports.Add(port)) return;
+            if (!_ports.Add(port))
+                return;
             ApplyFilterToAllDevices();
         }
 
         public void RemovePort(int port)
         {
-            if (!_ports.Remove(port)) return;
+            if (!_ports.Remove(port))
+                return;
             ApplyFilterToAllDevices();
         }
 
@@ -92,7 +104,8 @@ namespace TelemetryDevice.Services
             var baseFilter = BuildProtocolFilter(config.Protocols);
             var newFilter = BuildFilterFromPorts(_ports, baseFilter);
 
-            if (newFilter == _lastAppliedFilter) return;
+            if (newFilter == _lastAppliedFilter)
+                return;
 
             foreach (var device in _devices)
             {
@@ -100,7 +113,11 @@ namespace TelemetryDevice.Services
             }
 
             _lastAppliedFilter = newFilter;
-            _logger.LogDebug("Updated filter on {DeviceCount} devices: {Filter}", _devices.Count, newFilter);
+            _logger.LogDebug(
+                "Updated filter on {DeviceCount} devices: {Filter}",
+                _devices.Count,
+                newFilter
+            );
         }
 
         private void ApplyFilterToDevice(ICaptureDevice device, string? filter = null)
@@ -126,7 +143,10 @@ namespace TelemetryDevice.Services
             return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, protocols)})";
         }
 
-        private static string BuildFilterFromPorts(IReadOnlyCollection<int> ports, string baseFilter)
+        private static string BuildFilterFromPorts(
+            IReadOnlyCollection<int> ports,
+            string baseFilter
+        )
         {
             if (ports.Count == 0)
                 return baseFilter;
@@ -139,8 +159,11 @@ namespace TelemetryDevice.Services
             bool first = true;
             foreach (var p in ordered)
             {
-                if (!first) sb.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
-                sb.Append(string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, p));
+                if (!first)
+                    sb.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
+                sb.Append(
+                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, p)
+                );
                 first = false;
             }
             sb.Append(')');
@@ -152,7 +175,8 @@ namespace TelemetryDevice.Services
             var raw = e.GetPacket();
             var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
             var udp = packet.Extract<UdpPacket>();
-            if (udp == null) return;
+            if (udp == null)
+                return;
 
             HandlePacket(udp);
         }
@@ -168,8 +192,9 @@ namespace TelemetryDevice.Services
 
             var hexPreview =
                 payloadLength > TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH
-                    ? Convert.ToHexString(payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]) +
-                      TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
+                    ? Convert.ToHexString(
+                        payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]
+                    ) + TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
                     : Convert.ToHexString(payload);
 
             _logger.LogInformation(
