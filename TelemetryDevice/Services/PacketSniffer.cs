@@ -1,16 +1,15 @@
-﻿using PacketDotNet;
+﻿using System.Text;
+using PacketDotNet;
 using SharpPcap;
 using TelemetryDevice.Common;
-using System.Text;
 
 namespace TelemetryDevice.Services
 {
-    public class PacketSniffer : IDisposable
+    public class PacketSniffer : IDisposable, IPacketSniffer
     {
         private readonly ILogger<PacketSniffer> _logger;
-        private ICaptureDevice _device;
+        private readonly ICaptureDevice _captureDevice;
         private readonly HashSet<int> _ports = new();
-        private readonly Lock _sync = new();
         private string _lastAppliedFilter = TelemetryDeviceConstants.Network.UdpFilter;
 
         public PacketSniffer(ILogger<PacketSniffer> logger)

@@ -5,12 +5,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<PacketSniffer>();
+builder.Services.AddSingleton<IPacketSniffer,PacketSniffer>();
 
 var app = builder.Build();
 
-var sniffer = app.Services.GetRequiredService<PacketSniffer>();
-sniffer.AddPort(8000);
 
 if (app.Environment.IsDevelopment())
 {
