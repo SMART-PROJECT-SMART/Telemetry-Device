@@ -11,9 +11,8 @@ namespace TelemetryDevice.Services
     {
         private readonly ILogger<PacketSniffer> _logger;
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
-        private ICaptureDevice _device;
+        private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
-        private readonly Lock _sync = new();
         private string _lastAppliedFilter = string.Empty;
 
         public PacketSniffer(ILogger<PacketSniffer> logger, IOptions<NetworkingConfiguration> networkingConfig)
