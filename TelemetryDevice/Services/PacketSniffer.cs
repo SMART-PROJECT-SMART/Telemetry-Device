@@ -185,9 +185,20 @@ namespace TelemetryDevice.Services
 
         public void Dispose()
         {
-            _device.OnPacketArrival -= OnPacketArrival;
-            _device.StopCapture();
-            _device.Close();
+            foreach (var device in _devices)
+            {
+                try
+                {
+                    device.OnPacketArrival -= OnPacketArrival;
+                    device.StopCapture();
+                    device.Close();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error disposing device: {DeviceName}", device.Name);
+                }
+            }
+            _devices.Clear();
         }
     }
 }
