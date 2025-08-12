@@ -1,5 +1,4 @@
-﻿using Shared.Enums;
-
+﻿
 namespace TelemetryDevice.Services.Helpers.Decoder
 {
     public class TelemetryDataDecoder : ITelemetryDecoder
