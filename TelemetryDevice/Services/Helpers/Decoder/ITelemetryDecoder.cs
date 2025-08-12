@@ -1,4 +1,4 @@
-﻿using Shared.Enums;
+﻿using Shared.Common.Enums;
 
 namespace TelemetryDevice.Services.Helpers.Decoder
 {

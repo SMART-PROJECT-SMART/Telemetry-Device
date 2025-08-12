@@ -9,8 +9,9 @@ builder.Services.AddAppConfiguration(builder.Configuration);
 
 builder.Services.AddPacketSniffer();
 
-
 builder.Services.AddPipeline();
+
+Shared.Services.ServiceCollectionExtensions.AddIcdDirectoryServices(builder.Services);
 
 var app = builder.Build();
 

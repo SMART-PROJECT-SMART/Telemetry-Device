@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks.Dataflow;
-using Shared.Enums;
+using Shared.Common.Enums;
 using TelemetryDevice.Models;
 using TelemetryDevice.Services.Helpers.Decoder;
 using TelemetryDevice.Services.Helpers.Validator;

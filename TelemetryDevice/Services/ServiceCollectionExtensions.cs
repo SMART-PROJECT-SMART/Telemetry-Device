@@ -1,4 +1,5 @@
-﻿using TelemetryDevice.Common;
+﻿using Shared.Services;
+using TelemetryDevice.Common;
 using TelemetryDevice.Config;
 using TelemetryDevice.Services.Helpers.Decoder;
 using TelemetryDevice.Services.Helpers.Validator;
@@ -36,5 +37,6 @@ namespace TelemetryDevice.Services
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             return services;
         }
+       
     }
 }
