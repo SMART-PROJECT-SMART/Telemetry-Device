@@ -3,9 +3,9 @@ using TelemetryDevice.Common;
 
 namespace TelemetryDevice.Services.Helpers
 {
-    public static class ChecksumValidator
+    public class ChecksumValidator : IValidator
     {
-        public static bool ValidateChecksum(byte[] compressedData)
+        public  bool Validate(byte[] compressedData)
         {
             var bits = new BitArray(compressedData);
             int totalBits = bits.Length;
@@ -33,7 +33,7 @@ namespace TelemetryDevice.Services.Helpers
             return expected == actualLast32;
         }
 
-        private static BitArray SubBits(BitArray src, int start, int count)
+        private  BitArray SubBits(BitArray src, int start, int count)
         {
             var dest = new BitArray(count);
             for (int i = 0; i < count && (start + i) < src.Length; i++)

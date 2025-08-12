@@ -6,7 +6,7 @@ using TelemetryDevice.Common;
 using TelemetryDevice.Config;
 using TelemetryDevice.Models;
 
-namespace TelemetryDevice.Services.PacketSniffer
+namespace TelemetryDevice.Services.Sniffer
 {
     public class PacketSniffer : IDisposable, IPacketSniffer
     {
@@ -23,7 +23,6 @@ namespace TelemetryDevice.Services.PacketSniffer
         {
             _logger = logger;
             _networkingConfig = networkingConfig;
-
             var availableDevices = CaptureDeviceList.Instance;
             InitializeDevices(availableDevices);
         }
@@ -182,7 +181,7 @@ namespace TelemetryDevice.Services.PacketSniffer
             HandlePacket(udp);
         }
 
-        private async void HandlePacket(UdpPacket udp)
+        private void HandlePacket(UdpPacket udp)
         {
             var ipPacket = udp.ParentPacket as IPPacket;
             var sourceIp = ipPacket?.SourceAddress?.ToString();
@@ -197,8 +196,6 @@ namespace TelemetryDevice.Services.PacketSniffer
                         payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]
                     ) + TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
                     : Convert.ToHexString(payload);
-            var pipeLine = new PipeLine(payload);
-            var isValid = await pipeLine.ProccessData();
             _logger.LogInformation(
                 "UDP Packet: {SourceIp}:{SourcePort} -> {DestIp}:{DestPort}, Length: {Length} bytes,checksum: {valid}, Data: {HexPreview} ",
                 sourceIp,
@@ -206,7 +203,6 @@ namespace TelemetryDevice.Services.PacketSniffer
                 destIp,
                 udp.DestinationPort,
                 payloadLength,
-                isValid,
                 hexPreview
             );
         }

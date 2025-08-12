@@ -1,19 +1,17 @@
-using Microsoft.Extensions.Options;
-using TelemetryDevice.Common;
-using TelemetryDevice.Config;
-using TelemetryDevice.Services.Helpers;
-using TelemetryDevice.Services.PacketSniffer;
+using TelemetryDevice.Services;
+using TelemetryDevice.Services.Sniffer;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddLogging();
-builder.Services.AddOpenApi();
+builder.Services.AddWebApi();
 
-builder.Services.Configure<NetworkingConfiguration>(
-    builder.Configuration.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION));
+builder.Services.AddAppConfiguration(builder.Configuration);
 
-builder.Services.AddSingleton<IPacketSniffer, PacketSniffer>();
+builder.Services.AddPacketSniffer();
+
+builder.Services.AddValidation();
+
+builder.Services.AddPipeline();
 
 var app = builder.Build();
 

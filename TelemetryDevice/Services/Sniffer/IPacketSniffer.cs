@@ -1,6 +1,4 @@
-﻿using SharpPcap;
-
-namespace TelemetryDevice.Services.PacketSniffer
+﻿namespace TelemetryDevice.Services.Sniffer
 {
     public interface IPacketSniffer
     {
