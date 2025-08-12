@@ -5,6 +5,7 @@ using SharpPcap;
 using TelemetryDevice.Common;
 using TelemetryDevice.Config;
 using TelemetryDevice.Models;
+using TelemetryDevice.Services.PipeLines;
 
 namespace TelemetryDevice.Services.Sniffer
 {
@@ -14,15 +15,18 @@ namespace TelemetryDevice.Services.Sniffer
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
+        private readonly IPipeLine _pipeLine;
         private string _lastAppliedFilter = string.Empty;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,
-            IOptions<NetworkingConfiguration> networkingConfig
+            IOptions<NetworkingConfiguration> networkingConfig,
+            IPipeLine pipeLine
         )
         {
             _logger = logger;
             _networkingConfig = networkingConfig;
+            _pipeLine = pipeLine;
             var availableDevices = CaptureDeviceList.Instance;
             InitializeDevices(availableDevices);
         }
@@ -172,55 +176,26 @@ namespace TelemetryDevice.Services.Sniffer
 
         private void OnPacketArrival(object sender, PacketCapture e)
         {
-            var raw = e.GetPacket();
+            RawCapture raw = e.GetPacket();
             var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-            var udp = packet.Extract<UdpPacket>();
-            if (udp == null)
-                return;
 
-            HandlePacket(udp);
+            HandlePacket(packet);
         }
 
-        private void HandlePacket(UdpPacket udp)
+        private void HandlePacket(Packet packet)
         {
-            var ipPacket = udp.ParentPacket as IPPacket;
-            var sourceIp = ipPacket?.SourceAddress?.ToString();
-            var destIp = ipPacket?.DestinationAddress?.ToString();
+            byte[] payload = packet.PayloadData;
 
-            var payload = udp.PayloadData;
-            var payloadLength = payload.Length;
-
-            var hexPreview =
-                payloadLength > TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH
-                    ? Convert.ToHexString(
-                        payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]
-                    ) + TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
-                    : Convert.ToHexString(payload);
-            _logger.LogInformation(
-                "UDP Packet: {SourceIp}:{SourcePort} -> {DestIp}:{DestPort}, Length: {Length} bytes,checksum: {valid}, Data: {HexPreview} ",
-                sourceIp,
-                udp.SourcePort,
-                destIp,
-                udp.DestinationPort,
-                payloadLength,
-                hexPreview
-            );
+            _pipeLine.ProcessDataAsync(payload);
         }
 
         public void Dispose()
         {
             foreach (var device in _devices)
             {
-                try
-                {
-                    device.OnPacketArrival -= OnPacketArrival;
-                    device.StopCapture();
-                    device.Close();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error disposing device: {DeviceName}", device.Name);
-                }
+                device.OnPacketArrival -= OnPacketArrival;
+                device.StopCapture();
+                device.Close();
             }
             _devices.Clear();
         }

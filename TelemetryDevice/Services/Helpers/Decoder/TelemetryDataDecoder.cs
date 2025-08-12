@@ -1,12 +1,17 @@
-﻿using TelemetryDevice.Common.Enums;
+﻿using Shared.Enums;
 
 namespace TelemetryDevice.Services.Helpers.Decoder
 {
-    public class TelemetryDataDecoder : IDecoder<TelemetryFields>
+    public class TelemetryDataDecoder : ITelemetryDecoder
     {
+        private readonly Dictionary<TelemetryFields, double> _decodedData= new Dictionary<TelemetryFields, double>();
         public Dictionary<TelemetryFields, double> DecodeData(byte[] data)
         {
-            throw new NotImplementedException();
+            foreach (var field in Enum.GetValues<TelemetryFields>())
+            {
+                _decodedData[field] = 1;
+            }
+            return _decodedData;
         }
     }
 }

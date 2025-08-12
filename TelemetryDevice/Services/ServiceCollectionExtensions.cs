@@ -1,5 +1,6 @@
 ﻿using TelemetryDevice.Common;
 using TelemetryDevice.Config;
+using TelemetryDevice.Services.Helpers.Decoder;
 using TelemetryDevice.Services.Helpers.Validator;
 using TelemetryDevice.Services.PipeLines;
 using TelemetryDevice.Services.Sniffer;
@@ -28,15 +29,11 @@ namespace TelemetryDevice.Services
             return services;
         }
 
-        public static IServiceCollection AddValidation(this IServiceCollection services)
-        {
-            services.AddSingleton<IValidator,ChecksumValidator>();
-            return services;
-        }
-
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
             services.AddSingleton<IPipeLine, TelemetryPipeLine>();
+            services.AddSingleton<IValidator,ChecksumValidator>();
+            services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             return services;
         }
     }

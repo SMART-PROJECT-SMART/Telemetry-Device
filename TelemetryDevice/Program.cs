@@ -9,7 +9,6 @@ builder.Services.AddAppConfiguration(builder.Configuration);
 
 builder.Services.AddPacketSniffer();
 
-builder.Services.AddValidation();
 
 builder.Services.AddPipeline();
 
