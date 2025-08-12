@@ -1,6 +1,6 @@
 ﻿using TelemetryDevice.Common;
 using TelemetryDevice.Config;
-using TelemetryDevice.Services.Helpers;
+using TelemetryDevice.Services.Helpers.Validator;
 using TelemetryDevice.Services.PipeLines;
 using TelemetryDevice.Services.Sniffer;
 
@@ -36,7 +36,7 @@ namespace TelemetryDevice.Services
 
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
-            services.AddSingleton<IPipeLine, PipeLine>();
+            services.AddSingleton<IPipeLine, TelemetryPipeLine>();
             return services;
         }
     }

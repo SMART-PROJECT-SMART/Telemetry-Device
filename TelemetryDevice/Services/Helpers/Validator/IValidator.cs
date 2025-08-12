@@ -1,4 +1,4 @@
-﻿namespace TelemetryDevice.Services.Helpers
+﻿namespace TelemetryDevice.Services.Helpers.Validator
 {
     public interface IValidator
     {

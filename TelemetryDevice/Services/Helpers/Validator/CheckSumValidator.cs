@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using TelemetryDevice.Common;
 
-namespace TelemetryDevice.Services.Helpers
+namespace TelemetryDevice.Services.Helpers.Validator
 {
     public class ChecksumValidator : IValidator
     {
@@ -36,7 +36,7 @@ namespace TelemetryDevice.Services.Helpers
         private  BitArray SubBits(BitArray src, int start, int count)
         {
             var dest = new BitArray(count);
-            for (int i = 0; i < count && (start + i) < src.Length; i++)
+            for (int i = 0; i < count && start + i < src.Length; i++)
                 dest[i] = src[start + i];
             return dest;
         }
@@ -60,8 +60,8 @@ namespace TelemetryDevice.Services.Helpers
             for (int byteIndex = 0; byteIndex < byteCount; byteIndex++)
             {
                 byte b = GetByte(data, byteIndex, bitsPerByte);
-                checksum = (checksum * TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MULTIPLIER
-                           + TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_INCREMENT + b)
+                checksum = checksum * TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MULTIPLIER
+                           + TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_INCREMENT + b
                            & TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MODULO;
             }
             return checksum;
