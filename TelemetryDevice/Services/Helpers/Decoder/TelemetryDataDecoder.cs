@@ -12,9 +12,7 @@ namespace TelemetryDevices.Services.Helpers.Decoder
         public Dictionary<TelemetryFields, double> DecodeData(byte[] data, ICD icd)
         {
             BitArray compressedBitArray = ConvertBytesToBitArray(data);
-
             Dictionary<TelemetryFields, double> decompressedData = DecompressTelemetryDataByICD(compressedBitArray, icd);
-
             return decompressedData;
         }
 
@@ -38,7 +36,6 @@ namespace TelemetryDevices.Services.Helpers.Decoder
         {
             BitArray mainDataBits = ExtractMainDataBits(compressedData, icd);
             BitArray signBits = ExtractSignBits(compressedData, icd);
-
             return ReconstructTelemetryValues(mainDataBits, signBits, icd);
         }
 
@@ -77,10 +74,14 @@ namespace TelemetryDevices.Services.Helpers.Decoder
             foreach (ICDItem telemetryParameter in icd)
             {
                 ulong extractedBits = ExtractFieldBits(mainDataBits, telemetryParameter);
-                ulong valueWithSign = ApplySignBit(extractedBits, signBits[fieldIndex]);
-                double telemetryValue = ConvertBitsToDouble(valueWithSign);
+                double reconstructedValue = ConvertFromMeaningfulBits(extractedBits, telemetryParameter.BitLength);
 
-                telemetryData[telemetryParameter.Name] = telemetryValue;
+                if (signBits[fieldIndex])
+                {
+                    reconstructedValue = -reconstructedValue;
+                }
+
+                telemetryData[telemetryParameter.Name] = reconstructedValue;
                 fieldIndex++;
             }
 
@@ -104,25 +105,25 @@ namespace TelemetryDevices.Services.Helpers.Decoder
             return valueInBits;
         }
 
-        private ulong ApplySignBit(ulong valueBits, bool isNegative)
+        private double ConvertFromMeaningfulBits(ulong storedBits, int bitLength)
         {
+            if (storedBits == 0) return 0.0;
 
-            if (isNegative)
-            {
-                valueBits |= TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << TelemetryDeviceConstants.TelemetryCompression.DOUBLE_SIGN_BIT_POSITION;
-            }
-            else
-            {
-                valueBits &= ~(TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << TelemetryDeviceConstants.TelemetryCompression.DOUBLE_SIGN_BIT_POSITION);
-            }
+            int exponentBits = Math.Min(TelemetryDeviceConstants.TelemetryCompression.MAX_EXPONENT_BITS, bitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR);
+            int significandBits = bitLength - exponentBits;
 
-            return valueBits;
-        }
+            ulong exponentMask = (1UL << exponentBits) - 1;
+            ulong significandMask = (1UL << significandBits) - 1;
 
-        private double ConvertBitsToDouble(ulong valueBits)
-        {
-            byte[] doubleBytes = BitConverter.GetBytes(valueBits);
-            return BitConverter.ToDouble(doubleBytes, 0);
+            int storedExponent = (int)(storedBits >> significandBits) & (int)exponentMask;
+            ulong storedSignificand = storedBits & significandMask;
+
+            int ourBias = (1 << (exponentBits - 1)) - 1;
+            int actualExponent = storedExponent - ourBias;
+
+            double significand = 1.0 + (double)storedSignificand / (1UL << significandBits);
+
+            return significand * Math.Pow(2, actualExponent);
         }
     }
 }
