@@ -12,6 +12,8 @@ builder.Services.AddPacketSniffer();
 
 builder.Services.AddPipeline();
 builder.Services.AddSingleton<TelemetryDeviceManager>();
+builder.Services.AddFactories();
+builder.Services.AddPacketHandlers();
 
 Shared.Services.ServiceCollectionExtensions.AddIcdDirectoryServices(builder.Services);
 

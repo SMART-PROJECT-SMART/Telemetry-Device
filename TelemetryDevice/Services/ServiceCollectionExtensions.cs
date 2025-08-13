@@ -1,6 +1,8 @@
 ﻿using Shared.Services;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
+using TelemetryDevices.Services.Factories.PacketHandler;
+using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.PipeLines;
@@ -37,6 +39,17 @@ namespace TelemetryDevices.Services
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             return services;
         }
-       
+
+        public static IServiceCollection AddFactories(this IServiceCollection services)
+        {
+            services.AddSingleton<IPacketHandlerFactory, PacketHandlerFactory>();
+            return services;
+        }
+        public static IServiceCollection AddPacketHandlers(this IServiceCollection services)
+        {
+            services.AddSingleton<IPacketHandler, UdpHandler>();
+            return services;
+        }   
+
     }
 }

@@ -4,6 +4,8 @@ using PacketDotNet;
 using SharpPcap;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
+using TelemetryDevices.Services.Factories.PacketHandler;
+using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.Sniffer
@@ -14,19 +16,19 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
-        private readonly IPipeLine _pipeLine;
+        private readonly IPacketHandlerFactory _packetHandlerFactory;
         private string _lastAppliedFilter = string.Empty;
         public event Action<byte[]> PacketReceived;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,
             IOptions<NetworkingConfiguration> networkingConfig,
-            IPipeLine pipeLine
+            IPacketHandlerFactory packetHandlerFactory
         )
         {
             _logger = logger;
             _networkingConfig = networkingConfig;
-            _pipeLine = pipeLine;
+            _packetHandlerFactory = packetHandlerFactory;
             var availableDevices = CaptureDeviceList.Instance;
             InitializeDevices(availableDevices);
         }
@@ -187,26 +189,8 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void HandlePacket(Packet packet)
         {
-            //TODO : REPLACE WITH FACTORY
-            try
-            {
-                var udpPacket = packet.Extract<UdpPacket>();
-                if (udpPacket?.PayloadData is { Length: > 0 })
-                {
-                    _logger.LogInformation($"UDP packet received on port {udpPacket.DestinationPort} with {udpPacket.PayloadData.Length} bytes");
-                    PacketReceived?.Invoke(udpPacket.PayloadData);
-                    return;
-                }
-
-                var tcpPacket = packet.Extract<TcpPacket>();
-                if (tcpPacket?.PayloadData is not { Length: > 0 }) return;
-                _logger.LogInformation($"TCP packet received on port {tcpPacket.DestinationPort} with {tcpPacket.PayloadData.Length} bytes");
-                PacketReceived?.Invoke(tcpPacket.PayloadData);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing packet");
-            }
+            IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
+            handler.Handle(packet,PacketReceived);
         }
 
         public void Dispose()
