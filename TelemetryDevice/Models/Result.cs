@@ -1,4 +1,4 @@
-﻿namespace TelemetryDevice.Models
+﻿namespace TelemetryDevices.Models
 {
     public struct Result
     {

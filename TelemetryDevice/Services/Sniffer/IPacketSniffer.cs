@@ -1,4 +1,4 @@
-﻿namespace TelemetryDevice.Services.Sniffer
+﻿namespace TelemetryDevices.Services.Sniffer
 {
     public interface IPacketSniffer
     {

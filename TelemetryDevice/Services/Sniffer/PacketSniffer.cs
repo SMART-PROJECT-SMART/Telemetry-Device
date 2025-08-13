@@ -2,12 +2,11 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using PacketDotNet;
 using SharpPcap;
-using TelemetryDevice.Common;
-using TelemetryDevice.Config;
-using TelemetryDevice.Models;
-using TelemetryDevice.Services.PipeLines;
+using TelemetryDevices.Common;
+using TelemetryDevices.Config;
+using TelemetryDevices.Services.PipeLines;
 
-namespace TelemetryDevice.Services.Sniffer
+namespace TelemetryDevices.Services.Sniffer
 {
     public class PacketSniffer : IDisposable, IPacketSniffer
     {
@@ -186,7 +185,6 @@ namespace TelemetryDevice.Services.Sniffer
         {
             byte[] payload = packet.PayloadData;
 
-            _pipeLine.ProcessDataAsync(payload);
         }
 
         public void Dispose()

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
-using TelemetryDevice.Common;
+using TelemetryDevices.Common;
 
-namespace TelemetryDevice.Services.Helpers.Validator
+namespace TelemetryDevices.Services.Helpers.Validator
 {
     public class ChecksumValidator : IValidator
     {
