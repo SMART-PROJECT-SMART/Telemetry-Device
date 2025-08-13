@@ -1,32 +1,27 @@
-﻿using TelemetryDevice.Services.PipeLines;
+﻿using Shared.Models.ICDModels;
+using TelemetryDevices.Services.PipeLines;
 
-namespace TelemetryDevice.Models
+namespace TelemetryDevices.Models
 {
     public class Channel
     {
         public int PortNumber { get; set; }
-        public List<IPipeLine> PipeLines { get; set; }
+        public IPipeLine PipeLine { get; set; }
+        public ICD ICD { get; set; }
 
         public Channel() { }
 
-        public Channel(int portNumber)
+        public Channel(int portNumber,ICD icd)
         {
             PortNumber = portNumber;
-            PipeLines = new List<IPipeLine>();
+            ICD = icd;
         }
 
-        public Channel(int portNumber, List<IPipeLine> pipeLines)
+        public Channel(int portNumber, IPipeLine pipeLine,ICD icd)
         {
             PortNumber = portNumber;
-            PipeLines = pipeLines;
-        }
-
-        public void RunPayloadOnPipelines(byte[] payload)
-        {
-            foreach (var pipeLine in PipeLines)
-            {
-                pipeLine.ProcessDataAsync(payload);
-            }
+            PipeLine = pipeLine;
+            ICD = icd;
         }
     }
 }

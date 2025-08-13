@@ -1,4 +1,4 @@
-﻿namespace TelemetryDevice.Common
+﻿namespace TelemetryDevices.Common
 {
     public static class TelemetryDeviceConstants
     {
@@ -48,6 +48,7 @@
             public const int ICD_BITS = 328;   
             public const int SIGN_BITS = 21;  
             public const int PADDING_BITS = 3;
+            public const int DOUBLE_SIGN_BIT_POSITION = 63;
         }
 
         public static class TelemetryData
