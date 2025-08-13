@@ -1,7 +1,9 @@
-﻿namespace TelemetryDevice.Services.PipeLines
+﻿using Shared.Models.ICDModels;
+
+namespace TelemetryDevices.Services.PipeLines
 {
     public interface IPipeLine
     {
-        public Task ProcessDataAsync(byte[] data);
+        public Task ProcessDataAsync(byte[] data,ICD icd);
     }
 }

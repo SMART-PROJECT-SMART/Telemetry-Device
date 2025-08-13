@@ -1,10 +1,11 @@
 ﻿using System.Threading.Tasks.Dataflow;
 using Shared.Common.Enums;
-using TelemetryDevice.Models;
-using TelemetryDevice.Services.Helpers.Decoder;
-using TelemetryDevice.Services.Helpers.Validator;
+using Shared.Models.ICDModels;
+using TelemetryDevices.Models;
+using TelemetryDevices.Services.Helpers.Decoder;
+using TelemetryDevices.Services.Helpers.Validator;
 
-namespace TelemetryDevice.Services.PipeLines
+namespace TelemetryDevices.Services.PipeLines
 {
     public class TelemetryPipeLine : IPipeLine
     {
@@ -14,16 +15,18 @@ namespace TelemetryDevice.Services.PipeLines
         private TransformBlock<Result, Dictionary<TelemetryFields, double>> _decodingBlock;
         private ActionBlock<Dictionary<TelemetryFields, double>> _outputBlock;
         private readonly ILogger<TelemetryPipeLine> _logger;
+        private readonly ICD _icd;
 
-        public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, ILogger<TelemetryPipeLine> logger)
+        public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, ILogger<TelemetryPipeLine> logger,ICD icd)
         {
             _validator = validator;
             _telemetryDecoder = telemetryDecoder;
             _logger = logger;
+            _icd = icd;
             BuildPipeLine();
         }
 
-        public async Task ProcessDataAsync(byte[] data)
+        public async Task ProcessDataAsync(byte[] data,ICD icd)
         {
             _validationBlock.Post(data);
             await _outputBlock.Completion;
@@ -49,7 +52,7 @@ namespace TelemetryDevice.Services.PipeLines
         private void BuildDecodingBlock()
         {
             _decodingBlock = new TransformBlock<Result, Dictionary<TelemetryFields, double>>(
-                result => _telemetryDecoder.DecodeData(result.Data)
+                result => _telemetryDecoder.DecodeData(result.Data,_icd)
             );
         }
 
