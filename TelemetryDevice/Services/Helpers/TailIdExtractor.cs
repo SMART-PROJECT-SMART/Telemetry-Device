@@ -1,6 +1,6 @@
-﻿using Shared.Common.Enums;
+﻿using System.Collections;
+using Shared.Common.Enums;
 using Shared.Models.ICDModels;
-using System.Collections;
 using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Services.Helpers
@@ -9,7 +9,9 @@ namespace TelemetryDevices.Services.Helpers
     {
         public static int? GetTailIdByICD(byte[] payload, ICD icd)
         {
-            ICDItem tailIdItem = icd.Document.FirstOrDefault(item => item.Name == TelemetryFields.TailId);
+            ICDItem tailIdItem = icd.Document.FirstOrDefault(item =>
+                item.Name == TelemetryFields.TailId
+            );
             if (tailIdItem == null)
             {
                 return null;
@@ -21,21 +23,43 @@ namespace TelemetryDevices.Services.Helpers
                 return null;
             }
 
-            ulong extractedBits = ExtractBitsAsULong(payloadBits, tailIdItem.StartBitArrayIndex, tailIdItem.BitLength);
-            double reconstructedValue = ConvertFromMeaningfulBits(extractedBits, tailIdItem.BitLength);
+            ulong extractedBits = ExtractBitsAsULong(
+                payloadBits,
+                tailIdItem.StartBitArrayIndex,
+                tailIdItem.BitLength
+            );
+            double reconstructedValue = ConvertFromMeaningfulBits(
+                extractedBits,
+                tailIdItem.BitLength
+            );
 
             return (int)Math.Round(reconstructedValue);
         }
 
         private static BitArray ConvertBytesToBitArray(byte[] payload)
         {
-            BitArray bitArray = new BitArray(payload.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE);
+            BitArray bitArray = new BitArray(
+                payload.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
+            );
             for (int byteIndex = 0; byteIndex < payload.Length; byteIndex++)
             {
-                for (int bitIndex = 0; bitIndex < TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE; bitIndex++)
+                for (
+                    int bitIndex = 0;
+                    bitIndex < TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE;
+                    bitIndex++
+                )
                 {
-                    int absoluteBitIndex = (byteIndex * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE) + bitIndex;
-                    bitArray[absoluteBitIndex] = (payload[byteIndex] & (TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitIndex)) != 0;
+                    int absoluteBitIndex =
+                        (byteIndex * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE)
+                        + bitIndex;
+                    bitArray[absoluteBitIndex] =
+                        (
+                            payload[byteIndex]
+                            & (
+                                TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
+                                << bitIndex
+                            )
+                        ) != 0;
                 }
             }
             return bitArray;
@@ -56,9 +80,13 @@ namespace TelemetryDevices.Services.Helpers
 
         private static double ConvertFromMeaningfulBits(ulong storedBits, int bitLength)
         {
-            if (storedBits == 0) return 0.0;
+            if (storedBits == 0)
+                return 0.0;
 
-            int exponentBits = Math.Min(TelemetryDeviceConstants.TelemetryCompression.MAX_EXPONENT_BITS, bitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR);
+            int exponentBits = Math.Min(
+                TelemetryDeviceConstants.TelemetryCompression.MAX_EXPONENT_BITS,
+                bitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR
+            );
             int significandBits = bitLength - exponentBits;
 
             ulong exponentMask = (1UL << exponentBits) - 1;

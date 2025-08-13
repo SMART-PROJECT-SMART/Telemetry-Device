@@ -22,7 +22,7 @@ var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
 var ports = new List<int>();
 ports.Add(8000);
 ports.Add(8001);
-tdManager.AddTelemetryDevice(1,ports,new Location(0,0));
+tdManager.AddTelemetryDevice(1, ports, new Location(0, 0));
 
 if (app.Environment.IsDevelopment())
 {

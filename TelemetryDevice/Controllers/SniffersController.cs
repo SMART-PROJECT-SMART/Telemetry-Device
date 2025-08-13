@@ -8,6 +8,7 @@ namespace TelemetryDevices.Controllers
     public class SniffersController : ControllerBase
     {
         private readonly PacketSniffer _sniffer;
+
         public SniffersController(PacketSniffer sniffer)
         {
             _sniffer = sniffer;

@@ -190,7 +190,7 @@ namespace TelemetryDevices.Services.Sniffer
         private void HandlePacket(Packet packet)
         {
             IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
-            handler.Handle(packet,PacketReceived);
+            handler.Handle(packet, PacketReceived);
         }
 
         public void Dispose()

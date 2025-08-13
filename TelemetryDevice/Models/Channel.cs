@@ -12,13 +12,13 @@ namespace TelemetryDevices.Models
 
         public Channel() { }
 
-        public Channel(int portNumber,ICD icd)
+        public Channel(int portNumber, ICD icd)
         {
             PortNumber = portNumber;
             ICD = icd;
         }
 
-        public Channel(int portNumber, IPipeLine pipeLine,ICD icd)
+        public Channel(int portNumber, IPipeLine pipeLine, ICD icd)
         {
             PortNumber = portNumber;
             PipeLine = pipeLine;

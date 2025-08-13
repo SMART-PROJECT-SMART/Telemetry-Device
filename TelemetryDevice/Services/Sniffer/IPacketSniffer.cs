@@ -7,6 +7,5 @@
         public void RemovePort(int port);
         public List<int> GetPorts();
         public void Dispose();
-
     }
 }

@@ -7,11 +7,13 @@ namespace TelemetryDevices.Models
     {
         public Location Location { get; set; }
         public List<Channel> Channels { get; set; }
-        public TelemetryDevice(Location location,List<Channel> channels)
+
+        public TelemetryDevice(Location location, List<Channel> channels)
         {
             Location = location;
             Channels = channels;
         }
+
         public TelemetryDevice(Location location)
         {
             Location = location;
@@ -26,15 +28,16 @@ namespace TelemetryDevices.Models
             }
         }
 
-        public void AddChannel(int portNumber,ICD icd)
+        public void AddChannel(int portNumber, ICD icd)
         {
             var newChannel = new Channel(portNumber, icd);
             Channels.Add(newChannel);
             newChannel.PipeLine.SetICD(icd);
         }
-        public void AddChannel(int portNumber,IPipeLine pipeLine, ICD icd)
+
+        public void AddChannel(int portNumber, IPipeLine pipeLine, ICD icd)
         {
-            var newChannel = new Channel(portNumber,pipeLine, icd);
+            var newChannel = new Channel(portNumber, pipeLine, icd);
             Channels.Add(newChannel);
             newChannel.PipeLine.SetICD(icd);
         }
@@ -43,12 +46,11 @@ namespace TelemetryDevices.Models
         {
             var index = Channels.FindIndex(channel => channel.PortNumber == portNumber);
 
-            if (index == -1) return false;
+            if (index == -1)
+                return false;
 
             Channels.RemoveAt(index);
             return true;
-
         }
-
     }
 }

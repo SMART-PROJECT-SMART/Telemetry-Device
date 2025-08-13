@@ -14,6 +14,6 @@ public class PacketHandlerFactory : IPacketHandlerFactory
     public IPacketHandler GetHandler(Packet packet)
     {
         return _handlers.FirstOrDefault(handler => handler.CanHandle(packet))
-               ?? throw new InvalidOperationException("No suitable packet handler found.");
+            ?? throw new InvalidOperationException("No suitable packet handler found.");
     }
 }

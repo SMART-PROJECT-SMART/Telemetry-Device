@@ -17,7 +17,11 @@ namespace TelemetryDevices.Services.PipeLines
         private readonly ILogger<TelemetryPipeLine> _logger;
         private ICD _icd { get; set; }
 
-        public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, ILogger<TelemetryPipeLine> logger)
+        public TelemetryPipeLine(
+            IValidator validator,
+            ITelemetryDecoder telemetryDecoder,
+            ILogger<TelemetryPipeLine> logger
+        )
         {
             _validator = validator;
             _telemetryDecoder = telemetryDecoder;
@@ -56,7 +60,7 @@ namespace TelemetryDevices.Services.PipeLines
         private void BuildDecodingBlock()
         {
             _decodingBlock = new TransformBlock<Result, Dictionary<TelemetryFields, double>>(
-                result => _telemetryDecoder.DecodeData(result.Data,_icd)
+                result => _telemetryDecoder.DecodeData(result.Data, _icd)
             );
         }
 

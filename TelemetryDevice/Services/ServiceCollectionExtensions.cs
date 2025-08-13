@@ -20,10 +20,14 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddAppConfiguration(this IServiceCollection services,IConfiguration config)
+        public static IServiceCollection AddAppConfiguration(
+            this IServiceCollection services,
+            IConfiguration config
+        )
         {
             return services.Configure<NetworkingConfiguration>(
-                config.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION));
+                config.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION)
+            );
         }
 
         public static IServiceCollection AddPacketSniffer(this IServiceCollection services)
@@ -35,7 +39,7 @@ namespace TelemetryDevices.Services
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
             services.AddSingleton<IPipeLine, TelemetryPipeLine>();
-            services.AddSingleton<IValidator,ChecksumValidator>();
+            services.AddSingleton<IValidator, ChecksumValidator>();
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             return services;
         }
@@ -45,11 +49,11 @@ namespace TelemetryDevices.Services
             services.AddSingleton<IPacketHandlerFactory, PacketHandlerFactory>();
             return services;
         }
+
         public static IServiceCollection AddPacketHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IPacketHandler, UdpHandler>();
             return services;
-        }   
-
+        }
     }
 }
