@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TelemetryDevice.Services.Sniffer;
+using TelemetryDevices.Services.Sniffer;
 
-namespace TelemetryDevice.Controllers
+namespace TelemetryDevices.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

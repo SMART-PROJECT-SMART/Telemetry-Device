@@ -1,5 +1,5 @@
-using TelemetryDevice.Services;
-using TelemetryDevice.Services.Sniffer;
+using TelemetryDevices.Services;
+using TelemetryDevices.Services.Sniffer;
 
 var builder = WebApplication.CreateBuilder(args);
 

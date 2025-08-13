@@ -1,12 +1,12 @@
 ﻿using Shared.Services;
-using TelemetryDevice.Common;
-using TelemetryDevice.Config;
-using TelemetryDevice.Services.Helpers.Decoder;
-using TelemetryDevice.Services.Helpers.Validator;
-using TelemetryDevice.Services.PipeLines;
-using TelemetryDevice.Services.Sniffer;
+using TelemetryDevices.Common;
+using TelemetryDevices.Config;
+using TelemetryDevices.Services.Helpers.Decoder;
+using TelemetryDevices.Services.Helpers.Validator;
+using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.Sniffer;
 
-namespace TelemetryDevice.Services
+namespace TelemetryDevices.Services
 {
     public static class ServiceCollectionExtensions
     {
