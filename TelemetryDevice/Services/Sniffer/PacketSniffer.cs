@@ -187,10 +187,11 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void HandlePacket(Packet packet)
         {
+            //TODO : REPLACE WITH FACTORY
             try
             {
                 var udpPacket = packet.Extract<UdpPacket>();
-                if (udpPacket?.PayloadData != null && udpPacket.PayloadData.Length > 0)
+                if (udpPacket?.PayloadData is { Length: > 0 })
                 {
                     _logger.LogInformation($"UDP packet received on port {udpPacket.DestinationPort} with {udpPacket.PayloadData.Length} bytes");
                     PacketReceived?.Invoke(udpPacket.PayloadData);
@@ -198,12 +199,9 @@ namespace TelemetryDevices.Services.Sniffer
                 }
 
                 var tcpPacket = packet.Extract<TcpPacket>();
-                if (tcpPacket?.PayloadData != null && tcpPacket.PayloadData.Length > 0)
-                {
-                    _logger.LogInformation($"TCP packet received on port {tcpPacket.DestinationPort} with {tcpPacket.PayloadData.Length} bytes");
-                    PacketReceived?.Invoke(tcpPacket.PayloadData);
-                    return;
-                }
+                if (tcpPacket?.PayloadData is not { Length: > 0 }) return;
+                _logger.LogInformation($"TCP packet received on port {tcpPacket.DestinationPort} with {tcpPacket.PayloadData.Length} bytes");
+                PacketReceived?.Invoke(tcpPacket.PayloadData);
             }
             catch (Exception ex)
             {
