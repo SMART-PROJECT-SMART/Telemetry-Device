@@ -16,6 +16,7 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly HashSet<int> _ports = new();
         private readonly IPipeLine _pipeLine;
         private string _lastAppliedFilter = string.Empty;
+        public event Action<byte[]> PacketReceived;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,
@@ -80,6 +81,7 @@ namespace TelemetryDevices.Services.Sniffer
         {
             if (!_ports.Add(port))
                 return;
+            _logger.LogInformation($"Added port {port} to monitoring. Total ports: {_ports.Count}");
             ApplyFilterToAllDevices();
         }
 
@@ -116,11 +118,7 @@ namespace TelemetryDevices.Services.Sniffer
             }
 
             _lastAppliedFilter = newFilter;
-            _logger.LogDebug(
-                "Updated filter on {DeviceCount} devices: {Filter}",
-                _devices.Count,
-                newFilter
-            );
+            _logger.LogInformation($"Applied filter to {_devices.Count} devices: {newFilter}");
         }
 
         private void ApplyFilterToDevice(ICaptureDevice device, string? filter = null)
@@ -175,16 +173,42 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void OnPacketArrival(object sender, PacketCapture e)
         {
-            RawCapture raw = e.GetPacket();
-            var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-
-            HandlePacket(packet);
+            try
+            {
+                RawCapture raw = e.GetPacket();
+                var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
+                HandlePacket(packet);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in OnPacketArrival");
+            }
         }
 
         private void HandlePacket(Packet packet)
         {
-            byte[] payload = packet.PayloadData;
+            try
+            {
+                var udpPacket = packet.Extract<UdpPacket>();
+                if (udpPacket?.PayloadData != null && udpPacket.PayloadData.Length > 0)
+                {
+                    _logger.LogInformation($"UDP packet received on port {udpPacket.DestinationPort} with {udpPacket.PayloadData.Length} bytes");
+                    PacketReceived?.Invoke(udpPacket.PayloadData);
+                    return;
+                }
 
+                var tcpPacket = packet.Extract<TcpPacket>();
+                if (tcpPacket?.PayloadData != null && tcpPacket.PayloadData.Length > 0)
+                {
+                    _logger.LogInformation($"TCP packet received on port {tcpPacket.DestinationPort} with {tcpPacket.PayloadData.Length} bytes");
+                    PacketReceived?.Invoke(tcpPacket.PayloadData);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing packet");
+            }
         }
 
         public void Dispose()

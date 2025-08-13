@@ -15,21 +15,25 @@ namespace TelemetryDevices.Services.PipeLines
         private TransformBlock<Result, Dictionary<TelemetryFields, double>> _decodingBlock;
         private ActionBlock<Dictionary<TelemetryFields, double>> _outputBlock;
         private readonly ILogger<TelemetryPipeLine> _logger;
-        private readonly ICD _icd;
+        private ICD _icd { get; set; }
 
-        public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, ILogger<TelemetryPipeLine> logger,ICD icd)
+        public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, ILogger<TelemetryPipeLine> logger)
         {
             _validator = validator;
             _telemetryDecoder = telemetryDecoder;
             _logger = logger;
-            _icd = icd;
-            BuildPipeLine();
         }
 
-        public async Task ProcessDataAsync(byte[] data,ICD icd)
+        public async Task ProcessDataAsync(byte[] data)
         {
             _validationBlock.Post(data);
             await _outputBlock.Completion;
+        }
+
+        public void SetICD(ICD icd)
+        {
+            _icd = icd;
+            BuildPipeLine();
         }
 
         private void BuildPipeLine()

@@ -2,6 +2,7 @@
 {
     public interface IPacketSniffer
     {
+        public event Action<byte[]> PacketReceived;
         public void AddPort(int port);
         public void RemovePort(int port);
         public List<int> GetPorts();

@@ -1,5 +1,8 @@
 ﻿using Shared.Services.ICDDirectory;
 using TelemetryDevices.Models;
+using TelemetryDevices.Services.Helpers;
+using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.Sniffer;
 
 namespace TelemetryDevices.Services
 {
@@ -7,10 +10,15 @@ namespace TelemetryDevices.Services
     {
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
+        private readonly IPacketSniffer _packetSniffer;
+        private readonly IPipeLine _pipeLine;
 
-        public TelemetryDeviceManager(IICDDirectory icdDirectory)
+        public TelemetryDeviceManager(IICDDirectory icdDirectory,IPacketSniffer packetSniffer,IPipeLine pipeLine)
         {
             _icdDirectory = icdDirectory;
+            _packetSniffer = packetSniffer;
+            _packetSniffer.PacketReceived += OnPacketReceived;
+            _pipeLine = pipeLine;
         }
 
         public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
@@ -26,7 +34,7 @@ namespace TelemetryDevices.Services
             var icds = _icdDirectory.GetAllICDs().ToList();
             for (int index = 0; index < icds.Count; index++)
             {
-                telemetryDevice.AddChannel(portNumbers[index], icds[index]);
+                telemetryDevice.AddChannel(portNumbers[index],_pipeLine, icds[index]);
             }
         }
 
@@ -38,6 +46,18 @@ namespace TelemetryDevices.Services
         public bool Exists(int tailId)
         {
             return _telemetryDevicesByTailId.ContainsKey(tailId);
+        }
+        private void OnPacketReceived(byte[] payload)
+        {
+            foreach (var icd in _icdDirectory.GetAllICDs())
+            {
+                int tailId = TailIdExtractor.GetTailIdByICD(payload, icd) ?? -1;
+                if (tailId == -1)
+                {
+                    continue;
+                }
+                _telemetryDevicesByTailId[tailId].RunOnAllChannels(payload);
+            }
         }
     }
 }

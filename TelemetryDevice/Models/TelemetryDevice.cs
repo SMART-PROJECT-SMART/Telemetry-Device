@@ -1,4 +1,5 @@
 ﻿using Shared.Models.ICDModels;
+using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Models
 {
@@ -17,10 +18,25 @@ namespace TelemetryDevices.Models
             Channels = new List<Channel>();
         }
 
+        public void RunOnAllChannels(byte[] data)
+        {
+            foreach (var channel in Channels)
+            {
+                channel.PipeLine.ProcessDataAsync(data);
+            }
+        }
+
         public void AddChannel(int portNumber,ICD icd)
         {
             var newChannel = new Channel(portNumber, icd);
             Channels.Add(newChannel);
+            newChannel.PipeLine.SetICD(icd);
+        }
+        public void AddChannel(int portNumber,IPipeLine pipeLine, ICD icd)
+        {
+            var newChannel = new Channel(portNumber,pipeLine, icd);
+            Channels.Add(newChannel);
+            newChannel.PipeLine.SetICD(icd);
         }
 
         public bool RemoveChannel(int portNumber)

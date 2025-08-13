@@ -1,4 +1,5 @@
 ﻿using Shared.Models.ICDModels;
+using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Models
