@@ -57,16 +57,10 @@ namespace TelemetryDevices.Services
 
         private void OnPacketReceived(byte[] payload, int destinationPort)
         {
-            int? tailId = null;
 
-            foreach (var icd in _icdDirectory.GetAllICDs())
-            {
+            int? tailId = null;
+            ICD icd = _icdDirectory.GetPortsICD(destinationPort);
                 tailId = TailIdExtractor.GetTailIdByICD(payload, icd);
-                if (tailId.HasValue)
-                {
-                    break;
-                }
-            }
 
             if (tailId.HasValue && _telemetryDevicesByTailId.TryGetValue(tailId.Value, out var value))
             {
