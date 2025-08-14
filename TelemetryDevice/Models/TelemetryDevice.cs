@@ -55,6 +55,11 @@ namespace TelemetryDevices.Models
             return true;
         }
 
+        public Channel? GetChannelByPort(int portNumber)
+        {
+            return Channels.FirstOrDefault(c => c.PortNumber == portNumber);
+        }
+
         public void RunOnSpecificChannel(int portNumber, byte[] data)
         {
             var channel = Channels.FirstOrDefault(c => c.PortNumber == portNumber);

@@ -47,6 +47,12 @@ namespace TelemetryDevices.Services
             return services;
         }
 
+        public static IServiceCollection AddPortManager(this IServiceCollection services)
+        {
+            services.AddSingleton<IPortManager, PortManager>();
+            return services;
+        }
+
         public static IServiceCollection AddFactories(this IServiceCollection services)
         {
             services.AddSingleton<IPacketHandlerFactory, PacketHandlerFactory>();
