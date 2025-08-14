@@ -83,10 +83,5 @@ namespace TelemetryDevices.Services
                 device.RunOnSpecificChannel(destinationPort, payload);
             }
         }
-
-        public void SwitchPorts(int sourcePort, int destinationPort)
-        {
-            _portManager.SwitchPorts(sourcePort, destinationPort);
-        }
     }
 }

@@ -12,8 +12,7 @@ builder.Services.AddAppConfiguration(builder.Configuration);
 builder.Services.AddPacketSniffer();
 
 builder.Services.AddPipeline();
-builder.Services.AddPortManager();
-builder.Services.AddSingleton<TelemetryDeviceManager>();
+builder.Services.AddTelemetryServices();
 builder.Services.AddFactories();
 builder.Services.AddPacketHandlers();
 builder.Services.AddIcdDirectory();

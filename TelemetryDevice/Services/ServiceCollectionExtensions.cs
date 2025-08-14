@@ -41,7 +41,8 @@ namespace TelemetryDevices.Services
 
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
-            services.AddSingleton<IPipeLine, TelemetryPipeLine>();
+            // Change from Singleton to Transient - each channel needs its own pipeline
+            services.AddTransient<IPipeLine, TelemetryPipeLine>();
             services.AddSingleton<IValidator, ChecksumValidator>();
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             return services;
@@ -50,6 +51,14 @@ namespace TelemetryDevices.Services
         public static IServiceCollection AddPortManager(this IServiceCollection services)
         {
             services.AddSingleton<IPortManager, PortManager>();
+            return services;
+        }
+
+
+        public static IServiceCollection AddTelemetryServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IPortManager, PortManager>();
+            services.AddSingleton<TelemetryDeviceManager>();
             return services;
         }
 

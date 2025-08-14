@@ -11,10 +11,16 @@ namespace TelemetryDevices.Controllers
     public class TelemetryDeviceController : ControllerBase
     {
         private readonly TelemetryDeviceManager _telemetryDeviceManager;
-        public TelemetryDeviceController(TelemetryDeviceManager telemetryDeviceManager)
+        private readonly IPortManager _portManager;
+
+        public TelemetryDeviceController(
+            TelemetryDeviceManager telemetryDeviceManager,
+            IPortManager portManager)
         {
             _telemetryDeviceManager = telemetryDeviceManager;
+            _portManager = portManager;
         }
+
         [HttpPost("add-telemetry-device")]
         public IActionResult AddTelemetryDevice(
             CreateTelemetryDeviceDto dto
@@ -23,6 +29,7 @@ namespace TelemetryDevices.Controllers
             _telemetryDeviceManager.AddTelemetryDevice(dto.TailId, dto.PortNumbers, dto.Location);
             return Ok($"Telemetry device with tail ID {dto.TailId} added successfully.");
         }
+
         [HttpPost("remove-telemetry-device")]
         public IActionResult RemoveTelemetryDevice(int tailId)
         {
@@ -32,6 +39,7 @@ namespace TelemetryDevices.Controllers
             }
             return Ok($"Telemetry device with tail ID {tailId} removed successfully.");
         }
+
         [HttpGet("run")]
         public IActionResult Run()
         {
@@ -41,10 +49,11 @@ namespace TelemetryDevices.Controllers
             _telemetryDeviceManager.AddTelemetryDevice(tailId, portNumbers, location);
             return Ok($"Telemetry device with tail ID {tailId} started with ports {string.Join(", ", portNumbers)}.");
         }
+
         [HttpPost("switch-port")]
         public IActionResult SwitchPort(int sourcePort, int destinationPort)
         {
-            _telemetryDeviceManager.SwitchPorts(sourcePort, destinationPort);
+            _portManager.SwitchPorts(sourcePort, destinationPort);
             return Ok($"Switched ports {sourcePort} and {destinationPort} successfully.");
         }
     }
