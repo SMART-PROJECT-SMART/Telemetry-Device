@@ -76,7 +76,8 @@ namespace TelemetryDevices.Services
 
         private void OnPacketReceived(byte[] payload, int destinationPort)
         {
-            int? tailId = TailIdExtractor.GetTailIdByICD(payload);
+            var portsIcd = _portManager.GetChannelByPort(destinationPort)?.ICD;
+            int? tailId = TailIdExtractor.GetTailIdByICD(payload,portsIcd);
 
             if (tailId.HasValue && _telemetryDevicesByTailId.TryGetValue(tailId.Value, out var device))
             {

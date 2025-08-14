@@ -90,5 +90,6 @@ namespace TelemetryDevices.Services
         {
             return _portToChannel.Keys;
         }
+
     }
 }
