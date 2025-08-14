@@ -175,22 +175,15 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void OnPacketArrival(object sender, PacketCapture e)
         {
-            try
-            {
                 RawCapture raw = e.GetPacket();
-                var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
+                Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
                 HandlePacket(packet);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in OnPacketArrival");
-            }
         }
 
         private void HandlePacket(Packet packet)
         {
             IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
-            handler.Handle(packet, PacketReceived);
+            handler.Handle(packet,PacketReceived);
         }
 
         public void Dispose()
