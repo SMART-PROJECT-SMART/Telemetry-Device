@@ -6,5 +6,6 @@ namespace TelemetryDevices.Services.PipeLines
     {
         public Task ProcessDataAsync(byte[] data);
         public void SetICD(ICD icd);
+        public ICD GetICD();
     }
 }

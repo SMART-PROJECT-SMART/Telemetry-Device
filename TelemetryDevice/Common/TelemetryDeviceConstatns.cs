@@ -17,7 +17,11 @@
             public const int MAX_PORT_NUMBER = 8999;
             public const int PORT_INCREMENT = 1;
         }
-
+        public static class Config
+        {
+            public const string ICD_DIRECTORY = "ICD";
+            public const string JSON_SEARCH_PATTERN = "*.json";
+        }
         public static class LoopbackInterface
         {
             public const string LOOPBACK_DESCRIPTION = "Loopback";

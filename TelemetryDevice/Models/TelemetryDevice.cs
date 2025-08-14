@@ -28,6 +28,7 @@ namespace TelemetryDevices.Models
             }
         }
 
+    
         public void AddChannel(int portNumber, ICD icd)
         {
             var newChannel = new Channel(portNumber, icd);
@@ -51,6 +52,15 @@ namespace TelemetryDevices.Models
 
             Channels.RemoveAt(index);
             return true;
+        }
+
+        public void RunOnSpecificChannel(int portNumber, byte[] data)
+        {
+            var channel = Channels.FirstOrDefault(c => c.PortNumber == portNumber);
+            if (channel != null)
+            {
+                channel.PipeLine.ProcessDataAsync(data);
+            }
         }
     }
 }

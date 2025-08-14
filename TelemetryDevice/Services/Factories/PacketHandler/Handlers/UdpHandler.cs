@@ -9,12 +9,12 @@ public class UdpHandler : IPacketHandler
         return udpPacket?.PayloadData is { Length: > 0 };
     }
 
-    public void Handle(Packet packet, Action<byte[]> packetCaught)
+    public void Handle(Packet packet, Action<byte[],int> packetCaught)
     {
         var udpPacket = packet.Extract<UdpPacket>();
         if (udpPacket?.PayloadData is { Length: > 0 })
         {
-            packetCaught.Invoke(udpPacket.PayloadData);
+            packetCaught.Invoke(udpPacket.PayloadData,udpPacket.DestinationPort);
         }
     }
 }

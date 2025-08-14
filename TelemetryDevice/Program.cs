@@ -1,3 +1,4 @@
+using Shared.Services;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
 using TelemetryDevices.Services.Sniffer;
@@ -14,7 +15,8 @@ builder.Services.AddPipeline();
 builder.Services.AddSingleton<TelemetryDeviceManager>();
 builder.Services.AddFactories();
 builder.Services.AddPacketHandlers();
-builder.Services.AddIcdDirectoryServices();
+builder.Services.AddIcdDirectory();
+builder.Services.AddSharedConfiguration(builder.Configuration);
 
 var app = builder.Build();
 
@@ -27,5 +29,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 var sniffer = app.Services.GetRequiredService<IPacketSniffer>();
+sniffer.AddPort(8000);
+sniffer.AddPort(8001);
 
+var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
+tdManager.AddTelemetryDevice(1, new List<int> { 8000, 8001 }, new Location(0, 0));
 app.Run();

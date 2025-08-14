@@ -1,4 +1,5 @@
-﻿using Shared.Services;
+﻿using Shared.Configuration;
+using Shared.Services;
 using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
@@ -54,6 +55,11 @@ namespace TelemetryDevices.Services
         public static IServiceCollection AddPacketHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IPacketHandler, UdpHandler>();
+            return services;
+        }
+        public static IServiceCollection AddSharedConfiguration(this IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<ICDSettings>(config.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY));
             return services;
         }
     }

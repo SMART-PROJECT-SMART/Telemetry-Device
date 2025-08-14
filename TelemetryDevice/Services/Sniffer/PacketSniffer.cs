@@ -17,7 +17,7 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
         private readonly IPacketHandlerFactory _packetHandlerFactory;
-        public event Action<byte[]> PacketReceived;
+        public event Action<byte[],int> PacketReceived;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,

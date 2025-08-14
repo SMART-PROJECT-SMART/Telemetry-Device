@@ -15,7 +15,7 @@ namespace TelemetryDevices.Services.PipeLines
         private TransformBlock<Result, Dictionary<TelemetryFields, double>> _decodingBlock;
         private ActionBlock<Dictionary<TelemetryFields, double>> _outputBlock;
         private readonly ILogger<TelemetryPipeLine> _logger;
-        private ICD _icd { get; set; }
+        public ICD ICD { get; set; }
 
         public TelemetryPipeLine(
             IValidator validator,
@@ -36,8 +36,12 @@ namespace TelemetryDevices.Services.PipeLines
 
         public void SetICD(ICD icd)
         {
-            _icd = icd;
+            ICD = icd;
             BuildPipeLine();
+        }
+        public ICD GetICD()
+        {
+            return ICD;
         }
 
         private void BuildPipeLine()
@@ -60,7 +64,7 @@ namespace TelemetryDevices.Services.PipeLines
         private void BuildDecodingBlock()
         {
             _decodingBlock = new TransformBlock<Result, Dictionary<TelemetryFields, double>>(
-                result => _telemetryDecoder.DecodeData(result.Data, _icd)
+                result => _telemetryDecoder.DecodeData(result.Data, ICD)
             );
         }
 
@@ -68,11 +72,12 @@ namespace TelemetryDevices.Services.PipeLines
         {
             _outputBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedData =>
             {
-                _logger.LogInformation("Decoded {Count} telemetry fields", decodedData.Count);
+                /*_logger.LogInformation("Decoded {Count} telemetry fields", decodedData.Count);
                 foreach (var kvp in decodedData)
                 {
                     _logger.LogInformation("Field: {Key}, Value: {Value}", kvp.Key, kvp.Value);
-                }
+                }*/
+                _logger.LogInformation("Telemetry data processed successfully.");
             });
         }
 

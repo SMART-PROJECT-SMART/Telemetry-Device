@@ -1,4 +1,5 @@
-﻿using Shared.Services.ICDDirectory;
+﻿using Shared.Models.ICDModels;
+using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Helpers;
@@ -14,17 +15,20 @@ namespace TelemetryDevices.Services
         private readonly IICDDirectory _icdDirectory;
         private readonly IPacketSniffer _packetSniffer;
         private readonly IPipeLine _pipeLine;
+        private readonly ILogger<TelemetryDeviceManager> _logger;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPacketSniffer packetSniffer,
-            IPipeLine pipeLine
+            IPipeLine pipeLine,
+            ILogger<TelemetryDeviceManager> logger
         )
         {
             _icdDirectory = icdDirectory;
             _packetSniffer = packetSniffer;
             _packetSniffer.PacketReceived += OnPacketReceived;
             _pipeLine = pipeLine;
+            _logger = logger;
         }
 
         public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
@@ -38,7 +42,7 @@ namespace TelemetryDevices.Services
 
             var telemetryDevice = new TelemetryDevice(location);
             _telemetryDevicesByTailId[tailId] = telemetryDevice;
-
+            int amount = 1;
             var icds = _icdDirectory.GetAllICDs().ToList();
             for (int index = 0; index < icds.Count; index++)
             {
@@ -51,21 +55,22 @@ namespace TelemetryDevices.Services
             return _telemetryDevicesByTailId.Remove(tailId);
         }
 
-        public bool Exists(int tailId)
+        private void OnPacketReceived(byte[] payload, int destinationPort)
         {
-            return _telemetryDevicesByTailId.ContainsKey(tailId);
-        }
+            int? tailId = null;
 
-        private void OnPacketReceived(byte[] payload)
-        {
             foreach (var icd in _icdDirectory.GetAllICDs())
             {
-                int tailId = TailIdExtractor.GetTailIdByICD(payload, icd) ?? -1;
-                if (tailId == -1)
+                tailId = TailIdExtractor.GetTailIdByICD(payload, icd);
+                if (tailId.HasValue)
                 {
-                    continue;
+                    break;
                 }
-                _telemetryDevicesByTailId[tailId].RunOnAllChannels(payload);
+            }
+
+            if (tailId.HasValue && _telemetryDevicesByTailId.TryGetValue(tailId.Value, out var value))
+            {
+                value.RunOnSpecificChannel(destinationPort, payload);
             }
         }
     }
