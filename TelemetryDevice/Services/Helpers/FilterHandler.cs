@@ -5,8 +5,6 @@ namespace TelemetryDevices.Services.Helpers
 {
     public static class FilterHandler
     {
-        private static string _lastAppliedFilter = string.Empty;
-
         public static string BuildProtocolFilter(List<string> protocols)
         {
             if (protocols.Count == 0)
