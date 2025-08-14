@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Shared.Common;
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Common;
@@ -7,30 +8,19 @@ namespace TelemetryDevices.Services.Helpers
 {
     public static class TailIdExtractor
     {
-        public static int? GetTailIdByICD(byte[] payload, ICD icd)
+        public static int? GetTailIdByICD(byte[] payload)
         {
-            ICDItem tailIdItem = icd.Document.FirstOrDefault(item =>
-                item.Name == TelemetryFields.TailId
-            );
-            if (tailIdItem == null)
-            {
-                return null;
-            }
 
             BitArray payloadBits = ConvertBytesToBitArray(payload);
-            if (payloadBits.Length < tailIdItem.StartBitArrayIndex + tailIdItem.BitLength)
-            {
-                return null;
-            }
-
+            
             ulong extractedBits = ExtractBitsAsULong(
                 payloadBits,
-                tailIdItem.StartBitArrayIndex,
-                tailIdItem.BitLength
+                SharedConstants.TelemetryCompression.TAIL_ID_ITEM_START_BIT_ARRAY_INDEX,
+                SharedConstants.TelemetryCompression.TAIL_ID_ITEM_BIT_LENGTH
             );
             double reconstructedValue = ConvertFromMeaningfulBits(
                 extractedBits,
-                tailIdItem.BitLength
+                SharedConstants.TelemetryCompression.TAIL_ID_ITEM_BIT_LENGTH
             );
 
             return (int)Math.Round(reconstructedValue);

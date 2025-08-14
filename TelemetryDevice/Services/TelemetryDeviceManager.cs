@@ -40,13 +40,12 @@ namespace TelemetryDevices.Services
                 );
             }
 
-            var telemetryDevice = new TelemetryDevice(location);
+            var telemetryDevice = new TelemetryDevice(location, _pipeLine);
             _telemetryDevicesByTailId[tailId] = telemetryDevice;
-            int amount = 1;
             var icds = _icdDirectory.GetAllICDs().ToList();
             for (int index = 0; index < icds.Count; index++)
             {
-                telemetryDevice.AddChannel(portNumbers[index], _pipeLine, icds[index]);
+                telemetryDevice.AddChannel(portNumbers[index], icds[index]);
             }
         }
 
@@ -59,12 +58,66 @@ namespace TelemetryDevices.Services
         {
 
             int? tailId = null;
-            ICD icd = _icdDirectory.GetPortsICD(destinationPort);
-                tailId = TailIdExtractor.GetTailIdByICD(payload, icd);
+            tailId = TailIdExtractor.GetTailIdByICD(payload);
 
             if (tailId.HasValue && _telemetryDevicesByTailId.TryGetValue(tailId.Value, out var value))
             {
                 value.RunOnSpecificChannel(destinationPort, payload);
+            }
+        }
+
+        public void SwitchPorts(int sourcePort, int destinationPort)
+        {
+            Channel sourceChannel = null;
+            Channel destinationChannel = null;
+            TelemetryDevice sourceDevice = null;
+            TelemetryDevice destinationDevice = null;
+
+            foreach (var device in _telemetryDevicesByTailId.Values)
+            {
+                var source = device.Channels.FirstOrDefault(c => c.PortNumber == sourcePort);
+                var dest = device.Channels.FirstOrDefault(c => c.PortNumber == destinationPort);
+
+                if (source != null)
+                {
+                    sourceChannel = source;
+                    sourceDevice = device;
+                }
+
+                if (dest != null)
+                {
+                    destinationChannel = dest;
+                    destinationDevice = device;
+                }
+            }
+
+            if (sourceChannel == null)
+            {
+                _logger.LogWarning($"Source port {sourcePort} not found");
+                return;
+            }
+
+            if (destinationChannel != null)
+            {
+                _logger.LogInformation($"Swapping ports {sourcePort} and {destinationPort}");
+
+                int tempPort = sourceChannel.PortNumber;
+                sourceChannel.PortNumber = destinationChannel.PortNumber;
+                destinationChannel.PortNumber = tempPort;
+
+                _packetSniffer.RemovePort(sourcePort);
+                _packetSniffer.RemovePort(destinationPort);
+                _packetSniffer.AddPort(sourceChannel.PortNumber);
+                _packetSniffer.AddPort(destinationChannel.PortNumber);
+            }
+            else
+            {
+                _logger.LogInformation($"Changing port {sourcePort} to {destinationPort}");
+
+                _packetSniffer.RemovePort(sourcePort);
+                _packetSniffer.AddPort(destinationPort);
+
+                sourceChannel.PortNumber = destinationPort;
             }
         }
     }

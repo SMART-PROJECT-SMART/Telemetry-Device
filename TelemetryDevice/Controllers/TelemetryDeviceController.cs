@@ -41,5 +41,11 @@ namespace TelemetryDevices.Controllers
             _telemetryDeviceManager.AddTelemetryDevice(tailId, portNumbers, location);
             return Ok($"Telemetry device with tail ID {tailId} started with ports {string.Join(", ", portNumbers)}.");
         }
+        [HttpPost("switch-port")]
+        public IActionResult SwitchPort(int sourcePort, int destinationPort)
+        {
+            _telemetryDeviceManager.SwitchPorts(sourcePort, destinationPort);
+            return Ok($"Switched ports {sourcePort} and {destinationPort} successfully.");
+        }
     }
 }

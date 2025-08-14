@@ -3,6 +3,7 @@ using Shared.Services;
 using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
+using TelemetryDevices.Models;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.Helpers.Decoder;

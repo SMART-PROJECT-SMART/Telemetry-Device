@@ -23,6 +23,18 @@ namespace TelemetryDevices.Models
             PortNumber = portNumber;
             PipeLine = pipeLine;
             ICD = icd;
+            if (pipeLine != null && icd != null)
+            {
+                pipeLine.SetICD(icd);
+            }
+        }
+
+        public void SetICDInPipeline()
+        {
+            if (PipeLine != null && ICD != null)
+            {
+                PipeLine.SetICD(ICD);
+            }
         }
     }
 }
