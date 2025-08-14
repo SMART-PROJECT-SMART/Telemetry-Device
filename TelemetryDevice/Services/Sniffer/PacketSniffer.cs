@@ -6,7 +6,7 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
-using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.Helpers;
 
 namespace TelemetryDevices.Services.Sniffer
 {
@@ -17,7 +17,6 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
         private readonly IPacketHandlerFactory _packetHandlerFactory;
-        private string _lastAppliedFilter = string.Empty;
         public event Action<byte[]> PacketReceived;
 
         public PacketSniffer(
@@ -108,18 +107,14 @@ namespace TelemetryDevices.Services.Sniffer
         private void ApplyFilterToAllDevices()
         {
             var config = _networkingConfig.Value;
-            var baseFilter = BuildProtocolFilter(config.Protocols);
-            var newFilter = BuildFilterFromPorts(_ports, baseFilter);
-
-            if (newFilter == _lastAppliedFilter)
-                return;
+            string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
+            string newFilter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
 
             foreach (var device in _devices)
             {
                 ApplyFilterToDevice(device, newFilter);
             }
 
-            _lastAppliedFilter = newFilter;
             _logger.LogInformation($"Applied filter to {_devices.Count} devices: {newFilter}");
         }
 
@@ -128,50 +123,13 @@ namespace TelemetryDevices.Services.Sniffer
             if (filter == null)
             {
                 var config = _networkingConfig.Value;
-                var baseFilter = BuildProtocolFilter(config.Protocols);
-                filter = BuildFilterFromPorts(_ports, baseFilter);
+                string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
+                filter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
             }
 
             device.Filter = filter;
         }
 
-        private string BuildProtocolFilter(List<string> protocols)
-        {
-            if (protocols.Count == 0)
-                return TelemetryDeviceConstants.Network.UDP_FILTER;
-
-            if (protocols.Count == 1)
-                return protocols[0];
-
-            return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, protocols)})";
-        }
-
-        private static string BuildFilterFromPorts(
-            IReadOnlyCollection<int> ports,
-            string baseFilter
-        )
-        {
-            if (ports.Count == 0)
-                return baseFilter;
-
-            var ordered = ports.OrderBy(p => p);
-
-            var sb = new StringBuilder();
-            sb.Append(baseFilter);
-            sb.Append(" and (");
-            bool first = true;
-            foreach (var p in ordered)
-            {
-                if (!first)
-                    sb.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
-                sb.Append(
-                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, p)
-                );
-                first = false;
-            }
-            sb.Append(')');
-            return sb.ToString();
-        }
 
         private void OnPacketArrival(object sender, PacketCapture e)
         {
