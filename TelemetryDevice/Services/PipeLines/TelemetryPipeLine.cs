@@ -2,6 +2,7 @@
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Models;
+using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Validator;
 
@@ -11,6 +12,7 @@ namespace TelemetryDevices.Services.PipeLines
     {
         private readonly IValidator _validator;
         private readonly ITelemetryDecoder _telemetryDecoder;
+        private readonly IOutputHandler _outputHandler;
         private TransformBlock<byte[], Result> _validationBlock;
         private TransformBlock<Result, Dictionary<TelemetryFields, double>> _decodingBlock;
         private ActionBlock<Dictionary<TelemetryFields, double>> _outputBlock;
@@ -20,11 +22,13 @@ namespace TelemetryDevices.Services.PipeLines
         public TelemetryPipeLine(
             IValidator validator,
             ITelemetryDecoder telemetryDecoder,
+            IOutputHandler outputHandler,
             ILogger<TelemetryPipeLine> logger
         )
         {
             _validator = validator;
             _telemetryDecoder = telemetryDecoder;
+            _outputHandler = outputHandler;
             _logger = logger;
         }
 
@@ -72,12 +76,7 @@ namespace TelemetryDevices.Services.PipeLines
         {
             _outputBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedData =>
             {
-                /*_logger.LogInformation("Decoded {Count} telemetry fields", decodedData.Count);
-                foreach (var kvp in decodedData)
-                {
-                    _logger.LogInformation("Field: {Key}, Value: {Value}", kvp.Key, kvp.Value);
-                }*/
-                _logger.LogInformation("Telemetry data processed successfully.");
+                _outputHandler.HandleOutput(decodedData);
             });
         }
 

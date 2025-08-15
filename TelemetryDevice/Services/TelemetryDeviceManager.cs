@@ -1,6 +1,7 @@
 ﻿using Shared.Models.ICDModels;
 using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Models;
+using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Helpers;
 using TelemetryDevices.Services.PipeLines;
@@ -14,14 +15,14 @@ namespace TelemetryDevices.Services
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPacketSniffer _packetSniffer;
-        private readonly IPipeLine _pipeLine;
+        private readonly IPipelineBuilder _pipelineBuilder;
         private readonly IPortManager _portManager;
         private readonly ILogger<TelemetryDeviceManager> _logger;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPacketSniffer packetSniffer,
-            IPipeLine pipeLine,
+            IPipelineBuilder pipelineBuilder,
             IPortManager portManager,
             ILogger<TelemetryDeviceManager> logger
         )
@@ -29,7 +30,7 @@ namespace TelemetryDevices.Services
             _icdDirectory = icdDirectory;
             _packetSniffer = packetSniffer;
             _packetSniffer.PacketReceived += OnPacketReceived;
-            _pipeLine = pipeLine;
+            _pipelineBuilder = pipelineBuilder;
             _portManager = portManager;
             _logger = logger;
         }
@@ -43,13 +44,14 @@ namespace TelemetryDevices.Services
                 );
             }
 
-            var telemetryDevice = new TelemetryDevice(location, _pipeLine);
+            var telemetryDevice = new TelemetryDevice(location);
             _telemetryDevicesByTailId[tailId] = telemetryDevice;
             var icds = _icdDirectory.GetAllICDs().ToList();
             
             for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
             {
-                telemetryDevice.AddChannel(portNumbers[index], _pipeLine, icds[index]);
+                var pipeline = _pipelineBuilder.Build();
+                telemetryDevice.AddChannel(portNumbers[index], pipeline, icds[index]);
                 
                 var channel = telemetryDevice.Channels.FirstOrDefault(c => c.PortNumber == portNumbers[index]);
                 if (channel != null)
@@ -77,7 +79,13 @@ namespace TelemetryDevices.Services
         private void OnPacketReceived(byte[] payload, int destinationPort)
         {
             var portsIcd = _portManager.GetChannelByPort(destinationPort)?.ICD;
-            int? tailId = TailIdExtractor.GetTailIdByICD(payload,portsIcd);
+            if (portsIcd == null)
+            {
+                _logger.LogWarning("No ICD found for port {Port}", destinationPort);
+                return;
+            }
+            
+            int? tailId = TailIdExtractor.GetTailIdByICD(payload, portsIcd);
 
             if (tailId.HasValue && _telemetryDevicesByTailId.TryGetValue(tailId.Value, out var device))
             {

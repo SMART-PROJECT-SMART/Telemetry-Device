@@ -7,20 +7,17 @@ namespace TelemetryDevices.Models
     {
         public Location Location { get; set; }
         public List<Channel> Channels { get; set; }
-        private readonly IPipeLine _pipeLine;
 
-        public TelemetryDevice(Location location, List<Channel> channels, IPipeLine pipeLine)
+        public TelemetryDevice(Location location, List<Channel> channels)
         {
             Location = location;
             Channels = channels;
-            _pipeLine = pipeLine;
         }
 
-        public TelemetryDevice(Location location, IPipeLine pipeLine)
+        public TelemetryDevice(Location location)
         {
             Location = location;
             Channels = new List<Channel>();
-            _pipeLine = pipeLine;
         }
 
         public void RunOnAllChannels(byte[] data)
@@ -29,13 +26,6 @@ namespace TelemetryDevices.Models
             {
                 channel.PipeLine.ProcessDataAsync(data);
             }
-        }
-
-    
-        public void AddChannel(int portNumber, ICD icd)
-        {
-            var newChannel = new Channel(portNumber, _pipeLine, icd);
-            Channels.Add(newChannel);
         }
 
         public void AddChannel(int portNumber, IPipeLine pipeLine, ICD icd)
