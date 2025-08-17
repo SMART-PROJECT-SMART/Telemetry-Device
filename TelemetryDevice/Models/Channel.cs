@@ -29,12 +29,5 @@ namespace TelemetryDevices.Models
             }
         }
 
-        public void SetICDInPipeline()
-        {
-            if (PipeLine != null && ICD != null)
-            {
-                PipeLine.SetICD(ICD);
-            }
-        }
     }
 }

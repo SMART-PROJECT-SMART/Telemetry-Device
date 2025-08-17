@@ -56,40 +56,70 @@ namespace TelemetryDevices.Services
         public void SwitchPorts(int sourcePort, int destinationPort)
         {
             var sourceChannel = GetChannelByPort(sourcePort);
+            ValidateSourceChannelExists(sourcePort, sourceChannel);
+
             var destinationChannel = GetChannelByPort(destinationPort);
-
-            if (sourceChannel == null)
-            {
-                _logger.LogWarning("Source port {SourcePort} not found", sourcePort);
-                return;
-            }
-
+            
             if (destinationChannel != null)
             {
-                _logger.LogInformation("Swapping ports {SourcePort} and {DestinationPort}", sourcePort, destinationPort);
-                
-                _portToChannel[sourcePort] = destinationChannel;
-                _portToChannel[destinationPort] = sourceChannel;
-                
-                sourceChannel.PortNumber = destinationPort;
-                destinationChannel.PortNumber = sourcePort;
-                
-                _packetSniffer.RemovePort(sourcePort);
-                _packetSniffer.RemovePort(destinationPort);
-                _packetSniffer.AddPort(sourceChannel.PortNumber);
-                _packetSniffer.AddPort(destinationChannel.PortNumber);
+                SwapExistingPorts(sourcePort, destinationPort, sourceChannel, destinationChannel);
             }
             else
             {
-                _logger.LogInformation("Changing port {SourcePort} to {DestinationPort}", sourcePort, destinationPort);
-                
-                _portToChannel.Remove(sourcePort);
-                _portToChannel[destinationPort] = sourceChannel;
-                
-                sourceChannel.PortNumber = destinationPort;
-                
-                _packetSniffer.RemovePort(sourcePort);
-                _packetSniffer.AddPort(destinationPort);
+                MovePortToNewDestination(sourcePort, destinationPort, sourceChannel);
+            }
+        }
+
+        private void ValidateSourceChannelExists(int sourcePort, Channel? sourceChannel)
+        {
+            if (sourceChannel == null)
+            {
+                _logger.LogWarning("Source port {SourcePort} not found", sourcePort);
+                throw new InvalidOperationException($"Source port {sourcePort} not found");
+            }
+        }
+
+        private void SwapExistingPorts(int sourcePort, int destinationPort, Channel sourceChannel, Channel destinationChannel)
+        {
+            _logger.LogInformation("Swapping ports {SourcePort} and {DestinationPort}", sourcePort, destinationPort);
+            
+            UpdatePortMappings(sourcePort, destinationPort, sourceChannel, destinationChannel);
+            UpdateChannelPortNumbers(sourceChannel, destinationChannel, sourcePort, destinationPort);
+            UpdateSnifferPorts(sourcePort, destinationPort, sourceChannel.PortNumber, destinationChannel.PortNumber);
+        }
+
+        private void MovePortToNewDestination(int sourcePort, int destinationPort, Channel sourceChannel)
+        {
+            _logger.LogInformation("Changing port {SourcePort} to {DestinationPort}", sourcePort, destinationPort);
+            
+            _portToChannel.Remove(sourcePort);
+            _portToChannel[destinationPort] = sourceChannel;
+            
+            sourceChannel.PortNumber = destinationPort;
+            
+            UpdateSnifferPorts(sourcePort, destinationPort, destinationPort);
+        }
+
+        private void UpdatePortMappings(int sourcePort, int destinationPort, Channel sourceChannel, Channel destinationChannel)
+        {
+            _portToChannel[sourcePort] = destinationChannel;
+            _portToChannel[destinationPort] = sourceChannel;
+        }
+
+        private void UpdateChannelPortNumbers(Channel sourceChannel, Channel destinationChannel, int sourcePort, int destinationPort)
+        {
+            sourceChannel.PortNumber = destinationPort;
+            destinationChannel.PortNumber = sourcePort;
+        }
+
+        private void UpdateSnifferPorts(int sourcePort, int destinationPort, params int[] newPorts)
+        {
+            _packetSniffer.RemovePort(sourcePort);
+            _packetSniffer.RemovePort(destinationPort);
+            
+            foreach (var port in newPorts)
+            {
+                _packetSniffer.AddPort(port);
             }
         }
 
@@ -101,17 +131,6 @@ namespace TelemetryDevices.Services
         public void ProcessPacketOnPort(int portNumber, byte[] payload)
         {
             var channel = GetChannelByPort(portNumber);
-            if (channel == null)
-            {
-                _logger.LogWarning("No channel found for port {Port}", portNumber);
-                return;
-            }
-
-            if (channel.ICD == null)
-            {
-                _logger.LogWarning("No ICD found for port {Port}", portNumber);
-                return;
-            }
 
             int? tailId = TailIdExtractor.GetTailIdByICD(payload, channel.ICD);
             if (!tailId.HasValue)
@@ -121,7 +140,6 @@ namespace TelemetryDevices.Services
             }
 
             channel.PipeLine.ProcessDataAsync(payload);
-            _logger.LogDebug("Processed packet for tail ID {TailId} on port {Port}", tailId.Value, portNumber);
         }
     }
 }

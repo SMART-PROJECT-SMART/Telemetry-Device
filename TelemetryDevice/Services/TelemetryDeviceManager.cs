@@ -38,21 +38,34 @@ namespace TelemetryDevices.Services
 
         public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
         {
+            ValidateTelemetryDeviceDoesNotExist(tailId);
+            var telemetryDevice = CreateTelemetryDevice(location);
+            _telemetryDevicesByTailId[tailId] = telemetryDevice;
+            
+            var icds = _icdDirectory.GetAllICDs().ToList();
+            CreateChannelsForDevice(telemetryDevice, portNumbers, icds);
+        }
+
+        private void ValidateTelemetryDeviceDoesNotExist(int tailId)
+        {
             if (_telemetryDevicesByTailId.ContainsKey(tailId))
             {
                 throw new ArgumentException(
                     $"Telemetry device with tail ID {tailId} already exists."
                 );
             }
+        }
 
-            var telemetryDevice = new TelemetryDevice(location);
-            _telemetryDevicesByTailId[tailId] = telemetryDevice;
-            var icds = _icdDirectory.GetAllICDs().ToList();
-            
+        private TelemetryDevice CreateTelemetryDevice(Location location)
+        {
+            return new TelemetryDevice(location);
+        }
+
+        private void CreateChannelsForDevice(TelemetryDevice telemetryDevice, List<int> portNumbers, List<ICD> icds)
+        {
             for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
             {
-                _pipelineDirector.BuildTelemetryPipeline();
-                var pipeline = _pipelineBuilder.GetProduct();
+                var pipeline = CreatePipeline();
                 telemetryDevice.AddChannel(portNumbers[index], pipeline, icds[index]);
                 
                 var channel = telemetryDevice.Channels.FirstOrDefault(c => c.PortNumber == portNumbers[index]);
@@ -61,6 +74,12 @@ namespace TelemetryDevices.Services
                     _portManager.AddPort(portNumbers[index], channel);
                 }
             }
+        }
+
+        private IPipeLine CreatePipeline()
+        {
+            _pipelineDirector.BuildTelemetryPipeline();
+            return _pipelineBuilder.GetProduct();
         }
 
         public bool RemoveTelemetryDevice(int tailId)

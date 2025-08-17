@@ -20,14 +20,6 @@ namespace TelemetryDevices.Models
             Channels = new List<Channel>();
         }
 
-        public void RunOnAllChannels(byte[] data)
-        {
-            foreach (var channel in Channels)
-            {
-                channel.PipeLine.ProcessDataAsync(data);
-            }
-        }
-
         public void AddChannel(int portNumber, IPipeLine pipeLine, ICD icd)
         {
             var newChannel = new Channel(portNumber, pipeLine, icd);
@@ -50,13 +42,5 @@ namespace TelemetryDevices.Models
             return Channels.FirstOrDefault(c => c.PortNumber == portNumber);
         }
 
-        public void RunOnSpecificChannel(int portNumber, byte[] data)
-        {
-            var channel = Channels.FirstOrDefault(c => c.PortNumber == portNumber);
-            if (channel != null)
-            {
-                channel.PipeLine.ProcessDataAsync(data);
-            }
-        }
     }
 }
