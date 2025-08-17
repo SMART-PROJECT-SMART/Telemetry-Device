@@ -7,9 +7,9 @@ namespace TelemetryDevices.Services.Builders
     public class PipelineBuilder : IPipelineBuilder
     {
         private readonly IServiceProvider _serviceProvider;
-        private IValidator? _validator;
-        private ITelemetryDecoder? _decoder;
-        private IOutputHandler? _outputHandler;
+        private IValidator _validator;
+        private ITelemetryDecoder _decoder;
+        private IOutputHandler _outputHandler;
 
         public PipelineBuilder(IServiceProvider serviceProvider)
         {
@@ -41,12 +41,9 @@ namespace TelemetryDevices.Services.Builders
 
         public IPipeLine GetProduct()
         {
-            var validator = _validator ?? _serviceProvider.GetRequiredService<IValidator>();
-            var decoder = _decoder ?? _serviceProvider.GetRequiredService<ITelemetryDecoder>();
-            var outputHandler = _outputHandler ?? _serviceProvider.GetRequiredService<IOutputHandler>();
             var logger = _serviceProvider.GetRequiredService<ILogger<TelemetryPipeLine>>();
 
-            IPipeLine result = new TelemetryPipeLine(validator, decoder, outputHandler, logger);
+            IPipeLine result = new TelemetryPipeLine(_validator, _decoder, _outputHandler, logger);
             this.Reset();
             return result;
         }

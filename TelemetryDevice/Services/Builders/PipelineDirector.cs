@@ -22,10 +22,5 @@ namespace TelemetryDevices.Services.Builders
             this._builder.BuildDecoder();
             this._builder.BuildOutputHandler();
         }
-        
-        public IPipeLine GetProduct()
-        {
-            return this._builder.GetProduct();
-        }
     }
 }
