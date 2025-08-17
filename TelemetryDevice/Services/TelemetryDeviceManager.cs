@@ -3,7 +3,6 @@ using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Factories.PacketHandler;
-using TelemetryDevices.Services.Helpers;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.Sniffer;
 
@@ -78,19 +77,7 @@ namespace TelemetryDevices.Services
 
         private void OnPacketReceived(byte[] payload, int destinationPort)
         {
-            var portsIcd = _portManager.GetChannelByPort(destinationPort)?.ICD;
-            if (portsIcd == null)
-            {
-                _logger.LogWarning("No ICD found for port {Port}", destinationPort);
-                return;
-            }
-            
-            int? tailId = TailIdExtractor.GetTailIdByICD(payload, portsIcd);
-
-            if (tailId.HasValue && _telemetryDevicesByTailId.TryGetValue(tailId.Value, out var device))
-            {
-                device.RunOnSpecificChannel(destinationPort, payload);
-            }
+            _portManager.ProcessPacketOnPort(destinationPort, payload);
         }
     }
 }

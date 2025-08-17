@@ -9,5 +9,6 @@ namespace TelemetryDevices.Services
         Channel? GetChannelByPort(int portNumber);
         void SwitchPorts(int sourcePort, int destinationPort);
         IEnumerable<int> GetAllPorts();
+        void ProcessPacketOnPort(int portNumber, byte[] payload);
     }
 }

@@ -1,4 +1,5 @@
 using TelemetryDevices.Models;
+using TelemetryDevices.Services.Helpers;
 using TelemetryDevices.Services.Sniffer;
 
 namespace TelemetryDevices.Services
@@ -91,5 +92,30 @@ namespace TelemetryDevices.Services
             return _portToChannel.Keys;
         }
 
+        public void ProcessPacketOnPort(int portNumber, byte[] payload)
+        {
+            var channel = GetChannelByPort(portNumber);
+            if (channel == null)
+            {
+                _logger.LogWarning("No channel found for port {Port}", portNumber);
+                return;
+            }
+
+            if (channel.ICD == null)
+            {
+                _logger.LogWarning("No ICD found for port {Port}", portNumber);
+                return;
+            }
+
+            int? tailId = TailIdExtractor.GetTailIdByICD(payload, channel.ICD);
+            if (!tailId.HasValue)
+            {
+                _logger.LogWarning("Could not extract tail ID from payload on port {Port}", portNumber);
+                return;
+            }
+
+            channel.PipeLine.ProcessDataAsync(payload);
+            _logger.LogDebug("Processed packet for tail ID {TailId} on port {Port}", tailId.Value, portNumber);
+        }
     }
 }
