@@ -28,7 +28,6 @@ namespace TelemetryDevices.Services
         {
             _icdDirectory = icdDirectory;
             _packetSniffer = packetSniffer;
-            _packetSniffer.PacketReceived += OnPacketReceived;
             _pipelineDirector = pipelineDirector;
             _portManager = portManager;
             _logger = logger;
@@ -74,11 +73,6 @@ namespace TelemetryDevices.Services
             }
 
             return _telemetryDevicesByTailId.Remove(tailId);
-        }
-
-        private void OnPacketReceived(byte[] payload, int destinationPort)
-        {
-            _portManager.ProcessPacketOnPort(destinationPort, payload);
         }
     }
 }

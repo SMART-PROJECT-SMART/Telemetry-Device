@@ -14,6 +14,12 @@ namespace TelemetryDevices.Services
         {
             _packetSniffer = packetSniffer;
             _logger = logger;
+            _packetSniffer.PacketReceived += OnPacketReceived;
+        }
+
+        private void OnPacketReceived(byte[] payload, int destinationPort)
+        {
+            ProcessPacketOnPort(destinationPort, payload);
         }
 
         public void AddPort(int portNumber, Channel channel)
