@@ -7,10 +7,11 @@ namespace TelemetryDevices.Services.Builders
 {
     public interface IPipelineBuilder
     {
-        IPipelineBuilder WithValidator(IValidator validator);
-        IPipelineBuilder WithDecoder(ITelemetryDecoder decoder);
-        IPipelineBuilder WithOutputHandler(IOutputHandler outputHandler);
-        IPipeLine Build();
+        void BuildValidator();
+        void BuildDecoder();
+        void BuildOutputHandler();
+        void Reset();
+        IPipeLine GetProduct();
     }
 
     public interface IOutputHandler

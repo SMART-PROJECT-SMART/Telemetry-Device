@@ -7,41 +7,48 @@ namespace TelemetryDevices.Services.Builders
     public class PipelineBuilder : IPipelineBuilder
     {
         private readonly IServiceProvider _serviceProvider;
-        private IValidator? _customValidator;
-        private ITelemetryDecoder? _customDecoder;
-        private IOutputHandler? _customOutputHandler;
+        private IValidator? _validator;
+        private ITelemetryDecoder? _decoder;
+        private IOutputHandler? _outputHandler;
 
         public PipelineBuilder(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            this.Reset();
         }
 
-        public IPipelineBuilder WithValidator(IValidator validator)
+        public void Reset()
         {
-            _customValidator = validator;
-            return this;
+            this._validator = null;
+            this._decoder = null;
+            this._outputHandler = null;
         }
 
-        public IPipelineBuilder WithDecoder(ITelemetryDecoder decoder)
+        public void BuildValidator()
         {
-            _customDecoder = decoder;
-            return this;
+            this._validator = _serviceProvider.GetRequiredService<IValidator>();
         }
 
-        public IPipelineBuilder WithOutputHandler(IOutputHandler outputHandler)
+        public void BuildDecoder()
         {
-            _customOutputHandler = outputHandler;
-            return this;
+            this._decoder = _serviceProvider.GetRequiredService<ITelemetryDecoder>();
         }
 
-        public IPipeLine Build()
+        public void BuildOutputHandler()
         {
-            var validator = _customValidator ?? _serviceProvider.GetRequiredService<IValidator>();
-            var decoder = _customDecoder ?? _serviceProvider.GetRequiredService<ITelemetryDecoder>();
-            var outputHandler = _customOutputHandler ?? _serviceProvider.GetRequiredService<IOutputHandler>();
+            this._outputHandler = _serviceProvider.GetRequiredService<IOutputHandler>();
+        }
+
+        public IPipeLine GetProduct()
+        {
+            var validator = _validator ?? _serviceProvider.GetRequiredService<IValidator>();
+            var decoder = _decoder ?? _serviceProvider.GetRequiredService<ITelemetryDecoder>();
+            var outputHandler = _outputHandler ?? _serviceProvider.GetRequiredService<IOutputHandler>();
             var logger = _serviceProvider.GetRequiredService<ILogger<TelemetryPipeLine>>();
 
-            return new TelemetryPipeLine(validator, decoder, outputHandler, logger);
+            IPipeLine result = new TelemetryPipeLine(validator, decoder, outputHandler, logger);
+            this.Reset();
+            return result;
         }
     }
 }

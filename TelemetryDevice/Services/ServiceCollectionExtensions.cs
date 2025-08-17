@@ -55,6 +55,7 @@ namespace TelemetryDevices.Services
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             services.AddSingleton<IOutputHandler, LoggingOutputHandler>();
             services.AddSingleton<IPipelineBuilder, PipelineBuilder>();
+            services.AddSingleton<PipelineDirector>();
             return services;
         }
 

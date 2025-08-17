@@ -14,14 +14,14 @@ namespace TelemetryDevices.Services
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPacketSniffer _packetSniffer;
-        private readonly IPipelineBuilder _pipelineBuilder;
+        private readonly PipelineDirector _pipelineDirector;
         private readonly IPortManager _portManager;
         private readonly ILogger<TelemetryDeviceManager> _logger;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPacketSniffer packetSniffer,
-            IPipelineBuilder pipelineBuilder,
+            PipelineDirector pipelineDirector,
             IPortManager portManager,
             ILogger<TelemetryDeviceManager> logger
         )
@@ -29,7 +29,7 @@ namespace TelemetryDevices.Services
             _icdDirectory = icdDirectory;
             _packetSniffer = packetSniffer;
             _packetSniffer.PacketReceived += OnPacketReceived;
-            _pipelineBuilder = pipelineBuilder;
+            _pipelineDirector = pipelineDirector;
             _portManager = portManager;
             _logger = logger;
         }
@@ -49,7 +49,8 @@ namespace TelemetryDevices.Services
             
             for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
             {
-                var pipeline = _pipelineBuilder.Build();
+                _pipelineDirector.BuildTelemetryPipeline();
+                var pipeline = _pipelineDirector.GetProduct();
                 telemetryDevice.AddChannel(portNumbers[index], pipeline, icds[index]);
                 
                 var channel = telemetryDevice.Channels.FirstOrDefault(c => c.PortNumber == portNumbers[index]);
