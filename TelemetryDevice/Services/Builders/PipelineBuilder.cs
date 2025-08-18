@@ -1,51 +1,49 @@
+using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Helpers.Decoder;
+using TelemetryDevices.Services.Helpers.Output;
 using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.PipeLines;
 
-namespace TelemetryDevices.Services.Builders
+public class PipeLineBuilder : IPipeLineBuilder
 {
-    public class PipelineBuilder : IPipelineBuilder
+    private readonly IServiceProvider _serviceProvider;
+    private IValidator _validator;
+    private ITelemetryDecoder _decoder;
+    private IOutputHandler _outputHandler;
+
+    public PipeLineBuilder(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider _serviceProvider;
-        private IValidator _validator;
-        private ITelemetryDecoder _decoder;
-        private IOutputHandler _outputHandler;
+        _serviceProvider = serviceProvider;
+        Reset();
+    }
 
-        public PipelineBuilder(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-            this.Reset();
-        }
+    public void Reset()
+    {
+        _validator = null;
+        _decoder = null;
+        _outputHandler = null;
+    }
 
-        public void Reset()
-        {
-            this._validator = null;
-            this._decoder = null;
-            this._outputHandler = null;
-        }
+    public void BuildValidator()
+    {
+        _validator = _serviceProvider.GetRequiredService<IValidator>();
+    }
 
-        public void BuildValidator()
-        {
-            this._validator = _serviceProvider.GetRequiredService<IValidator>();
-        }
+    public void BuildDecoder()
+    {
+        _decoder = _serviceProvider.GetRequiredService<ITelemetryDecoder>();
+    }
 
-        public void BuildDecoder()
-        {
-            this._decoder = _serviceProvider.GetRequiredService<ITelemetryDecoder>();
-        }
+    public void BuildOutputHandler()
+    {
+        _outputHandler = _serviceProvider.GetRequiredService<IOutputHandler>();
+    }
 
-        public void BuildOutputHandler()
-        {
-            this._outputHandler = _serviceProvider.GetRequiredService<IOutputHandler>();
-        }
-
-        public IPipeLine GetProduct()
-        {
-            var logger = _serviceProvider.GetRequiredService<ILogger<TelemetryPipeLine>>();
-
-            IPipeLine result = new TelemetryPipeLine(_validator, _decoder, _outputHandler, logger);
-            this.Reset();
-            return result;
-        }
+    public IPipeLine GetProduct()
+    {
+        var logger = _serviceProvider.GetRequiredService<ILogger<TelemetryPipeLine>>();
+        IPipeLine result = new TelemetryPipeLine(_validator, _decoder, _outputHandler, logger);
+        Reset();
+        return result;
     }
 }

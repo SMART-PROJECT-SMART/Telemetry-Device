@@ -4,6 +4,7 @@ using Shared.Models.ICDModels;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Helpers.Decoder;
+using TelemetryDevices.Services.Helpers.Output;
 using TelemetryDevices.Services.Helpers.Validator;
 
 namespace TelemetryDevices.Services.PipeLines

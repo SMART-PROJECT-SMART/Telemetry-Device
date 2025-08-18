@@ -4,6 +4,7 @@ using TelemetryDevices.Models;
 using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
 namespace TelemetryDevices.Services
@@ -14,24 +15,24 @@ namespace TelemetryDevices.Services
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPacketSniffer _packetSniffer;
-        private readonly IPipelineBuilder _pipelineBuilder;
-        private readonly PipelineDirector _pipelineDirector;
+        private readonly IPipeLineBuilder _pipeLineBuilder;
+        private readonly PipeLineDirector _pipeLineDirector;
         private readonly IPortManager _portManager;
         private readonly ILogger<TelemetryDeviceManager> _logger;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPacketSniffer packetSniffer,
-            IPipelineBuilder pipelineBuilder,
-            PipelineDirector pipelineDirector,
+            IPipeLineBuilder pipeLineBuilder,
+            PipeLineDirector pipeLineDirector,
             IPortManager portManager,
             ILogger<TelemetryDeviceManager> logger
         )
         {
             _icdDirectory = icdDirectory;
             _packetSniffer = packetSniffer;
-            _pipelineBuilder = pipelineBuilder;
-            _pipelineDirector = pipelineDirector;
+            _pipeLineBuilder = pipeLineBuilder;
+            _pipeLineDirector = pipeLineDirector;
             _portManager = portManager;
             _logger = logger;
         }
@@ -78,8 +79,8 @@ namespace TelemetryDevices.Services
 
         private IPipeLine CreatePipeline()
         {
-            _pipelineDirector.BuildTelemetryPipeline();
-            return _pipelineBuilder.GetProduct();
+            _pipeLineDirector.BuildTelemetryPipeline();
+            return _pipeLineBuilder.GetProduct();
         }
 
         public bool RemoveTelemetryDevice(int tailId)

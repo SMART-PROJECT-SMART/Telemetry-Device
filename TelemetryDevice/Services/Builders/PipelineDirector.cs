@@ -1,26 +1,36 @@
+using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.PipeLines;
 
-namespace TelemetryDevices.Services.Builders
+public class PipeLineDirector
 {
-    public class PipelineDirector
+    private readonly IPipeLineBuilder _builder;
+
+    public PipeLineDirector(IPipeLineBuilder builder)
     {
-        private readonly IPipelineBuilder _builder;
-        
-        public PipelineDirector(IPipelineBuilder builder)
-        {
-            _builder = builder ?? throw new ArgumentNullException(nameof(builder));
-        }
-        
-        public void BuildMinimalViablePipeline()
-        {
-            this._builder.BuildValidator();
-        }
-        
-        public void BuildTelemetryPipeline()
-        {
-            this._builder.BuildValidator();
-            this._builder.BuildDecoder();
-            this._builder.BuildOutputHandler();
-        }
+        _builder = builder;
+    }
+
+    public IPipeLine BuildTelemetryPipeline()
+    {
+        _builder.Reset();
+        _builder.BuildValidator();
+        _builder.BuildDecoder();
+        _builder.BuildOutputHandler();
+        return _builder.GetProduct();
+    }
+
+    public IPipeLine BuildDebugPipeline()
+    {
+        _builder.Reset();
+        _builder.BuildValidator();
+        _builder.BuildOutputHandler();
+        return _builder.GetProduct();
+    }
+
+    public IPipeLine BuildMinimalPipeline()
+    {
+        _builder.Reset();
+        _builder.BuildValidator();
+        return _builder.GetProduct();
     }
 }
