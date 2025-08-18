@@ -1,9 +1,8 @@
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Helpers;
-using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
-namespace TelemetryDevices.Services
+namespace TelemetryDevices.Services.PortsManager
 {
     public class PortManager : IPortManager
     {

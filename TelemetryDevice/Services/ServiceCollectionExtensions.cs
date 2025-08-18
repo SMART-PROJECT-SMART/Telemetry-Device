@@ -51,12 +51,11 @@ namespace TelemetryDevices.Services
 
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
-            services.AddTransient<IPipeLine, TelemetryPipeLine>();
             services.AddSingleton<IValidator, ChecksumValidator>();
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
             services.AddSingleton<IOutputHandler, LoggingOutputHandler>();
-            services.AddSingleton<IPipelineBuilder, PipelineBuilder>();
-            services.AddSingleton<PipelineDirector>();
+            services.AddSingleton<IPipeLineBuilder, PipeLineBuilder>();
+            services.AddSingleton<PipeLineDirector>();
             return services;
         }
 

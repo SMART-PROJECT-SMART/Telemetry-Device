@@ -17,6 +17,7 @@ builder.Services.AddFactories();
 builder.Services.AddPacketHandlers();
 builder.Services.AddIcdDirectory();
 builder.Services.AddSharedConfiguration(builder.Configuration);
+builder.Services.AddPortManager();
 
 var app = builder.Build();
 

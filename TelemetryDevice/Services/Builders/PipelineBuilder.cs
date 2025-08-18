@@ -6,44 +6,57 @@ using TelemetryDevices.Services.PipeLines;
 
 public class PipeLineBuilder : IPipeLineBuilder
 {
-    private readonly IServiceProvider _serviceProvider;
-    private IValidator _validator;
-    private ITelemetryDecoder _decoder;
-    private IOutputHandler _outputHandler;
+    private readonly IValidator _validator;
+    private readonly ITelemetryDecoder _decoder;
+    private readonly IOutputHandler _outputHandler;
+    private readonly ILogger<TelemetryPipeLine> _logger;
+    private List<IPipelineComponent> _components = new List<IPipelineComponent>();
 
-    public PipeLineBuilder(IServiceProvider serviceProvider)
+    public PipeLineBuilder(
+        IValidator validator,
+        ITelemetryDecoder decoder,
+        IOutputHandler outputHandler,
+        ILogger<TelemetryPipeLine> logger)
     {
-        _serviceProvider = serviceProvider;
-        Reset();
+        _validator = validator;
+        _decoder = decoder;
+        _outputHandler = outputHandler;
+        _logger = logger;
+        this.Reset();
     }
 
     public void Reset()
     {
-        _validator = null;
-        _decoder = null;
-        _outputHandler = null;
+        this._components = new List<IPipelineComponent>();
     }
 
-    public void BuildValidator()
+    public void AddValidator()
     {
-        _validator = _serviceProvider.GetRequiredService<IValidator>();
+        this._components.Add(_validator);
     }
 
-    public void BuildDecoder()
+    public void AddDecoder()
     {
-        _decoder = _serviceProvider.GetRequiredService<ITelemetryDecoder>();
+        this._components.Add(_decoder);
     }
 
-    public void BuildOutputHandler()
+    public void AddOutputHandler()
     {
-        _outputHandler = _serviceProvider.GetRequiredService<IOutputHandler>();
+        this._components.Add(_outputHandler);
     }
 
     public IPipeLine GetProduct()
     {
-        var logger = _serviceProvider.GetRequiredService<ILogger<TelemetryPipeLine>>();
-        IPipeLine result = new TelemetryPipeLine(_validator, _decoder, _outputHandler, logger);
-        Reset();
+        IPipeLine result = new TelemetryPipeLine(new List<IPipelineComponent>(_components), _logger);
+        this.Reset();
         return result;
+    }
+
+    public string ListComponents()
+    {
+        if (_components.Count == 0) return "Pipeline components: None";
+
+        string components = string.Join(", ", _components.Select(c => c.ComponentType));
+        return $"Pipeline components: {components}";
     }
 }

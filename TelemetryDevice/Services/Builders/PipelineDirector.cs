@@ -13,24 +13,24 @@ public class PipeLineDirector
     public IPipeLine BuildTelemetryPipeline()
     {
         _builder.Reset();
-        _builder.BuildValidator();
-        _builder.BuildDecoder();
-        _builder.BuildOutputHandler();
+        _builder.AddValidator();
+        _builder.AddDecoder();
+        _builder.AddOutputHandler();
         return _builder.GetProduct();
     }
 
     public IPipeLine BuildDebugPipeline()
     {
         _builder.Reset();
-        _builder.BuildValidator();
-        _builder.BuildOutputHandler();
+        _builder.AddValidator();
+        _builder.AddOutputHandler();
         return _builder.GetProduct();
     }
 
     public IPipeLine BuildMinimalPipeline()
     {
         _builder.Reset();
-        _builder.BuildValidator();
+        _builder.AddValidator();
         return _builder.GetProduct();
     }
 }
