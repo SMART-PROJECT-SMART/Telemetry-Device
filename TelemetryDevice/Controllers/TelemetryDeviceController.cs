@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
+using TelemetryDevices.Services.PortsManager;
 
 namespace TelemetryDevices.Controllers
 {

@@ -1,5 +1,6 @@
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Helpers;
+using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
 namespace TelemetryDevices.Services

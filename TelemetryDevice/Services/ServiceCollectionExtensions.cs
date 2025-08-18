@@ -12,6 +12,7 @@ using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Output;
 using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
 namespace TelemetryDevices.Services

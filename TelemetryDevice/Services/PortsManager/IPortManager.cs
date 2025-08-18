@@ -1,6 +1,6 @@
 using TelemetryDevices.Models;
 
-namespace TelemetryDevices.Services
+namespace TelemetryDevices.Services.PortsManager
 {
     public interface IPortManager
     {
