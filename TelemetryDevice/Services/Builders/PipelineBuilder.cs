@@ -22,41 +22,33 @@ public class PipeLineBuilder : IPipeLineBuilder
         _decoder = decoder;
         _outputHandler = outputHandler;
         _logger = logger;
-        this.Reset();
+        Reset();
     }
 
     public void Reset()
     {
-        this._components = new List<IPipelineComponent>();
+        _components = new List<IPipelineComponent>();
     }
 
     public void AddValidator()
     {
-        this._components.Add(_validator);
+        _components.Add(_validator);
     }
 
     public void AddDecoder()
     {
-        this._components.Add(_decoder);
+        _components.Add(_decoder);
     }
 
     public void AddOutputHandler()
     {
-        this._components.Add(_outputHandler);
+        _components.Add(_outputHandler);
     }
 
     public IPipeLine GetProduct()
     {
         IPipeLine result = new TelemetryPipeLine(new List<IPipelineComponent>(_components), _logger);
-        this.Reset();
+        Reset();
         return result;
-    }
-
-    public string ListComponents()
-    {
-        if (_components.Count == 0) return "Pipeline components: None";
-
-        string components = string.Join(", ", _components.Select(c => c.ComponentType));
-        return $"Pipeline components: {components}";
     }
 }

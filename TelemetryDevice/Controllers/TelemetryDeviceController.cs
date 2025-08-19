@@ -34,10 +34,7 @@ namespace TelemetryDevices.Controllers
         [HttpPost("remove-telemetry-device")]
         public IActionResult RemoveTelemetryDevice(int tailId)
         {
-            if (!_telemetryDeviceManager.RemoveTelemetryDevice(tailId))
-            {
-                return NotFound($"Telemetry device with tail ID {tailId} not found.");
-            }
+            _telemetryDeviceManager.RemoveTelemetryDevice(tailId);
             return Ok($"Telemetry device with tail ID {tailId} removed successfully.");
         }
 

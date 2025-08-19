@@ -34,5 +34,5 @@ sniffer.AddPort(8000);
 sniffer.AddPort(8001);
 
 var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
-tdManager.AddTelemetryDevice(1, new List<int> { 8000, 8001 }, new Location(0, 0));
+tdManager.AddTelemetryDevice(1, [8000, 8001], new Location(0, 0));
 app.Run();

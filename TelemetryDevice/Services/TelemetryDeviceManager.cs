@@ -55,7 +55,7 @@ namespace TelemetryDevices.Services
         {
             for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
             {
-                var pipeline = CreatePipeline();
+                IPipeLine pipeline = _pipeLineDirector.BuildTelemetryPipeline();
                 telemetryDevice.AddChannel(portNumbers[index], pipeline, icds[index]);
 
                 var channel = telemetryDevice.Channels.FirstOrDefault(c => c.PortNumber == portNumbers[index]);
@@ -64,11 +64,6 @@ namespace TelemetryDevices.Services
                     _portManager.AddPort(portNumbers[index], channel);
                 }
             }
-        }
-
-        private IPipeLine CreatePipeline()
-        {
-            return _pipeLineDirector.BuildTelemetryPipeline();
         }
 
         public bool RemoveTelemetryDevice(int tailId)
