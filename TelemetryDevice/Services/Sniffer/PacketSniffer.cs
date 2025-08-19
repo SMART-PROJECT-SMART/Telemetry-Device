@@ -2,10 +2,13 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using PacketDotNet;
 using SharpPcap;
-using TelemetryDevice.Common;
-using TelemetryDevice.Config;
+using TelemetryDevices.Common;
+using TelemetryDevices.Config;
+using TelemetryDevices.Services.Factories.PacketHandler;
+using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
+using TelemetryDevices.Services.Helpers;
 
-namespace TelemetryDevice.Services
+namespace TelemetryDevices.Services.Sniffer
 {
     public class PacketSniffer : IDisposable, IPacketSniffer
     {
@@ -13,16 +16,18 @@ namespace TelemetryDevice.Services
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
-        private string _lastAppliedFilter = string.Empty;
+        private readonly IPacketHandlerFactory _packetHandlerFactory;
+        public event Action<byte[],int> PacketReceived;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,
-            IOptions<NetworkingConfiguration> networkingConfig
+            IOptions<NetworkingConfiguration> networkingConfig,
+            IPacketHandlerFactory packetHandlerFactory
         )
         {
             _logger = logger;
             _networkingConfig = networkingConfig;
-
+            _packetHandlerFactory = packetHandlerFactory;
             var availableDevices = CaptureDeviceList.Instance;
             InitializeDevices(availableDevices);
         }
@@ -77,6 +82,7 @@ namespace TelemetryDevice.Services
         {
             if (!_ports.Add(port))
                 return;
+            _logger.LogInformation($"Added port {port} to monitoring. Total ports: {_ports.Count}");
             ApplyFilterToAllDevices();
         }
 
@@ -101,23 +107,15 @@ namespace TelemetryDevice.Services
         private void ApplyFilterToAllDevices()
         {
             var config = _networkingConfig.Value;
-            var baseFilter = BuildProtocolFilter(config.Protocols);
-            var newFilter = BuildFilterFromPorts(_ports, baseFilter);
-
-            if (newFilter == _lastAppliedFilter)
-                return;
+            string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
+            string newFilter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
 
             foreach (var device in _devices)
             {
                 ApplyFilterToDevice(device, newFilter);
             }
 
-            _lastAppliedFilter = newFilter;
-            _logger.LogDebug(
-                "Updated filter on {DeviceCount} devices: {Filter}",
-                _devices.Count,
-                newFilter
-            );
+            _logger.LogInformation($"Applied filter to {_devices.Count} devices: {newFilter}");
         }
 
         private void ApplyFilterToDevice(ICaptureDevice device, string? filter = null)
@@ -125,103 +123,34 @@ namespace TelemetryDevice.Services
             if (filter == null)
             {
                 var config = _networkingConfig.Value;
-                var baseFilter = BuildProtocolFilter(config.Protocols);
-                filter = BuildFilterFromPorts(_ports, baseFilter);
+                string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
+                filter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
             }
 
             device.Filter = filter;
         }
 
-        private string BuildProtocolFilter(List<string> protocols)
-        {
-            if (protocols.Count == 0)
-                return TelemetryDeviceConstants.Network.UDP_FILTER;
-
-            if (protocols.Count == 1)
-                return protocols[0];
-
-            return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, protocols)})";
-        }
-
-        private static string BuildFilterFromPorts(
-            IReadOnlyCollection<int> ports,
-            string baseFilter
-        )
-        {
-            if (ports.Count == 0)
-                return baseFilter;
-
-            var ordered = ports.OrderBy(p => p);
-
-            var sb = new StringBuilder();
-            sb.Append(baseFilter);
-            sb.Append(" and (");
-            bool first = true;
-            foreach (var p in ordered)
-            {
-                if (!first)
-                    sb.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
-                sb.Append(
-                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, p)
-                );
-                first = false;
-            }
-            sb.Append(')');
-            return sb.ToString();
-        }
 
         private void OnPacketArrival(object sender, PacketCapture e)
         {
-            var raw = e.GetPacket();
-            var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-            var udp = packet.Extract<UdpPacket>();
-            if (udp == null)
-                return;
-
-            HandlePacket(udp);
+                RawCapture raw = e.GetPacket();
+                Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
+                HandlePacket(packet);
         }
 
-        private void HandlePacket(UdpPacket udp)
+        private void HandlePacket(Packet packet)
         {
-            var ipPacket = udp.ParentPacket as IPPacket;
-            var sourceIp = ipPacket?.SourceAddress?.ToString();
-            var destIp = ipPacket?.DestinationAddress?.ToString();
-
-            var payload = udp.PayloadData;
-            var payloadLength = payload.Length;
-
-            var hexPreview =
-                payloadLength > TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH
-                    ? Convert.ToHexString(
-                        payload[..TelemetryDeviceConstants.PacketProcessing.MAX_HEX_PREVIEW_LENGTH]
-                    ) + TelemetryDeviceConstants.PacketProcessing.HEX_PREVIEW_SUFFIX
-                    : Convert.ToHexString(payload);
-
-            _logger.LogInformation(
-                "UDP Packet: {SourceIp}:{SourcePort} -> {DestIp}:{DestPort}, Length: {Length} bytes, Data: {HexPreview}",
-                sourceIp,
-                udp.SourcePort,
-                destIp,
-                udp.DestinationPort,
-                payloadLength,
-                hexPreview
-            );
+            IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
+            handler.Handle(packet,PacketReceived);
         }
 
         public void Dispose()
         {
             foreach (var device in _devices)
             {
-                try
-                {
-                    device.OnPacketArrival -= OnPacketArrival;
-                    device.StopCapture();
-                    device.Close();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error disposing device: {DeviceName}", device.Name);
-                }
+                device.OnPacketArrival -= OnPacketArrival;
+                device.StopCapture();
+                device.Close();
             }
             _devices.Clear();
         }

@@ -1,4 +1,4 @@
-﻿namespace TelemetryDevice.Config
+﻿namespace TelemetryDevices.Config
 {
     public class NetworkingConfiguration
     {
