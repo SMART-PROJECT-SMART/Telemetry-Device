@@ -1,6 +1,6 @@
-﻿using Shared.Common.Enums;
+﻿using System.Threading.Tasks.Dataflow;
+using Shared.Common.Enums;
 using Shared.Models.ICDModels;
-using System.Threading.Tasks.Dataflow;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Output;
@@ -64,8 +64,10 @@ public class TelemetryPipeLine : IPipeLine
 
     private void BuildDecodingBlock()
     {
-        _decodingBlock = new TransformBlock<Result, Dictionary<TelemetryFields, double>>(
-            result => result.IsValid ? _telemetryDecoder.DecodeData(result.Data, ICD) : new Dictionary<TelemetryFields, double>()
+        _decodingBlock = new TransformBlock<Result, Dictionary<TelemetryFields, double>>(result =>
+            result.IsValid
+                ? _telemetryDecoder.DecodeData(result.Data, ICD)
+                : new Dictionary<TelemetryFields, double>()
         );
     }
 
@@ -83,5 +85,4 @@ public class TelemetryPipeLine : IPipeLine
         _validationBlock.LinkTo(DataflowBlock.NullTarget<Result>(), result => !result.IsValid);
         _decodingBlock.LinkTo(_outputBlock);
     }
-
 }

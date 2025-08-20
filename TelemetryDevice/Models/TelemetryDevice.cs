@@ -41,6 +41,5 @@ namespace TelemetryDevices.Models
         {
             return Channels.FirstOrDefault(c => c.PortNumber == portNumber);
         }
-
     }
 }

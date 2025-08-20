@@ -17,7 +17,7 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
         private readonly IPacketHandlerFactory _packetHandlerFactory;
-        public event Action<byte[],int> PacketReceived;
+        public event Action<byte[], int> PacketReceived;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,
@@ -130,18 +130,17 @@ namespace TelemetryDevices.Services.Sniffer
             device.Filter = filter;
         }
 
-
         private void OnPacketArrival(object sender, PacketCapture e)
         {
-                RawCapture raw = e.GetPacket();
-                Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-                HandlePacket(packet);
+            RawCapture raw = e.GetPacket();
+            Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
+            HandlePacket(packet);
         }
 
         private void HandlePacket(Packet packet)
         {
             IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
-            handler.Handle(packet,PacketReceived);
+            handler.Handle(packet, PacketReceived);
         }
 
         public void Dispose()

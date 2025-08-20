@@ -17,11 +17,13 @@
             public const int MAX_PORT_NUMBER = 8999;
             public const int PORT_INCREMENT = 1;
         }
+
         public static class Config
         {
             public const string ICD_DIRECTORY = "ICD";
             public const string JSON_SEARCH_PATTERN = "*.json";
         }
+
         public static class LoopbackInterface
         {
             public const string LOOPBACK_DESCRIPTION = "Loopback";
@@ -38,6 +40,13 @@
             public const string NETWORKING_SECTION = "Networking";
             public const string DEFAULT_PROTOCOL = "udp";
             public const string DEFAULT_INTERFACE = "loopback";
+            public const string KAFKA_BOOTSTRAP_SERVERS = "BootStrapServers";
+        }
+
+        public static class Kafka
+        {
+            public const string BASE_TOPIC_NAME = "telemetry-tailId-";
+            public const string PRODUCER_NAME = "TelemetryProducer";
         }
 
         public static class TelemetryCompression

@@ -9,6 +9,5 @@ namespace TelemetryDevices.Services.Helpers.Output
         PipeLineComponents IPipelineComponent.ComponentType => PipeLineComponents.Output;
 
         void HandleOutput(Dictionary<TelemetryFields, double> decodedData);
-
     }
 }

@@ -18,6 +18,7 @@ builder.Services.AddPacketHandlers();
 builder.Services.AddIcdDirectory();
 builder.Services.AddSharedConfiguration(builder.Configuration);
 builder.Services.AddPortManager();
+builder.Services.AddKafkaServices(builder.Configuration);
 
 var app = builder.Build();
 

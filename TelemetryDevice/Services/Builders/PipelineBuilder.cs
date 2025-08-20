@@ -16,7 +16,8 @@ public class PipeLineBuilder : IPipeLineBuilder
         IValidator validator,
         ITelemetryDecoder decoder,
         IOutputHandler outputHandler,
-        ILogger<TelemetryPipeLine> logger)
+        ILogger<TelemetryPipeLine> logger
+    )
     {
         _validator = validator;
         _decoder = decoder;
@@ -47,7 +48,10 @@ public class PipeLineBuilder : IPipeLineBuilder
 
     public IPipeLine GetProduct()
     {
-        IPipeLine result = new TelemetryPipeLine(new List<IPipelineComponent>(_components), _logger);
+        IPipeLine result = new TelemetryPipeLine(
+            new List<IPipelineComponent>(_components),
+            _logger
+        );
         Reset();
         return result;
     }

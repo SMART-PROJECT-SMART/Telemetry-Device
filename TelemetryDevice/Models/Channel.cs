@@ -28,6 +28,5 @@ namespace TelemetryDevices.Models
                 pipeLine.SetICD(icd);
             }
         }
-
     }
 }

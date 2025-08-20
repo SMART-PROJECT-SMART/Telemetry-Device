@@ -51,14 +51,20 @@ namespace TelemetryDevices.Services
             return new TelemetryDevice(location);
         }
 
-        private void CreateChannelsForDevice(TelemetryDevice telemetryDevice, List<int> portNumbers, List<ICD> icds)
+        private void CreateChannelsForDevice(
+            TelemetryDevice telemetryDevice,
+            List<int> portNumbers,
+            List<ICD> icds
+        )
         {
             for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
             {
                 IPipeLine pipeline = _pipeLineDirector.BuildTelemetryPipeline();
                 telemetryDevice.AddChannel(portNumbers[index], pipeline, icds[index]);
 
-                var channel = telemetryDevice.Channels.FirstOrDefault(c => c.PortNumber == portNumbers[index]);
+                var channel = telemetryDevice.Channels.FirstOrDefault(c =>
+                    c.PortNumber == portNumbers[index]
+                );
                 if (channel != null)
                 {
                     _portManager.AddPort(portNumbers[index], channel);

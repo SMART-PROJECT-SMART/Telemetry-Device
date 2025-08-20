@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Confluent.Kafka;
+using KafkaFlow;
+using KafkaFlow.Serializer;
+using Microsoft.Extensions.DependencyInjection;
 using Shared.Configuration;
 using Shared.Services;
 using Shared.Services.ICDsDirectory;
@@ -34,6 +37,34 @@ namespace TelemetryDevices.Services
         {
             return services.Configure<NetworkingConfiguration>(
                 config.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION)
+            );
+        }
+
+        public static IServiceCollection AddKafkaServices(
+            this IServiceCollection services,
+            IConfiguration config
+        )
+        {
+            services.Configure<KafkaConfiguration>(
+                config.GetSection(TelemetryDeviceConstants.Configuration.KAFKA_BOOTSTRAP_SERVERS)
+            );
+
+            var kafkaSettings = config
+                .GetSection(TelemetryDeviceConstants.Configuration.KAFKA_BOOTSTRAP_SERVERS)
+                .Get<KafkaConfiguration>();
+            return services.AddKafka(kafka =>
+                kafka.AddCluster(cluster =>
+                    cluster
+                        .WithBrokers([kafkaSettings.BootstrapServers])
+                        .AddProducer(
+                            TelemetryDeviceConstants.Kafka.PRODUCER_NAME,
+                            producer =>
+                                producer.AddMiddlewares(m =>
+                                    m.AddSerializer<NewtonsoftJsonSerializer>()
+                                )
+                                .WithCompression(CompressionType.Gzip)
+                        )
+                )
             );
         }
 
@@ -84,9 +115,14 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddSharedConfiguration(this IServiceCollection services, IConfiguration config)
+        public static IServiceCollection AddSharedConfiguration(
+            this IServiceCollection services,
+            IConfiguration config
+        )
         {
-            services.Configure<ICDSettings>(config.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY));
+            services.Configure<ICDSettings>(
+                config.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY)
+            );
             return services;
         }
     }
