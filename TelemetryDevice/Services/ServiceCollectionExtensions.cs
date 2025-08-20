@@ -14,6 +14,7 @@ using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Output;
 using TelemetryDevices.Services.Helpers.Validator;
+using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
@@ -39,18 +40,17 @@ namespace TelemetryDevices.Services
                 config.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION)
             );
         }
-
         public static IServiceCollection AddKafkaServices(
             this IServiceCollection services,
             IConfiguration config
         )
         {
             services.Configure<KafkaConfiguration>(
-                config.GetSection(TelemetryDeviceConstants.Configuration.KAFKA_BOOTSTRAP_SERVERS)
+                config.GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
             );
 
             var kafkaSettings = config
-                .GetSection(TelemetryDeviceConstants.Configuration.KAFKA_BOOTSTRAP_SERVERS)
+                .GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
                 .Get<KafkaConfiguration>();
             return services.AddKafka(kafka =>
                 kafka.AddCluster(cluster =>
@@ -68,23 +68,25 @@ namespace TelemetryDevices.Services
             );
         }
 
+        public static IServiceCollection AddProducer(this IServiceCollection services)
+        {
+            services.AddSingleton<ITelemetryProducer, TelemetryProducer>();
+            return services;
+        }
+
+
         public static IServiceCollection AddPacketSniffer(this IServiceCollection services)
         {
             services.AddSingleton<IPacketSniffer, PacketSniffer>();
             return services;
         }
 
-        public static IServiceCollection AddICDDirectory(this IServiceCollection services)
-        {
-            services.AddSingleton<IICDDirectory, ICDDirectory>();
-            return services;
-        }
 
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
             services.AddSingleton<IValidator, ChecksumValidator>();
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
-            services.AddSingleton<IOutputHandler, LoggingOutputHandler>();
+            services.AddSingleton<IOutputHandler, KafkaOutputHandler>();
             services.AddSingleton<IPipeLineBuilder, PipeLineBuilder>();
             services.AddSingleton<PipeLineDirector>();
             return services;

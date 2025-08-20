@@ -75,7 +75,7 @@ public class TelemetryPipeLine : IPipeLine
     {
         _outputBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedData =>
         {
-            _outputHandler.HandleOutput(decodedData);
+            _outputHandler.HandleOutput(decodedData,ICD);
         });
     }
 

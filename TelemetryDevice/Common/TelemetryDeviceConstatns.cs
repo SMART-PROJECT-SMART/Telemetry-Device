@@ -40,7 +40,7 @@
             public const string NETWORKING_SECTION = "Networking";
             public const string DEFAULT_PROTOCOL = "udp";
             public const string DEFAULT_INTERFACE = "loopback";
-            public const string KAFKA_BOOTSTRAP_SERVERS = "BootStrapServers";
+            public const string KAFKA = "Kafka";
         }
 
         public static class Kafka
