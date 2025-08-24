@@ -23,8 +23,7 @@ namespace TelemetryDevices.Services.Helpers.Output
             decodedData.TryGetValue(TelemetryFields.TailId, out var tailIdRaw);
 
             var key = tailIdRaw.ToString();
-            var topic = icd?.GetType().Name?.ToLowerInvariant();
-
+            var topic = icd?.ToString() ?? "unknown-icd";
 
             _ = _producer.ProduceAsync(topic, key, decodedData);
         }

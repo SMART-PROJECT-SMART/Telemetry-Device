@@ -1,11 +1,7 @@
 ﻿using Confluent.Kafka;
-using Microsoft.Extensions.DependencyInjection;
 using Shared.Configuration;
-using Shared.Services;
-using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Models;
 using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
@@ -13,7 +9,6 @@ using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Output;
 using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.Kafka.Producers;
-using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -49,7 +44,7 @@ namespace TelemetryDevices.Services
                 BootstrapServers = kafkaSettings.BootstrapServers,
                 Acks = Acks.All,
                 EnableIdempotence = true,
-                CompressionType = Confluent.Kafka.CompressionType.Gzip
+                CompressionType = CompressionType.Gzip
             };
 
             services.AddSingleton(producerConfig);
