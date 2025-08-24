@@ -1,25 +1,28 @@
-﻿using KafkaFlow;
-using KafkaFlow.Producers;
+﻿using Confluent.Kafka;
+using Newtonsoft.Json;
 using Shared.Common.Enums;
-using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Services.Kafka.Producers
 {
     public class TelemetryProducer : ITelemetryProducer
     {
-        private readonly IMessageProducer _messageProducer;
+        private readonly IProducer<string, byte[]> _producer;
 
-        public TelemetryProducer(IProducerAccessor producerAccessor)
+        public TelemetryProducer(ProducerConfig producerConfig)
         {
-            _messageProducer = producerAccessor.GetProducer(TelemetryDeviceConstants.Kafka.PRODUCER_NAME) ?? throw new ArgumentNullException();
+            _producer = new ProducerBuilder<string, byte[]>(producerConfig).Build();
         }
 
-        public async Task ProduceAsync(string topicName, string icdIdentifier, Dictionary<TelemetryFields, double> data)
+        public async Task ProduceAsync(string topicName, string tailIdKey, Dictionary<TelemetryFields, double> telemetryData)
         {
-            await _messageProducer.ProduceAsync(
-                topicName,
-                icdIdentifier,
-                data);
+            var serialized = JsonConvert.SerializeObject(telemetryData);
+            var message = new Message<string, byte[]>
+            {
+                Key = tailIdKey,
+                Value = System.Text.Encoding.UTF8.GetBytes(serialized)
+            };
+
+            await _producer.ProduceAsync(topicName, message).ConfigureAwait(false);
         }
     }
 }

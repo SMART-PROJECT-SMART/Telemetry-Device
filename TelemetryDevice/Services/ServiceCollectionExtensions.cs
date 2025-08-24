@@ -1,6 +1,4 @@
 ﻿using Confluent.Kafka;
-using KafkaFlow;
-using KafkaFlow.Serializer;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Configuration;
 using Shared.Services;
@@ -31,41 +29,31 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddAppConfiguration(
-            this IServiceCollection services,
-            IConfiguration config
-        )
+        public static IServiceCollection AddAppConfiguration(this IServiceCollection services, IConfiguration config)
         {
             return services.Configure<NetworkingConfiguration>(
                 config.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION)
             );
         }
-        public static IServiceCollection AddKafkaServices(
-            this IServiceCollection services,
-            IConfiguration config
-        )
+
+        public static IServiceCollection AddKafkaServices(this IServiceCollection services, IConfiguration config)
         {
-            services.Configure<KafkaConfiguration>(
-                config.GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
-            );
+            services.Configure<KafkaConfiguration>(config.GetSection(TelemetryDeviceConstants.Configuration.KAFKA));
 
             var kafkaSettings = config
                 .GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
                 .Get<KafkaConfiguration>();
-            return services.AddKafka(kafka =>
-                kafka.AddCluster(cluster =>
-                    cluster
-                        .WithBrokers([kafkaSettings.BootstrapServers])
-                        .AddProducer(
-                            TelemetryDeviceConstants.Kafka.PRODUCER_NAME,
-                            producer =>
-                                producer.AddMiddlewares(m =>
-                                    m.AddSerializer<NewtonsoftJsonSerializer>()
-                                )
-                                .WithCompression(CompressionType.Gzip)
-                        )
-                )
-            );
+
+            var producerConfig = new ProducerConfig
+            {
+                BootstrapServers = kafkaSettings.BootstrapServers,
+                Acks = Acks.All,
+                EnableIdempotence = true,
+                CompressionType = Confluent.Kafka.CompressionType.Gzip
+            };
+
+            services.AddSingleton(producerConfig);
+            return services;
         }
 
         public static IServiceCollection AddProducer(this IServiceCollection services)
@@ -74,13 +62,11 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-
         public static IServiceCollection AddPacketSniffer(this IServiceCollection services)
         {
             services.AddSingleton<IPacketSniffer, PacketSniffer>();
             return services;
         }
-
 
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
@@ -100,7 +86,6 @@ namespace TelemetryDevices.Services
 
         public static IServiceCollection AddTelemetryServices(this IServiceCollection services)
         {
-            services.AddSingleton<IPortManager, PortManager>();
             services.AddSingleton<TelemetryDeviceManager>();
             return services;
         }
@@ -117,14 +102,9 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddSharedConfiguration(
-            this IServiceCollection services,
-            IConfiguration config
-        )
+        public static IServiceCollection AddSharedConfiguration(this IServiceCollection services, IConfiguration config)
         {
-            services.Configure<ICDSettings>(
-                config.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY)
-            );
+            services.Configure<ICDSettings>(config.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY));
             return services;
         }
     }
