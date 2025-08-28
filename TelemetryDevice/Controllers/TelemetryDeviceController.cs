@@ -16,16 +16,15 @@ namespace TelemetryDevices.Controllers
 
         public TelemetryDeviceController(
             TelemetryDeviceManager telemetryDeviceManager,
-            IPortManager portManager)
+            IPortManager portManager
+        )
         {
             _telemetryDeviceManager = telemetryDeviceManager;
             _portManager = portManager;
         }
 
         [HttpPost("add-telemetry-device")]
-        public IActionResult AddTelemetryDevice(
-            CreateTelemetryDeviceDto dto
-        )
+        public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto dto)
         {
             _telemetryDeviceManager.AddTelemetryDevice(dto.TailId, dto.PortNumbers, dto.Location);
             return Ok($"Telemetry device with tail ID {dto.TailId} added successfully.");
@@ -42,10 +41,12 @@ namespace TelemetryDevices.Controllers
         public IActionResult Run()
         {
             int tailId = 1;
-            List<int>portNumbers = new List<int> { 8000, 8001 };
+            List<int> portNumbers = new List<int> { 8000, 8001 };
             Location location = new Location(0, 0);
             _telemetryDeviceManager.AddTelemetryDevice(tailId, portNumbers, location);
-            return Ok($"Telemetry device with tail ID {tailId} started with ports {string.Join(", ", portNumbers)}.");
+            return Ok(
+                $"Telemetry device with tail ID {tailId} started with ports {string.Join(", ", portNumbers)}."
+            );
         }
 
         [HttpPost("switch-port")]

@@ -59,7 +59,7 @@ namespace TelemetryDevices.Services.PortsManager
             ValidateSourceChannelExists(sourcePort, sourceChannel);
 
             var destinationChannel = GetChannelByPort(destinationPort);
-            
+
             if (destinationChannel != null)
             {
                 SwapExistingPorts(sourcePort, destinationPort, sourceChannel, destinationChannel);
@@ -79,34 +79,71 @@ namespace TelemetryDevices.Services.PortsManager
             }
         }
 
-        private void SwapExistingPorts(int sourcePort, int destinationPort, Channel sourceChannel, Channel destinationChannel)
+        private void SwapExistingPorts(
+            int sourcePort,
+            int destinationPort,
+            Channel sourceChannel,
+            Channel destinationChannel
+        )
         {
-            _logger.LogInformation("Swapping ports {SourcePort} and {DestinationPort}", sourcePort, destinationPort);
-            
+            _logger.LogInformation(
+                "Swapping ports {SourcePort} and {DestinationPort}",
+                sourcePort,
+                destinationPort
+            );
+
             UpdatePortMappings(sourcePort, destinationPort, sourceChannel, destinationChannel);
-            UpdateChannelPortNumbers(sourceChannel, destinationChannel, sourcePort, destinationPort);
-            UpdateSnifferPorts(sourcePort, destinationPort, sourceChannel.PortNumber, destinationChannel.PortNumber);
+            UpdateChannelPortNumbers(
+                sourceChannel,
+                destinationChannel,
+                sourcePort,
+                destinationPort
+            );
+            UpdateSnifferPorts(
+                sourcePort,
+                destinationPort,
+                sourceChannel.PortNumber,
+                destinationChannel.PortNumber
+            );
         }
 
-        private void MovePortToNewDestination(int sourcePort, int destinationPort, Channel sourceChannel)
+        private void MovePortToNewDestination(
+            int sourcePort,
+            int destinationPort,
+            Channel sourceChannel
+        )
         {
-            _logger.LogInformation("Changing port {SourcePort} to {DestinationPort}", sourcePort, destinationPort);
-            
+            _logger.LogInformation(
+                "Changing port {SourcePort} to {DestinationPort}",
+                sourcePort,
+                destinationPort
+            );
+
             _portToChannel.Remove(sourcePort);
             _portToChannel[destinationPort] = sourceChannel;
-            
+
             sourceChannel.PortNumber = destinationPort;
-            
+
             UpdateSnifferPorts(sourcePort, destinationPort, destinationPort);
         }
 
-        private void UpdatePortMappings(int sourcePort, int destinationPort, Channel sourceChannel, Channel destinationChannel)
+        private void UpdatePortMappings(
+            int sourcePort,
+            int destinationPort,
+            Channel sourceChannel,
+            Channel destinationChannel
+        )
         {
             _portToChannel[sourcePort] = destinationChannel;
             _portToChannel[destinationPort] = sourceChannel;
         }
 
-        private void UpdateChannelPortNumbers(Channel sourceChannel, Channel destinationChannel, int sourcePort, int destinationPort)
+        private void UpdateChannelPortNumbers(
+            Channel sourceChannel,
+            Channel destinationChannel,
+            int sourcePort,
+            int destinationPort
+        )
         {
             sourceChannel.PortNumber = destinationPort;
             destinationChannel.PortNumber = sourcePort;
@@ -116,7 +153,7 @@ namespace TelemetryDevices.Services.PortsManager
         {
             _packetSniffer.RemovePort(sourcePort);
             _packetSniffer.RemovePort(destinationPort);
-            
+
             foreach (var port in newPorts)
             {
                 _packetSniffer.AddPort(port);
@@ -135,7 +172,10 @@ namespace TelemetryDevices.Services.PortsManager
             int? tailId = TailIdExtractor.GetTailIdByICD(payload, channel.ICD);
             if (!tailId.HasValue)
             {
-                _logger.LogWarning("Could not extract tail ID from payload on port {Port}", portNumber);
+                _logger.LogWarning(
+                    "Could not extract tail ID from payload on port {Port}",
+                    portNumber
+                );
                 return;
             }
 

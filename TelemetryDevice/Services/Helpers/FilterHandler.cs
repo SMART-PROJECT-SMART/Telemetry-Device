@@ -16,10 +16,7 @@ namespace TelemetryDevices.Services.Helpers
             return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, protocols)})";
         }
 
-        public static string BuildFilterFromPorts(
-            IReadOnlyCollection<int> ports,
-            string baseFilter
-        )
+        public static string BuildFilterFromPorts(IReadOnlyCollection<int> ports, string baseFilter)
         {
             if (ports.Count == 0)
                 return baseFilter;

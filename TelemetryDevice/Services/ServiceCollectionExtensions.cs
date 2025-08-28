@@ -1,17 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Confluent.Kafka;
 using Shared.Configuration;
-using Shared.Services;
-using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Models;
 using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.Helpers.Decoder;
 using TelemetryDevices.Services.Helpers.Output;
 using TelemetryDevices.Services.Helpers.Validator;
-using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -27,14 +24,37 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddAppConfiguration(
-            this IServiceCollection services,
-            IConfiguration config
-        )
+        public static IServiceCollection AddAppConfiguration(this IServiceCollection services, IConfiguration config)
         {
             return services.Configure<NetworkingConfiguration>(
                 config.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION)
             );
+        }
+
+        public static IServiceCollection AddKafkaServices(this IServiceCollection services, IConfiguration config)
+        {
+            services.Configure<KafkaConfiguration>(config.GetSection(TelemetryDeviceConstants.Configuration.KAFKA));
+
+            var kafkaSettings = config
+                .GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
+                .Get<KafkaConfiguration>();
+
+            var producerConfig = new ProducerConfig
+            {
+                BootstrapServers = kafkaSettings.BootstrapServers,
+                Acks = Acks.All,
+                EnableIdempotence = true,
+                CompressionType = CompressionType.Gzip
+            };
+
+            services.AddSingleton(producerConfig);
+            return services;
+        }
+
+        public static IServiceCollection AddProducer(this IServiceCollection services)
+        {
+            services.AddSingleton<ITelemetryProducer, TelemetryProducer>();
+            return services;
         }
 
         public static IServiceCollection AddPacketSniffer(this IServiceCollection services)
@@ -43,17 +63,11 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddICDDirectory(this IServiceCollection services)
-        {
-            services.AddSingleton<IICDDirectory, ICDDirectory>();
-            return services;
-        }
-
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
             services.AddSingleton<IValidator, ChecksumValidator>();
             services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
-            services.AddSingleton<IOutputHandler, LoggingOutputHandler>();
+            services.AddSingleton<IOutputHandler, KafkaOutputHandler>();
             services.AddSingleton<IPipeLineBuilder, PipeLineBuilder>();
             services.AddSingleton<PipeLineDirector>();
             return services;
@@ -67,7 +81,6 @@ namespace TelemetryDevices.Services
 
         public static IServiceCollection AddTelemetryServices(this IServiceCollection services)
         {
-            services.AddSingleton<IPortManager, PortManager>();
             services.AddSingleton<TelemetryDeviceManager>();
             return services;
         }
