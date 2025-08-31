@@ -1,11 +1,11 @@
 ﻿namespace TelemetryDevices.Models
 {
-    public struct Result
+    public struct DecodingResult
     {
         public bool IsValid;
         public byte[] Data;
 
-        public Result(bool isValid, byte[] data)
+        public DecodingResult(bool isValid, byte[] data)
         {
             IsValid = isValid;
             Data = data;

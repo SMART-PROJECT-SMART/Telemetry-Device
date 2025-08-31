@@ -4,8 +4,8 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
+using TelemetryDevices.Services.Factories.PipeLineFactory;
 using TelemetryDevices.Services.Kafka.Producers;
-using TelemetryDevices.Services.PipeLines.Blocks.Builders;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
@@ -65,11 +65,11 @@ namespace TelemetryDevices.Services
 
         public static IServiceCollection AddPipeline(this IServiceCollection services)
         {
-            services.AddSingleton<IValidator, ChecksumValidator>();
-            services.AddSingleton<ITelemetryDecoder, TelemetryDataDecoder>();
-            services.AddSingleton<IOutputHandler, KafkaOutputHandler>();
-            services.AddSingleton<IPipeLineBuilder, PipeLineBuilder>();
-            services.AddSingleton<PipeLineDirector>();
+            services.AddTransient<IValidator, ChecksumValidator>();
+            services.AddTransient<ITelemetryDecoder, TelemetryDataDecoder>();
+            services.AddTransient<IOutputHandler, KafkaOutputHandler>();
+            services.AddTransient<TelemetryPipeLine>();
+            services.AddSingleton<IPipeLineFactory, PipeLineFactory>();
             return services;
         }
 
