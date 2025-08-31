@@ -1,8 +1,8 @@
-using TelemetryDevices.Services.Builders;
-using TelemetryDevices.Services.Helpers.Decoder;
-using TelemetryDevices.Services.Helpers.Output;
-using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PipeLines.Blocks.Builders;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 
 public class PipeLineBuilder : IPipeLineBuilder
 {
@@ -49,7 +49,7 @@ public class PipeLineBuilder : IPipeLineBuilder
     public IPipeLine GetProduct()
     {
         IPipeLine result = new TelemetryPipeLine(
-            new List<IPipelineComponent>(_components),
+            [.._components],
             _logger
         );
         Reset();

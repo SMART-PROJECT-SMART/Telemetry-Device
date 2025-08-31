@@ -3,7 +3,7 @@ using Shared.Models.ICDModels;
 using TelemetryDevices.Services.Kafka.Producers;
 
 
-namespace TelemetryDevices.Services.Helpers.Output
+namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
     public class KafkaOutputHandler : IOutputHandler
     {

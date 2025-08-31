@@ -1,6 +1,4 @@
-using TelemetryDevices.Services.PipeLines;
-
-namespace TelemetryDevices.Services.Builders;
+namespace TelemetryDevices.Services.PipeLines.Blocks.Builders;
 
 public interface IPipeLineBuilder
 {

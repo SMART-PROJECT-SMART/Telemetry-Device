@@ -2,13 +2,13 @@
 using Shared.Configuration;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Builders;
 using TelemetryDevices.Services.Factories.PacketHandler;
 using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
-using TelemetryDevices.Services.Helpers.Decoder;
-using TelemetryDevices.Services.Helpers.Output;
-using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Services.PipeLines.Blocks.Builders;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -51,7 +51,7 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddProducer(this IServiceCollection services)
+        public static IServiceCollection AddKafkaTelemetryProducer(this IServiceCollection services)
         {
             services.AddSingleton<ITelemetryProducer, TelemetryProducer>();
             return services;

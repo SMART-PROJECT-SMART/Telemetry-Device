@@ -29,7 +29,7 @@ namespace TelemetryDevices.Services
         public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
-            var telemetryDevice = CreateTelemetryDevice(location);
+            var telemetryDevice = new TelemetryDevice(location);
             _telemetryDevicesByTailId[tailId] = telemetryDevice;
 
             var icds = _icdDirectory.GetAllICDs().ToList();
@@ -44,11 +44,6 @@ namespace TelemetryDevices.Services
                     $"Telemetry device with tail ID {tailId} already exists."
                 );
             }
-        }
-
-        private TelemetryDevice CreateTelemetryDevice(Location location)
-        {
-            return new TelemetryDevice(location);
         }
 
         private void CreateChannelsForDevice(

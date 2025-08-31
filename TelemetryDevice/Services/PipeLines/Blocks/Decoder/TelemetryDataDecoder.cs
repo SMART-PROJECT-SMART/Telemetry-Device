@@ -3,7 +3,7 @@ using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Common;
 
-namespace TelemetryDevices.Services.Helpers.Decoder
+namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public class TelemetryDataDecoder : ITelemetryDecoder
     {
@@ -151,7 +151,7 @@ namespace TelemetryDevices.Services.Helpers.Decoder
             int storedExponent = (int)(storedBits >> significandBits) & (int)exponentMask;
             ulong storedSignificand = storedBits & significandMask;
 
-            int ourBias = (1 << (exponentBits - 1)) - 1;
+            int ourBias = (1 << exponentBits - 1) - 1;
             int actualExponent = storedExponent - ourBias;
 
             double significand = 1.0 + (double)storedSignificand / (1UL << significandBits);
