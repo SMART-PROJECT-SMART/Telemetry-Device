@@ -2,10 +2,9 @@
 using Shared.Configuration;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Factories.PacketHandler;
-using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.Factories.PipeLineFactory;
 using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Services.PacketProcessing;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
@@ -85,15 +84,10 @@ namespace TelemetryDevices.Services
             return services;
         }
 
-        public static IServiceCollection AddFactories(this IServiceCollection services)
-        {
-            services.AddSingleton<IPacketHandlerFactory, PacketHandlerFactory>();
-            return services;
-        }
 
-        public static IServiceCollection AddPacketHandlers(this IServiceCollection services)
+        public static IServiceCollection AddPacketProcessor(this IServiceCollection services)
         {
-            services.AddSingleton<IPacketHandler, UdpHandler>();
+            services.AddSingleton<IPacketProcessor, PacketProcessor>();
             return services;
         }
 

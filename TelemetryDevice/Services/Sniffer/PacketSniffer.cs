@@ -1,12 +1,9 @@
-using System.Text;
 using Microsoft.Extensions.Options;
 using PacketDotNet;
 using SharpPcap;
-using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Factories.PacketHandler;
-using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
 using TelemetryDevices.Services.Helpers;
+using TelemetryDevices.Services.PacketProcessing;
 
 namespace TelemetryDevices.Services.Sniffer
 {
@@ -16,18 +13,18 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
-        private readonly IPacketHandlerFactory _packetHandlerFactory;
+        private readonly IPacketProcessor _packetProcessor;
         public event Action<byte[], int> PacketReceived;
 
         public PacketSniffer(
             ILogger<PacketSniffer> logger,
             IOptions<NetworkingConfiguration> networkingConfig,
-            IPacketHandlerFactory packetHandlerFactory
+            IPacketProcessor packetProcessor
         )
         {
             _logger = logger;
             _networkingConfig = networkingConfig;
-            _packetHandlerFactory = packetHandlerFactory;
+            _packetProcessor = packetProcessor;
             var availableDevices = CaptureDeviceList.Instance;
             InitializeDevices(availableDevices);
         }
@@ -134,13 +131,7 @@ namespace TelemetryDevices.Services.Sniffer
         {
             RawCapture raw = e.GetPacket();
             Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-            HandlePacket(packet);
-        }
-
-        private void HandlePacket(Packet packet)
-        {
-            IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
-            handler.Handle(packet, PacketReceived);
+            _packetProcessor.ProcessPacket(packet, PacketReceived);
         }
 
         public void Dispose()

@@ -14,8 +14,7 @@ builder.Services.AddPacketSniffer();
 
 builder.Services.AddPipeline();
 builder.Services.AddTelemetryServices();
-builder.Services.AddFactories();
-builder.Services.AddPacketHandlers();
+builder.Services.AddPacketProcessor();
 builder.Services.AddIcdDirectory();
 builder.Services.AddSharedConfiguration(builder.Configuration);
 builder.Services.AddPortManager();
