@@ -6,23 +6,17 @@ public class PacketProcessor : IPacketProcessor
 {
     public void ProcessPacket(Packet packet, Action<byte[], int> packetCaught)
     {
-        switch (packet.PayloadPacket?.PayloadPacket)
+        if (packet.PayloadPacket is not IPv4Packet ipv4Packet)
+            return;
+
+        switch (ipv4Packet.PayloadPacket)
         {
-            case UdpPacket udpPacket:
-                if (udpPacket.PayloadData is { Length: > 0 })
-                {
-                    packetCaught.Invoke(udpPacket.PayloadData, udpPacket.DestinationPort);
-                }
+            case UdpPacket { PayloadData.Length: > 0 } udpPacket:
+                packetCaught.Invoke(udpPacket.PayloadData, udpPacket.DestinationPort);
                 break;
 
-            case TcpPacket tcpPacket:
-                if (tcpPacket.PayloadData is { Length: > 0 })
-                {
-                    packetCaught.Invoke(tcpPacket.PayloadData, tcpPacket.DestinationPort);
-                }
-                break;
-
-            default:
+            case TcpPacket { PayloadData.Length: > 0 } tcpPacket:
+                packetCaught.Invoke(tcpPacket.PayloadData, tcpPacket.DestinationPort);
                 break;
         }
     }
