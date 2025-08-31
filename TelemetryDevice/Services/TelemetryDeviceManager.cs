@@ -1,9 +1,10 @@
-﻿using Shared.Models.ICDModels;
+﻿using Shared.Common.Enums;
+using Shared.Models.ICDModels;
 using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Models;
+using TelemetryDevices.Services.Factories.PipeLineFactory;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
-using TelemetryDevices.Services.Sniffer;
 
 namespace TelemetryDevices.Services
 {
@@ -12,17 +13,17 @@ namespace TelemetryDevices.Services
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId =
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
-        private readonly PipeLineDirector _pipeLineDirector;
+        private readonly IPipeLineFactory _pipeLineFactory;
         private readonly IPortManager _portManager;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
-            PipeLineDirector pipeLineDirector,
+            IPipeLineFactory pipeLineFactory,
             IPortManager portManager
         )
         {
             _icdDirectory = icdDirectory;
-            _pipeLineDirector = pipeLineDirector;
+            _pipeLineFactory = pipeLineFactory;
             _portManager = portManager;
         }
 
@@ -54,8 +55,9 @@ namespace TelemetryDevices.Services
         {
             for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
             {
-                IPipeLine pipeline = _pipeLineDirector.BuildTelemetryPipeline();
-                telemetryDevice.AddChannel(portNumbers[index], pipeline, icds[index]);
+                var icd = icds[index];
+                IPipeLine pipeline = _pipeLineFactory.GetPipeLine(icd);
+                telemetryDevice.AddChannel(portNumbers[index], pipeline, icd);
 
                 var channel = telemetryDevice.Channels.FirstOrDefault(c =>
                     c.PortNumber == portNumbers[index]

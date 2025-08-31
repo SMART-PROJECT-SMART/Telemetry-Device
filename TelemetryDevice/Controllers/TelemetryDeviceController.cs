@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Common.Enums;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
@@ -41,7 +42,7 @@ namespace TelemetryDevices.Controllers
         public IActionResult Run()
         {
             int tailId = 1;
-            List<int> portNumbers = new List<int> { 8000, 8001 };
+            var portNumbers = new List<int> { 8000, 8001 };
             Location location = new Location(0, 0);
             _telemetryDeviceManager.AddTelemetryDevice(tailId, portNumbers, location);
             return Ok(

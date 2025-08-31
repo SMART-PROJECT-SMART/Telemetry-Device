@@ -3,9 +3,8 @@ using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
-    public interface IValidator : IPipelineComponent
+    public interface IValidator
     {
-        PipeLineComponents IPipelineComponent.ComponentType => PipeLineComponents.Validator;
 
         public bool Validate(byte[] compressedData);
     }

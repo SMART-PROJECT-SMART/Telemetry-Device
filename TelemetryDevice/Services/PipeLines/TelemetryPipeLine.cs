@@ -2,30 +2,26 @@
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.Helpers.Decoder;
-using TelemetryDevices.Services.Helpers.Output;
-using TelemetryDevices.Services.Helpers.Validator;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 
 public class TelemetryPipeLine : IPipeLine
 {
     private readonly IValidator _validator;
     private readonly ITelemetryDecoder _telemetryDecoder;
     private readonly IOutputHandler _outputHandler;
-    private readonly List<IPipelineComponent> _components;
-    private TransformBlock<byte[], Result> _validationBlock;
-    private TransformBlock<Result, Dictionary<TelemetryFields, double>> _decodingBlock;
+    private TransformBlock<byte[], DecodingResult> _validationBlock;
+    private TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> _decodingBlock;
     private ActionBlock<Dictionary<TelemetryFields, double>> _outputBlock;
-    private readonly ILogger<TelemetryPipeLine> _logger;
     public ICD ICD { get; set; }
 
-    public TelemetryPipeLine(List<IPipelineComponent> components, ILogger<TelemetryPipeLine> logger)
+    public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, IOutputHandler outputHandler)
     {
-        _components = components;
-        _validator = components.OfType<IValidator>().FirstOrDefault();
-        _telemetryDecoder = components.OfType<ITelemetryDecoder>().FirstOrDefault();
-        _outputHandler = components.OfType<IOutputHandler>().FirstOrDefault();
-        _logger = logger;
+        _validator = validator;
+        _telemetryDecoder = telemetryDecoder;
+        _outputHandler = outputHandler;
     }
 
     public async Task ProcessDataAsync(byte[] data)
@@ -55,16 +51,16 @@ public class TelemetryPipeLine : IPipeLine
 
     private void BuildValidationBlock()
     {
-        _validationBlock = new TransformBlock<byte[], Result>(data =>
+        _validationBlock = new TransformBlock<byte[], DecodingResult>(data =>
         {
             bool isValid = _validator.Validate(data);
-            return new Result(isValid, data);
+            return new DecodingResult(isValid, data);
         });
     }
 
     private void BuildDecodingBlock()
     {
-        _decodingBlock = new TransformBlock<Result, Dictionary<TelemetryFields, double>>(result =>
+        _decodingBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(result =>
             result.IsValid
                 ? _telemetryDecoder.DecodeData(result.Data, ICD)
                 : new Dictionary<TelemetryFields, double>()
@@ -75,14 +71,14 @@ public class TelemetryPipeLine : IPipeLine
     {
         _outputBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedData =>
         {
-            _outputHandler.HandleOutput(decodedData,ICD);
+            _outputHandler.HandleOutput(decodedData, ICD);
         });
     }
 
     private void LinkBlocks()
     {
         _validationBlock.LinkTo(_decodingBlock, result => result.IsValid);
-        _validationBlock.LinkTo(DataflowBlock.NullTarget<Result>(), result => !result.IsValid);
+        _validationBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>(), result => !result.IsValid);
         _decodingBlock.LinkTo(_outputBlock);
     }
 }
