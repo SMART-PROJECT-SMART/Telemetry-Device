@@ -1,4 +1,5 @@
 ﻿using TelemetryDevices.Models;
+using System.Collections.Generic;
 
 namespace TelemetryDevices.Dto
 {
