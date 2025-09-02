@@ -1,21 +1,23 @@
 ﻿using System.Collections;
 using TelemetryDevices.Common;
+using Shared.Models.ICDModels;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
     public class ChecksumValidator : IValidator
     {
-        public bool Validate(byte[] compressedTelemetryData)
+        public bool Validate(byte[] compressedTelemetryData, ICD icd)
         {
             var telemetryBits = new BitArray(compressedTelemetryData);
             int totalBitsCount = telemetryBits.Length;
 
-            int icdBitsLength = TelemetryDeviceConstants.TelemetryCompression.ICD_BITS;
-            int signBitsLength = TelemetryDeviceConstants.TelemetryCompression.SIGN_BITS;
+            int icdBitsLength = icd.GetSizeInBites();
+            int signBitsLength = icd.Document.Count;
             int checksumBitsLength = TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_BITS;
-            int paddingBitsLength = TelemetryDeviceConstants.TelemetryCompression.PADDING_BITS;
-
+            
             int dataBitsLength = icdBitsLength + signBitsLength;
+            int dataPlusChecksumBits = dataBitsLength + checksumBitsLength;
+            int paddingBitsLength = (8 - (dataPlusChecksumBits % 8)) % 8;
             int expectedTotalBits = dataBitsLength + checksumBitsLength + paddingBitsLength;
 
             if (totalBitsCount < dataBitsLength + checksumBitsLength)

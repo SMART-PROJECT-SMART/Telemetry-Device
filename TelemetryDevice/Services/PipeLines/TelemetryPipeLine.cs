@@ -53,7 +53,7 @@ public class TelemetryPipeLine : IPipeLine
     {
         _validationBlock = new TransformBlock<byte[], DecodingResult>(rawTelemetryData =>
         {
-            bool isDataValid = _validator.Validate(rawTelemetryData);
+            bool isDataValid = _validator.Validate(rawTelemetryData, ICD);
             return new DecodingResult(isDataValid, rawTelemetryData);
         });
     }
