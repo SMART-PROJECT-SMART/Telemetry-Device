@@ -3,6 +3,7 @@ using TelemetryDevices.Models;
 using TelemetryDevices.Services;
 using TelemetryDevices.Services.Sniffer;
 using Shared.Common.Enums;
+using TelemetryDevices.Services.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

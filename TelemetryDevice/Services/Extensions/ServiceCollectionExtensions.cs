@@ -11,7 +11,7 @@ using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
-namespace TelemetryDevices.Services
+namespace TelemetryDevices.Services.Extensions
 {
     public static class ServiceCollectionExtensions
     {
