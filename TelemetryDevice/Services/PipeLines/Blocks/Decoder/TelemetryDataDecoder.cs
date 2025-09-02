@@ -10,153 +10,153 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
         private readonly Dictionary<TelemetryFields, double> _decodedData =
             new Dictionary<TelemetryFields, double>();
 
-        public Dictionary<TelemetryFields, double> DecodeData(byte[] data, ICD icd)
+        public Dictionary<TelemetryFields, double> DecodeData(byte[] rawTelemetryData, ICD telemetryIcd)
         {
-            BitArray compressedBitArray = ConvertBytesToBitArray(data);
-            Dictionary<TelemetryFields, double> decompressedData = DecompressTelemetryDataByICD(
+            BitArray compressedBitArray = ConvertBytesToBitArray(rawTelemetryData);
+            Dictionary<TelemetryFields, double> decompressedTelemetryData = DecompressTelemetryDataByICD(
                 compressedBitArray,
-                icd
+                telemetryIcd
             );
-            return decompressedData;
+            return decompressedTelemetryData;
         }
 
-        private BitArray ConvertBytesToBitArray(byte[] data)
+        private BitArray ConvertBytesToBitArray(byte[] rawTelemetryData)
         {
-            BitArray bitArray = new BitArray(
-                data.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
+            BitArray telemetryBitArray = new BitArray(
+                rawTelemetryData.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
             );
 
-            for (int byteIndex = 0; byteIndex < data.Length; byteIndex++)
+            for (int byteIndex = 0; byteIndex < rawTelemetryData.Length; byteIndex++)
             {
                 for (
-                    int bitIndex = 0;
-                    bitIndex < TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE;
-                    bitIndex++
+                    int bitPositionInByte = 0;
+                    bitPositionInByte < TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE;
+                    bitPositionInByte++
                 )
                 {
-                    int absoluteBitIndex =
+                    int absoluteBitPosition =
                         byteIndex * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
-                        + bitIndex;
-                    bitArray[absoluteBitIndex] =
+                        + bitPositionInByte;
+                    telemetryBitArray[absoluteBitPosition] =
                         (
-                            data[byteIndex]
+                            rawTelemetryData[byteIndex]
                             & TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
-                                << bitIndex
+                                << bitPositionInByte
                         ) != 0;
                 }
             }
 
-            return bitArray;
+            return telemetryBitArray;
         }
 
         private Dictionary<TelemetryFields, double> DecompressTelemetryDataByICD(
-            BitArray compressedData,
-            ICD icd
+            BitArray compressedTelemetryData,
+            ICD telemetryIcd
         )
         {
-            BitArray mainDataBits = ExtractMainDataBits(compressedData, icd);
-            BitArray signBits = ExtractSignBits(compressedData, icd);
-            return ReconstructTelemetryValues(mainDataBits, signBits, icd);
+            BitArray mainDataBitSection = ExtractMainDataBits(compressedTelemetryData, telemetryIcd);
+            BitArray signBitSection = ExtractSignBits(compressedTelemetryData, telemetryIcd);
+            return ReconstructTelemetryValues(mainDataBitSection, signBitSection, telemetryIcd);
         }
 
-        private BitArray ExtractMainDataBits(BitArray compressedData, ICD icd)
+        private BitArray ExtractMainDataBits(BitArray compressedTelemetryData, ICD telemetryIcd)
         {
-            int dataLength = icd.GetSizeInBites();
-            BitArray mainData = new BitArray(dataLength);
+            int mainDataLength = telemetryIcd.GetSizeInBites();
+            BitArray mainDataSection = new BitArray(mainDataLength);
 
-            for (int i = 0; i < dataLength; i++)
+            for (int bitIndex = 0; bitIndex < mainDataLength; bitIndex++)
             {
-                mainData[i] = compressedData[i];
+                mainDataSection[bitIndex] = compressedTelemetryData[bitIndex];
             }
 
-            return mainData;
+            return mainDataSection;
         }
 
-        private BitArray ExtractSignBits(BitArray compressedData, ICD icd)
+        private BitArray ExtractSignBits(BitArray compressedTelemetryData, ICD telemetryIcd)
         {
-            int signBitsCount = icd.Document.Count;
-            int dataLength = icd.GetSizeInBites();
-            BitArray signBits = new BitArray(signBitsCount);
+            int signBitsCount = telemetryIcd.Document.Count;
+            int mainDataLength = telemetryIcd.GetSizeInBites();
+            BitArray signBitSection = new BitArray(signBitsCount);
 
-            for (int i = 0; i < signBitsCount; i++)
+            for (int signBitIndex = 0; signBitIndex < signBitsCount; signBitIndex++)
             {
-                signBits[i] = compressedData[dataLength + i];
+                signBitSection[signBitIndex] = compressedTelemetryData[mainDataLength + signBitIndex];
             }
 
-            return signBits;
+            return signBitSection;
         }
 
         private Dictionary<TelemetryFields, double> ReconstructTelemetryValues(
-            BitArray mainDataBits,
-            BitArray signBits,
-            ICD icd
+            BitArray mainDataBitSection,
+            BitArray signBitSection,
+            ICD telemetryIcd
         )
         {
-            Dictionary<TelemetryFields, double> telemetryData =
+            Dictionary<TelemetryFields, double> reconstructedTelemetryData =
                 new Dictionary<TelemetryFields, double>();
-            int fieldIndex = 0;
+            int telemetryFieldIndex = 0;
 
-            foreach (ICDItem telemetryParameter in icd)
+            foreach (ICDItem telemetryParameter in telemetryIcd)
             {
-                ulong extractedBits = ExtractFieldBits(mainDataBits, telemetryParameter);
-                double reconstructedValue = ConvertFromMeaningfulBits(
-                    extractedBits,
+                ulong extractedBitValue = ExtractFieldBits(mainDataBitSection, telemetryParameter);
+                double reconstructedParameterValue = ConvertFromMeaningfulBits(
+                    extractedBitValue,
                     telemetryParameter.BitLength
                 );
 
-                if (signBits[fieldIndex])
+                if (signBitSection[telemetryFieldIndex])
                 {
-                    reconstructedValue = -reconstructedValue;
+                    reconstructedParameterValue = -reconstructedParameterValue;
                 }
 
-                telemetryData[telemetryParameter.Name] = reconstructedValue;
-                fieldIndex++;
+                reconstructedTelemetryData[telemetryParameter.Name] = reconstructedParameterValue;
+                telemetryFieldIndex++;
             }
 
-            return telemetryData;
+            return reconstructedTelemetryData;
         }
 
-        private ulong ExtractFieldBits(BitArray mainDataBits, ICDItem telemetryParameter)
+        private ulong ExtractFieldBits(BitArray mainDataBitSection, ICDItem telemetryParameter)
         {
-            int startBit = telemetryParameter.StartBitArrayIndex;
-            int bitLength = telemetryParameter.BitLength;
-            ulong valueInBits = 0;
+            int fieldStartBit = telemetryParameter.StartBitArrayIndex;
+            int fieldBitLength = telemetryParameter.BitLength;
+            ulong extractedFieldValue = 0;
 
-            for (int offset = 0; offset < bitLength; offset++)
+            for (int bitOffset = 0; bitOffset < fieldBitLength; bitOffset++)
             {
-                if (mainDataBits[startBit + offset])
+                if (mainDataBitSection[fieldStartBit + bitOffset])
                 {
-                    valueInBits |=
-                        TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << offset;
+                    extractedFieldValue |=
+                        TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitOffset;
                 }
             }
 
-            return valueInBits;
+            return extractedFieldValue;
         }
 
-        private double ConvertFromMeaningfulBits(ulong storedBits, int bitLength)
+        private double ConvertFromMeaningfulBits(ulong compressedBits, int totalBitLength)
         {
-            if (storedBits == 0)
+            if (compressedBits == 0)
                 return 0.0;
 
-            int exponentBits = Math.Min(
+            int exponentBitsCount = Math.Min(
                 TelemetryDeviceConstants.TelemetryCompression.MAX_EXPONENT_BITS,
-                bitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR
+                totalBitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR
             );
-            int significandBits = bitLength - exponentBits;
+            int significandBitsCount = totalBitLength - exponentBitsCount;
 
-            ulong exponentMask = (1UL << exponentBits) - 1;
-            ulong significandMask = (1UL << significandBits) - 1;
+            ulong exponentBitMask = (1UL << exponentBitsCount) - 1;
+            ulong significandBitMask = (1UL << significandBitsCount) - 1;
 
-            int storedExponent = (int)(storedBits >> significandBits) & (int)exponentMask;
-            ulong storedSignificand = storedBits & significandMask;
+            int storedExponentValue = (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
+            ulong storedSignificandValue = compressedBits & significandBitMask;
 
-            int ourBias = (1 << exponentBits - 1) - 1;
-            int actualExponent = storedExponent - ourBias;
+            int exponentBias = (1 << exponentBitsCount - 1) - 1;
+            int actualExponentValue = storedExponentValue - exponentBias;
 
-            double significand = 1.0 + (double)storedSignificand / (1UL << significandBits);
+            double significandValue = 1.0 + (double)storedSignificandValue / (1UL << significandBitsCount);
 
-            return significand * Math.Pow(2, actualExponent);
+            return significandValue * Math.Pow(2, actualExponentValue);
         }
     }
 }

@@ -5,39 +5,39 @@ namespace TelemetryDevices.Services.Helpers
 {
     public static class FilterHandler
     {
-        public static string BuildProtocolFilter(List<string> protocols)
+        public static string BuildProtocolFilter(List<string> supportedProtocols)
         {
-            if (protocols.Count == 0)
+            if (supportedProtocols.Count == 0)
                 return TelemetryDeviceConstants.Network.UDP_FILTER;
 
-            if (protocols.Count == 1)
-                return protocols[0];
+            if (supportedProtocols.Count == 1)
+                return supportedProtocols[0];
 
-            return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, protocols)})";
+            return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, supportedProtocols)})";
         }
 
-        public static string BuildFilterFromPorts(IReadOnlyCollection<int> ports, string baseFilter)
+        public static string BuildFilterFromPorts(IReadOnlyCollection<int> monitoredPorts, string baseProtocolFilter)
         {
-            if (ports.Count == 0)
-                return baseFilter;
+            if (monitoredPorts.Count == 0)
+                return baseProtocolFilter;
 
-            var ordered = ports.OrderBy(p => p);
+            var sortedPortNumbers = monitoredPorts.OrderBy(portNumber => portNumber);
 
-            var sb = new StringBuilder();
-            sb.Append(baseFilter);
-            sb.Append(" and (");
-            bool first = true;
-            foreach (var p in ordered)
+            var filterStringBuilder = new StringBuilder();
+            filterStringBuilder.Append(baseProtocolFilter);
+            filterStringBuilder.Append(" and (");
+            bool isFirstPort = true;
+            foreach (var currentPortNumber in sortedPortNumbers)
             {
-                if (!first)
-                    sb.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
-                sb.Append(
-                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, p)
+                if (!isFirstPort)
+                    filterStringBuilder.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
+                filterStringBuilder.Append(
+                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, currentPortNumber)
                 );
-                first = false;
+                isFirstPort = false;
             }
-            sb.Append(')');
-            return sb.ToString();
+            filterStringBuilder.Append(')');
+            return filterStringBuilder.ToString();
         }
     }
 }

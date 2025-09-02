@@ -7,32 +7,32 @@ namespace TelemetryDevices.Controllers
     [ApiController]
     public class SniffersController : ControllerBase
     {
-        private readonly PacketSniffer _sniffer;
+        private readonly PacketSniffer _packetSniffer;
 
-        public SniffersController(PacketSniffer sniffer)
+        public SniffersController(PacketSniffer packetSniffer)
         {
-            _sniffer = sniffer;
+            _packetSniffer = packetSniffer;
         }
 
         [HttpPost("add-port")]
         public IActionResult AddPort(int portNumber)
         {
-            _sniffer.AddPort(portNumber);
+            _packetSniffer.AddPort(portNumber);
             return Ok($"Port {portNumber} added successfully.");
         }
 
         [HttpPost("remove-port")]
         public IActionResult RemovePort(int portNumber)
         {
-            _sniffer.RemovePort(portNumber);
+            _packetSniffer.RemovePort(portNumber);
             return Ok($"Port {portNumber} removed successfully.");
         }
 
         [HttpGet("run")]
         public IActionResult Run()
         {
-            _sniffer.AddPort(8000);
-            _sniffer.AddPort(8001);
+            _packetSniffer.AddPort(8000);
+            _packetSniffer.AddPort(8001);
             return Ok("Sniffer started with ports 8000 and 8001.");
         }
     }

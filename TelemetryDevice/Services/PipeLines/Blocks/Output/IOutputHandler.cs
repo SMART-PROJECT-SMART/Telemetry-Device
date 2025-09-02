@@ -8,6 +8,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
     public interface IOutputHandler 
     {
 
-        void HandleOutput(Dictionary<TelemetryFields, double> decodedData,ICD icd);
+        void HandleOutput(Dictionary<TelemetryFields, double> decodedTelemetryData,ICD telemetryIcd);
     }
 }

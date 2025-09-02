@@ -6,6 +6,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
     public interface IValidator
     {
 
-        public bool Validate(byte[] compressedData);
+        public bool Validate(byte[] compressedTelemetryData);
     }
 }

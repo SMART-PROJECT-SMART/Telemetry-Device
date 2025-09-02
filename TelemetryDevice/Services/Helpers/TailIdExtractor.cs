@@ -7,100 +7,100 @@ namespace TelemetryDevices.Services.Helpers
 {
     public static class TailIdExtractor
     {
-        public static int? GetTailIdByICD(byte[] payload, ICD icd)
+        public static int? GetTailIdByICD(byte[] packetPayload, ICD telemetryIcd)
         {
-            ICDItem tailIdItem = icd.Document.FirstOrDefault(item =>
-                item.Name == TelemetryFields.TailId
+            ICDItem tailIdIcdItem = telemetryIcd.Document.FirstOrDefault(icdItem =>
+                icdItem.Name == TelemetryFields.TailId
             );
-            if (tailIdItem == null)
+            if (tailIdIcdItem == null)
             {
                 return null;
             }
 
-            BitArray payloadBits = ConvertBytesToBitArray(payload);
-            if (payloadBits.Length < tailIdItem.StartBitArrayIndex + tailIdItem.BitLength)
+            BitArray payloadBitArray = ConvertBytesToBitArray(packetPayload);
+            if (payloadBitArray.Length < tailIdIcdItem.StartBitArrayIndex + tailIdIcdItem.BitLength)
             {
                 return null;
             }
 
-            ulong extractedBits = ExtractBitsAsULong(
-                payloadBits,
-                tailIdItem.StartBitArrayIndex,
-                tailIdItem.BitLength
+            ulong extractedTailIdBits = ExtractBitsAsULong(
+                payloadBitArray,
+                tailIdIcdItem.StartBitArrayIndex,
+                tailIdIcdItem.BitLength
             );
-            double reconstructedValue = ConvertFromMeaningfulBits(
-                extractedBits,
-                tailIdItem.BitLength
+            double reconstructedTailIdValue = ConvertFromMeaningfulBits(
+                extractedTailIdBits,
+                tailIdIcdItem.BitLength
             );
 
-            return (int)Math.Round(reconstructedValue);
+            return (int)Math.Round(reconstructedTailIdValue);
         }
 
-        private static BitArray ConvertBytesToBitArray(byte[] payload)
+        private static BitArray ConvertBytesToBitArray(byte[] packetPayload)
         {
-            BitArray bitArray = new BitArray(
-                payload.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
+            BitArray payloadBitArray = new BitArray(
+                packetPayload.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
             );
-            for (int byteIndex = 0; byteIndex < payload.Length; byteIndex++)
+            for (int byteIndex = 0; byteIndex < packetPayload.Length; byteIndex++)
             {
                 for (
-                    int bitIndex = 0;
-                    bitIndex < TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE;
-                    bitIndex++
+                    int bitPositionInByte = 0;
+                    bitPositionInByte < TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE;
+                    bitPositionInByte++
                 )
                 {
-                    int absoluteBitIndex =
+                    int absoluteBitPosition =
                         (byteIndex * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE)
-                        + bitIndex;
-                    bitArray[absoluteBitIndex] =
+                        + bitPositionInByte;
+                    payloadBitArray[absoluteBitPosition] =
                         (
-                            payload[byteIndex]
+                            packetPayload[byteIndex]
                             & (
                                 TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
-                                << bitIndex
+                                << bitPositionInByte
                             )
                         ) != 0;
                 }
             }
-            return bitArray;
+            return payloadBitArray;
         }
 
-        private static ulong ExtractBitsAsULong(BitArray bits, int startBit, int bitLength)
+        private static ulong ExtractBitsAsULong(BitArray payloadBitArray, int startBitPosition, int bitLength)
         {
-            ulong value = 0;
-            for (int offset = 0; offset < bitLength; offset++)
+            ulong extractedValue = 0;
+            for (int bitOffset = 0; bitOffset < bitLength; bitOffset++)
             {
-                if (bits[startBit + offset])
+                if (payloadBitArray[startBitPosition + bitOffset])
                 {
-                    value |= TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << offset;
+                    extractedValue |= TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitOffset;
                 }
             }
-            return value;
+            return extractedValue;
         }
 
-        private static double ConvertFromMeaningfulBits(ulong storedBits, int bitLength)
+        private static double ConvertFromMeaningfulBits(ulong compressedBits, int totalBitLength)
         {
-            if (storedBits == 0)
+            if (compressedBits == 0)
                 return 0.0;
 
-            int exponentBits = Math.Min(
+            int exponentBitsCount = Math.Min(
                 TelemetryDeviceConstants.TelemetryCompression.MAX_EXPONENT_BITS,
-                bitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR
+                totalBitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR
             );
-            int significandBits = bitLength - exponentBits;
+            int significandBitsCount = totalBitLength - exponentBitsCount;
 
-            ulong exponentMask = (1UL << exponentBits) - 1;
-            ulong significandMask = (1UL << significandBits) - 1;
+            ulong exponentBitMask = (1UL << exponentBitsCount) - 1;
+            ulong significandBitMask = (1UL << significandBitsCount) - 1;
 
-            int storedExponent = (int)(storedBits >> significandBits) & (int)exponentMask;
-            ulong storedSignificand = storedBits & significandMask;
+            int storedExponentValue = (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
+            ulong storedSignificandValue = compressedBits & significandBitMask;
 
-            int ourBias = (1 << (exponentBits - 1)) - 1;
-            int actualExponent = storedExponent - ourBias;
+            int exponentBias = (1 << (exponentBitsCount - 1)) - 1;
+            int actualExponentValue = storedExponentValue - exponentBias;
 
-            double significand = 1.0 + (double)storedSignificand / (1UL << significandBits);
+            double significandValue = 1.0 + (double)storedSignificandValue / (1UL << significandBitsCount);
 
-            return significand * Math.Pow(2, actualExponent);
+            return significandValue * Math.Pow(2, actualExponentValue);
         }
     }
 }

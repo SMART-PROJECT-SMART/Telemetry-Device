@@ -14,18 +14,18 @@ namespace TelemetryDevices.Services.Factories.PipeLineFactory
             _serviceProvider = serviceProvider;
         }
 
-        public IPipeLine GetPipeLine(CommunicationDataType dataType)
+        public IPipeLine GetPipeLine(CommunicationDataType communicationDataType)
         {
-            return dataType switch
+            return communicationDataType switch
             {
                 CommunicationDataType.Telemetry => _serviceProvider.GetRequiredService<TelemetryPipeLine>(),
-                _ => throw new NotImplementedException($"PipeLine for {dataType} is not implemented.")
+                _ => throw new NotImplementedException($"PipeLine for {communicationDataType} is not implemented.")
             };
         }
 
-        public IPipeLine GetPipeLine(ICD icd)
+        public IPipeLine GetPipeLine(ICD telemetryIcd)
         {
-            return GetPipeLine(icd.DataType);
+            return GetPipeLine(telemetryIcd.DataType);
         }
     }
 }

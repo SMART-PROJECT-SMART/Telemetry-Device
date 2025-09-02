@@ -7,6 +7,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public interface ITelemetryDecoder
     {
-        public Dictionary<TelemetryFields, double> DecodeData(byte[] data, ICD icd);
+        public Dictionary<TelemetryFields, double> DecodeData(byte[] rawTelemetryData, ICD telemetryIcd);
     }
 }

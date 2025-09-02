@@ -30,11 +30,11 @@ namespace TelemetryDevices.Services
         public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
-            var telemetryDevice = new TelemetryDevice(location);
-            _telemetryDevicesByTailId[tailId] = telemetryDevice;
+            var newTelemetryDevice = new TelemetryDevice(location);
+            _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
 
-            var icds = _icdDirectory.GetAllICDs().ToList();
-            CreateChannelsForDevice(telemetryDevice, portNumbers, icds);
+            var availableIcds = _icdDirectory.GetAllICDs().ToList();
+            CreateChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
         }
 
         private void ValidateTelemetryDeviceDoesNotExist(int tailId)
@@ -48,36 +48,36 @@ namespace TelemetryDevices.Services
         }
 
         private void CreateChannelsForDevice(
-            TelemetryDevice telemetryDevice,
+            TelemetryDevice newTelemetryDevice,
             List<int> portNumbers,
-            List<ICD> icds
+            List<ICD> availableIcds
         )
         {
-            for (int index = 0; index < icds.Count && index < portNumbers.Count; index++)
+            for (int channelIndex = 0; channelIndex < availableIcds.Count && channelIndex < portNumbers.Count; channelIndex++)
             {
-                var icd = icds[index];
-                IPipeLine pipeline = _pipeLineFactory.GetPipeLine(icd);
-                telemetryDevice.AddChannel(portNumbers[index], pipeline, icd);
+                var currentIcd = availableIcds[channelIndex];
+                IPipeLine telemetryPipeline = _pipeLineFactory.GetPipeLine(currentIcd);
+                newTelemetryDevice.AddChannel(portNumbers[channelIndex], telemetryPipeline, currentIcd);
 
-                var channel = telemetryDevice.Channels.FirstOrDefault(c =>
-                    c.PortNumber == portNumbers[index]
+                var createdChannel = newTelemetryDevice.Channels.FirstOrDefault(c =>
+                    c.PortNumber == portNumbers[channelIndex]
                 );
-                if (channel != null)
+                if (createdChannel != null)
                 {
-                    _portManager.AddPort(portNumbers[index], channel);
+                    _portManager.AddPort(portNumbers[channelIndex], createdChannel);
                 }
             }
         }
 
         public bool RemoveTelemetryDevice(int tailId)
         {
-            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out var device))
+            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out var targetDevice))
             {
                 return false;
             }
-            foreach (var channel in device.Channels)
+            foreach (var deviceChannel in targetDevice.Channels)
             {
-                _portManager.RemovePort(channel.PortNumber);
+                _portManager.RemovePort(deviceChannel.PortNumber);
             }
             return _telemetryDevicesByTailId.Remove(tailId);
         }

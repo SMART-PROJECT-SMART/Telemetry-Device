@@ -6,6 +6,6 @@ namespace TelemetryDevices.Services.Factories.PipeLineFactory
 {
     public interface IPipeLineFactory
     {
-        IPipeLine GetPipeLine(ICD icd);
+        IPipeLine GetPipeLine(ICD telemetryIcd);
     }
 }

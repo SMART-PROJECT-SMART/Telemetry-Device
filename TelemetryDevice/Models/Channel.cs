@@ -12,20 +12,20 @@ namespace TelemetryDevices.Models
 
         public Channel() { }
 
-        public Channel(int portNumber, ICD icd)
+        public Channel(int portNumber, ICD channelIcd)
         {
             PortNumber = portNumber;
-            ICD = icd;
+            ICD = channelIcd;
         }
 
-        public Channel(int portNumber, IPipeLine pipeLine, ICD icd)
+        public Channel(int portNumber, IPipeLine telemetryPipeline, ICD channelIcd)
         {
             PortNumber = portNumber;
-            PipeLine = pipeLine;
-            ICD = icd;
-            if (pipeLine != null && icd != null)
+            PipeLine = telemetryPipeline;
+            ICD = channelIcd;
+            if (telemetryPipeline != null && channelIcd != null)
             {
-                pipeLine.SetICD(icd);
+                telemetryPipeline.SetICD(channelIcd);
             }
         }
     }

@@ -17,12 +17,12 @@ namespace TelemetryDevices.Services.PortsManager
             _packetSniffer.PacketReceived += OnPacketReceived;
         }
 
-        private void OnPacketReceived(byte[] payload, int destinationPort)
+        private void OnPacketReceived(byte[] packetPayload, int destinationPort)
         {
-            ProcessPacketOnPort(destinationPort, payload);
+            ProcessPacketOnPort(destinationPort, packetPayload);
         }
 
-        public void AddPort(int portNumber, Channel channel)
+        public void AddPort(int portNumber, Channel assignedChannel)
         {
             if (_portToChannel.ContainsKey(portNumber))
             {
@@ -30,7 +30,7 @@ namespace TelemetryDevices.Services.PortsManager
                 return;
             }
 
-            _portToChannel[portNumber] = channel;
+            _portToChannel[portNumber] = assignedChannel;
             _packetSniffer.AddPort(portNumber);
             _logger.LogInformation("Added port {PortNumber}", portNumber);
         }
@@ -149,14 +149,14 @@ namespace TelemetryDevices.Services.PortsManager
             destinationChannel.PortNumber = sourcePort;
         }
 
-        private void UpdateSnifferPorts(int sourcePort, int destinationPort, params int[] newPorts)
+        private void UpdateSnifferPorts(int sourcePort, int destinationPort, params int[] assignedPortNumbers)
         {
             _packetSniffer.RemovePort(sourcePort);
             _packetSniffer.RemovePort(destinationPort);
 
-            foreach (var port in newPorts)
+            foreach (var portNumber in assignedPortNumbers)
             {
-                _packetSniffer.AddPort(port);
+                _packetSniffer.AddPort(portNumber);
             }
         }
 
@@ -165,12 +165,12 @@ namespace TelemetryDevices.Services.PortsManager
             return _portToChannel.Keys;
         }
 
-        public void ProcessPacketOnPort(int portNumber, byte[] payload)
+        public void ProcessPacketOnPort(int portNumber, byte[] packetPayload)
         {
-            var channel = GetChannelByPort(portNumber);
+            var assignedChannel = GetChannelByPort(portNumber);
 
-            int? tailId = TailIdExtractor.GetTailIdByICD(payload, channel.ICD);
-            if (!tailId.HasValue)
+            int? extractedTailId = TailIdExtractor.GetTailIdByICD(packetPayload, assignedChannel.ICD);
+            if (!extractedTailId.HasValue)
             {
                 _logger.LogWarning(
                     "Could not extract tail ID from payload on port {Port}",
@@ -179,7 +179,7 @@ namespace TelemetryDevices.Services.PortsManager
                 return;
             }
 
-            channel.PipeLine.ProcessDataAsync(payload);
+            assignedChannel.PipeLine.ProcessDataAsync(packetPayload);
         }
     }
 }

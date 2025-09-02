@@ -20,26 +20,26 @@ namespace TelemetryDevices.Models
             Channels = new List<Channel>();
         }
 
-        public void AddChannel(int portNumber, IPipeLine pipeLine, ICD icd)
+        public void AddChannel(int portNumber, IPipeLine telemetryPipeline, ICD channelIcd)
         {
-            var newChannel = new Channel(portNumber, pipeLine, icd);
-            Channels.Add(newChannel);
+            var newTelemetryChannel = new Channel(portNumber, telemetryPipeline, channelIcd);
+            Channels.Add(newTelemetryChannel);
         }
 
         public bool RemoveChannel(int portNumber)
         {
-            var index = Channels.FindIndex(channel => channel.PortNumber == portNumber);
+            var channelIndex = Channels.FindIndex(telemetryChannel => telemetryChannel.PortNumber == portNumber);
 
-            if (index == -1)
+            if (channelIndex == -1)
                 return false;
 
-            Channels.RemoveAt(index);
+            Channels.RemoveAt(channelIndex);
             return true;
         }
 
         public Channel? GetChannelByPort(int portNumber)
         {
-            return Channels.FirstOrDefault(c => c.PortNumber == portNumber);
+            return Channels.FirstOrDefault(telemetryChannel => telemetryChannel.PortNumber == portNumber);
         }
     }
 }

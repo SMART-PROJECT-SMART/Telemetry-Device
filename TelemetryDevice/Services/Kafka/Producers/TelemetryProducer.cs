@@ -15,14 +15,14 @@ namespace TelemetryDevices.Services.Kafka.Producers
 
         public async Task ProduceAsync(string topicName, string tailIdKey, Dictionary<TelemetryFields, double> telemetryData)
         {
-            var serialized = JsonConvert.SerializeObject(telemetryData);
-            var message = new Message<string, byte[]>
+            var serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);
+            var kafkaMessage = new Message<string, byte[]>
             {
                 Key = tailIdKey,
-                Value = System.Text.Encoding.UTF8.GetBytes(serialized)
+                Value = System.Text.Encoding.UTF8.GetBytes(serializedTelemetryData)
             };
 
-            await _producer.ProduceAsync(topicName, message).ConfigureAwait(false);
+            await _producer.ProduceAsync(topicName, kafkaMessage).ConfigureAwait(false);
         }
     }
 }

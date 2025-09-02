@@ -24,15 +24,15 @@ public class TelemetryPipeLine : IPipeLine
         _outputHandler = outputHandler;
     }
 
-    public async Task ProcessDataAsync(byte[] data)
+    public async Task ProcessDataAsync(byte[] telemetryData)
     {
-        _validationBlock.Post(data);
+        _validationBlock.Post(telemetryData);
         await _outputBlock.Completion;
     }
 
-    public void SetICD(ICD icd)
+    public void SetICD(ICD telemetryIcd)
     {
-        ICD = icd;
+        ICD = telemetryIcd;
         BuildPipeLine();
     }
 
@@ -51,34 +51,34 @@ public class TelemetryPipeLine : IPipeLine
 
     private void BuildValidationBlock()
     {
-        _validationBlock = new TransformBlock<byte[], DecodingResult>(data =>
+        _validationBlock = new TransformBlock<byte[], DecodingResult>(rawTelemetryData =>
         {
-            bool isValid = _validator.Validate(data);
-            return new DecodingResult(isValid, data);
+            bool isDataValid = _validator.Validate(rawTelemetryData);
+            return new DecodingResult(isDataValid, rawTelemetryData);
         });
     }
 
     private void BuildDecodingBlock()
     {
-        _decodingBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(result =>
-            result.IsValid
-                ? _telemetryDecoder.DecodeData(result.Data, ICD)
+        _decodingBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(validationResult =>
+            validationResult.IsValid
+                ? _telemetryDecoder.DecodeData(validationResult.Data, ICD)
                 : new Dictionary<TelemetryFields, double>()
         );
     }
 
     private void BuildOutputBlock()
     {
-        _outputBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedData =>
+        _outputBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedTelemetryData =>
         {
-            _outputHandler.HandleOutput(decodedData, ICD);
+            _outputHandler.HandleOutput(decodedTelemetryData, ICD);
         });
     }
 
     private void LinkBlocks()
     {
-        _validationBlock.LinkTo(_decodingBlock, result => result.IsValid);
-        _validationBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>(), result => !result.IsValid);
+        _validationBlock.LinkTo(_decodingBlock, validationResult => validationResult.IsValid);
+        _validationBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>(), validationResult => !validationResult.IsValid);
         _decodingBlock.LinkTo(_outputBlock);
     }
 }

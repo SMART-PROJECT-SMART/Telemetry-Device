@@ -31,18 +31,18 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void InitializeDevices(CaptureDeviceList availableDevices)
         {
-            var config = _networkingConfig.Value;
+            var networkingConfig = _networkingConfig.Value;
 
             foreach (
-                var matchedDevice in config
-                    .Interfaces.Select(interfaceName =>
-                        GetCaptureDevice(availableDevices, interfaceName)
+                var matchedCaptureDevice in networkingConfig
+                    .Interfaces.Select(configuredInterfaceName =>
+                        GetCaptureDevice(availableDevices, configuredInterfaceName)
                     )
                     .OfType<ICaptureDevice>()
             )
             {
-                InitializeDevice(matchedDevice);
-                _devices.Add(matchedDevice);
+                InitializeDevice(matchedCaptureDevice);
+                _devices.Add(matchedCaptureDevice);
             }
 
             if (_devices.Count != 0)
@@ -50,29 +50,29 @@ namespace TelemetryDevices.Services.Sniffer
             _logger.LogWarning(
                 "No devices found for configured interfaces, using first available device"
             );
-            var fallbackDevice = availableDevices.First();
-            InitializeDevice(fallbackDevice);
-            _devices.Add(fallbackDevice);
+            var fallbackCaptureDevice = availableDevices.First();
+            InitializeDevice(fallbackCaptureDevice);
+            _devices.Add(fallbackCaptureDevice);
         }
 
         private ICaptureDevice? GetCaptureDevice(
             CaptureDeviceList availableDevices,
-            string interfaceName
+            string configuredInterfaceName
         )
         {
-            return availableDevices.FirstOrDefault(d =>
-                d.Description.Contains(interfaceName, StringComparison.OrdinalIgnoreCase)
-                || d.Name.Contains(interfaceName, StringComparison.OrdinalIgnoreCase)
+            return availableDevices.FirstOrDefault(captureDevice =>
+                captureDevice.Description.Contains(configuredInterfaceName, StringComparison.OrdinalIgnoreCase)
+                || captureDevice.Name.Contains(configuredInterfaceName, StringComparison.OrdinalIgnoreCase)
             );
         }
 
-        private void InitializeDevice(ICaptureDevice device)
+        private void InitializeDevice(ICaptureDevice captureDevice)
         {
-            device.Open();
-            device.OnPacketArrival += OnPacketArrival;
-            ApplyFilterToDevice(device);
-            device.StartCapture();
-            _logger.LogInformation("Started capture on device: {DeviceName}", device.Description);
+            captureDevice.Open();
+            captureDevice.OnPacketArrival += OnPacketArrival;
+            ApplyFilterToDevice(captureDevice);
+            captureDevice.StartCapture();
+            _logger.LogInformation("Started capture on device: {DeviceName}", captureDevice.Description);
         }
 
         public void AddPort(int port)
@@ -103,44 +103,44 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void ApplyFilterToAllDevices()
         {
-            var config = _networkingConfig.Value;
-            string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
-            string newFilter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
+            var networkingConfig = _networkingConfig.Value;
+            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(networkingConfig.Protocols);
+            string compositePortFilter = FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
 
-            foreach (var device in _devices)
+            foreach (var captureDevice in _devices)
             {
-                ApplyFilterToDevice(device, newFilter);
+                ApplyFilterToDevice(captureDevice, compositePortFilter);
             }
 
-            _logger.LogInformation($"Applied filter to {_devices.Count} devices: {newFilter}");
+            _logger.LogInformation($"Applied filter to {_devices.Count} devices: {compositePortFilter}");
         }
 
-        private void ApplyFilterToDevice(ICaptureDevice device, string? filter = null)
+        private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
         {
-            if (filter == null)
+            if (deviceFilter == null)
             {
-                var config = _networkingConfig.Value;
-                string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
-                filter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
+                var networkingConfig = _networkingConfig.Value;
+                string baseProtocolFilter = FilterHandler.BuildProtocolFilter(networkingConfig.Protocols);
+                deviceFilter = FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
             }
 
-            device.Filter = filter;
+            captureDevice.Filter = deviceFilter;
         }
 
-        private void OnPacketArrival(object sender, PacketCapture e)
+        private void OnPacketArrival(object sender, PacketCapture captureEventArgs)
         {
-            RawCapture raw = e.GetPacket();
-            Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-            _packetProcessor.ProcessPacket(packet, PacketReceived);
+            RawCapture rawPacketData = captureEventArgs.GetPacket();
+            Packet parsedPacket = Packet.ParsePacket(rawPacketData.LinkLayerType, rawPacketData.Data);
+            _packetProcessor.ProcessPacket(parsedPacket, PacketReceived);
         }
 
         public void Dispose()
         {
-            foreach (var device in _devices)
+            foreach (var captureDevice in _devices)
             {
-                device.OnPacketArrival -= OnPacketArrival;
-                device.StopCapture();
-                device.Close();
+                captureDevice.OnPacketArrival -= OnPacketArrival;
+                captureDevice.StopCapture();
+                captureDevice.Close();
             }
             _devices.Clear();
         }

@@ -18,14 +18,14 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
         }
 
 
-        public void HandleOutput(Dictionary<TelemetryFields, double> decodedData, ICD icd)
+        public void HandleOutput(Dictionary<TelemetryFields, double> decodedTelemetryData, ICD telemetryIcd)
         {
-            decodedData.TryGetValue(TelemetryFields.TailId, out var tailIdRaw);
+            decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
 
-            var key = tailIdRaw.ToString();
-            var topic = icd?.ToString() ?? "unknown-icd";
+            var kafkaMessageKey = tailIdValue.ToString();
+            var kafkaTopicName = telemetryIcd?.ToString() ?? "unknown-icd";
 
-            _ = _producer.ProduceAsync(topic, key, decodedData);
+            _ = _producer.ProduceAsync(kafkaTopicName, kafkaMessageKey, decodedTelemetryData);
         }
     }
 }
