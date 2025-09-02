@@ -1,7 +1,7 @@
 ﻿using Shared.Common.Enums;
+using Shared.Models.ICDModels;
 using TelemetryDevices.Common.Enums;
 using TelemetryDevices.Services.PipeLines;
-using Shared.Models.ICDModels;
 
 namespace TelemetryDevices.Services.Factories.PipeLineFactory
 {
@@ -18,8 +18,11 @@ namespace TelemetryDevices.Services.Factories.PipeLineFactory
         {
             return communicationDataType switch
             {
-                CommunicationDataType.Telemetry => _serviceProvider.GetRequiredService<TelemetryPipeLine>(),
-                _ => throw new NotImplementedException($"PipeLine for {communicationDataType} is not implemented.")
+                CommunicationDataType.Telemetry =>
+                    _serviceProvider.GetRequiredService<TelemetryPipeLine>(),
+                _ => throw new NotImplementedException(
+                    $"PipeLine for {communicationDataType} is not implemented."
+                ),
             };
         }
 

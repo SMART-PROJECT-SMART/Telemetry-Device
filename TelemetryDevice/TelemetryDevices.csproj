@@ -4,23 +4,26 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-	<ItemGroup>
-		<PackageReference Include="Confluent.Kafka" Version="2.11.1" />
-		<PackageReference Include="Kafka" Version="1.0.5814.23193" />
-		<PackageReference Include="KafkaFlow" Version="4.0.1" />
-		<PackageReference Include="KafkaFlow.LogHandler.Console" Version="4.0.1" />
-		<PackageReference Include="KafkaFlow.LogHandler.Microsoft" Version="4.0.1" />
-		<PackageReference Include="KafkaFlow.Microsoft.DependencyInjection" Version="4.0.1" />
-		<PackageReference Include="KafkaFlow.Serializer.JsonCore" Version="4.0.1" />
-		<PackageReference Include="KafkaFlow.Serializer.NewtonsoftJson" Version="4.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.4-beta1" />
-		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
-		<PackageReference Include="PacketDotNet" Version="1.4.8" />
-		<PackageReference Include="SharpPcap" Version="6.3.1" />
-		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="10.0.0-preview.6.25358.103" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="2.11.1" />
+    <PackageReference Include="Kafka" Version="1.0.5814.23193" />
+    <PackageReference Include="KafkaFlow" Version="4.0.1" />
+    <PackageReference Include="KafkaFlow.LogHandler.Console" Version="4.0.1" />
+    <PackageReference Include="KafkaFlow.LogHandler.Microsoft" Version="4.0.1" />
+    <PackageReference Include="KafkaFlow.Microsoft.DependencyInjection" Version="4.0.1" />
+    <PackageReference Include="KafkaFlow.Serializer.JsonCore" Version="4.0.1" />
+    <PackageReference Include="KafkaFlow.Serializer.NewtonsoftJson" Version="4.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4-beta1" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+    <PackageReference Include="PacketDotNet" Version="1.4.8" />
+    <PackageReference Include="SharpPcap" Version="6.3.1" />
+    <PackageReference
+      Include="System.Threading.Tasks.Dataflow"
+      Version="10.0.0-preview.6.25358.103"
+    />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
   </ItemGroup>

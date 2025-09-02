@@ -10,20 +10,22 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
         private readonly Dictionary<TelemetryFields, double> _decodedData =
             new Dictionary<TelemetryFields, double>();
 
-        public Dictionary<TelemetryFields, double> DecodeData(byte[] rawTelemetryData, ICD telemetryIcd)
+        public Dictionary<TelemetryFields, double> DecodeData(
+            byte[] rawTelemetryData,
+            ICD telemetryIcd
+        )
         {
             BitArray compressedBitArray = ConvertBytesToBitArray(rawTelemetryData);
-            Dictionary<TelemetryFields, double> decompressedTelemetryData = DecompressTelemetryDataByICD(
-                compressedBitArray,
-                telemetryIcd
-            );
+            Dictionary<TelemetryFields, double> decompressedTelemetryData =
+                DecompressTelemetryDataByICD(compressedBitArray, telemetryIcd);
             return decompressedTelemetryData;
         }
 
         private BitArray ConvertBytesToBitArray(byte[] rawTelemetryData)
         {
             BitArray telemetryBitArray = new BitArray(
-                rawTelemetryData.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
+                rawTelemetryData.Length
+                    * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
             );
 
             for (int byteIndex = 0; byteIndex < rawTelemetryData.Length; byteIndex++)
@@ -54,7 +56,10 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             ICD telemetryIcd
         )
         {
-            BitArray mainDataBitSection = ExtractMainDataBits(compressedTelemetryData, telemetryIcd);
+            BitArray mainDataBitSection = ExtractMainDataBits(
+                compressedTelemetryData,
+                telemetryIcd
+            );
             BitArray signBitSection = ExtractSignBits(compressedTelemetryData, telemetryIcd);
             return ReconstructTelemetryValues(mainDataBitSection, signBitSection, telemetryIcd);
         }
@@ -80,7 +85,9 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 
             for (int signBitIndex = 0; signBitIndex < signBitsCount; signBitIndex++)
             {
-                signBitSection[signBitIndex] = compressedTelemetryData[mainDataLength + signBitIndex];
+                signBitSection[signBitIndex] = compressedTelemetryData[
+                    mainDataLength + signBitIndex
+                ];
             }
 
             return signBitSection;
@@ -148,13 +155,15 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             ulong exponentBitMask = (1UL << exponentBitsCount) - 1;
             ulong significandBitMask = (1UL << significandBitsCount) - 1;
 
-            int storedExponentValue = (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
+            int storedExponentValue =
+                (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
             ulong storedSignificandValue = compressedBits & significandBitMask;
 
             int exponentBias = (1 << exponentBitsCount - 1) - 1;
             int actualExponentValue = storedExponentValue - exponentBias;
 
-            double significandValue = 1.0 + (double)storedSignificandValue / (1UL << significandBitsCount);
+            double significandValue =
+                1.0 + (double)storedSignificandValue / (1UL << significandBitsCount);
 
             return significandValue * Math.Pow(2, actualExponentValue);
         }

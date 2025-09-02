@@ -2,7 +2,6 @@
 using Shared.Models.ICDModels;
 using TelemetryDevices.Services.Kafka.Producers;
 
-
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
     public class KafkaOutputHandler : IOutputHandler
@@ -10,15 +9,16 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
         private readonly ITelemetryProducer _producer;
         private readonly ILogger<KafkaOutputHandler> _logger;
 
-
         public KafkaOutputHandler(ITelemetryProducer producer, ILogger<KafkaOutputHandler> logger)
         {
             _producer = producer;
             _logger = logger;
         }
 
-
-        public void HandleOutput(Dictionary<TelemetryFields, double> decodedTelemetryData, ICD telemetryIcd)
+        public void HandleOutput(
+            Dictionary<TelemetryFields, double> decodedTelemetryData,
+            ICD telemetryIcd
+        )
         {
             decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
 

@@ -61,8 +61,14 @@ namespace TelemetryDevices.Services.Sniffer
         )
         {
             return availableDevices.FirstOrDefault(captureDevice =>
-                captureDevice.Description.Contains(configuredInterfaceName, StringComparison.OrdinalIgnoreCase)
-                || captureDevice.Name.Contains(configuredInterfaceName, StringComparison.OrdinalIgnoreCase)
+                captureDevice.Description.Contains(
+                    configuredInterfaceName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+                || captureDevice.Name.Contains(
+                    configuredInterfaceName,
+                    StringComparison.OrdinalIgnoreCase
+                )
             );
         }
 
@@ -72,7 +78,10 @@ namespace TelemetryDevices.Services.Sniffer
             captureDevice.OnPacketArrival += OnPacketArrival;
             ApplyFilterToDevice(captureDevice);
             captureDevice.StartCapture();
-            _logger.LogInformation("Started capture on device: {DeviceName}", captureDevice.Description);
+            _logger.LogInformation(
+                "Started capture on device: {DeviceName}",
+                captureDevice.Description
+            );
         }
 
         public void AddPort(int port)
@@ -90,12 +99,6 @@ namespace TelemetryDevices.Services.Sniffer
             ApplyFilterToAllDevices();
         }
 
-        public void ClearPorts()
-        {
-            _ports.Clear();
-            ApplyFilterToAllDevices();
-        }
-
         public List<int> GetPorts()
         {
             return _ports.ToList();
@@ -104,15 +107,22 @@ namespace TelemetryDevices.Services.Sniffer
         private void ApplyFilterToAllDevices()
         {
             var networkingConfig = _networkingConfig.Value;
-            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(networkingConfig.Protocols);
-            string compositePortFilter = FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
+            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
+                networkingConfig.Protocols
+            );
+            string compositePortFilter = FilterHandler.BuildFilterFromPorts(
+                _ports,
+                baseProtocolFilter
+            );
 
             foreach (var captureDevice in _devices)
             {
                 ApplyFilterToDevice(captureDevice, compositePortFilter);
             }
 
-            _logger.LogInformation($"Applied filter to {_devices.Count} devices: {compositePortFilter}");
+            _logger.LogInformation(
+                $"Applied filter to {_devices.Count} devices: {compositePortFilter}"
+            );
         }
 
         private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
@@ -120,7 +130,9 @@ namespace TelemetryDevices.Services.Sniffer
             if (deviceFilter == null)
             {
                 var networkingConfig = _networkingConfig.Value;
-                string baseProtocolFilter = FilterHandler.BuildProtocolFilter(networkingConfig.Protocols);
+                string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
+                    networkingConfig.Protocols
+                );
                 deviceFilter = FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
             }
 
@@ -130,7 +142,10 @@ namespace TelemetryDevices.Services.Sniffer
         private void OnPacketArrival(object sender, PacketCapture captureEventArgs)
         {
             RawCapture rawPacketData = captureEventArgs.GetPacket();
-            Packet parsedPacket = Packet.ParsePacket(rawPacketData.LinkLayerType, rawPacketData.Data);
+            Packet parsedPacket = Packet.ParsePacket(
+                rawPacketData.LinkLayerType,
+                rawPacketData.Data
+            );
             _packetProcessor.ProcessPacket(parsedPacket, PacketReceived);
         }
 

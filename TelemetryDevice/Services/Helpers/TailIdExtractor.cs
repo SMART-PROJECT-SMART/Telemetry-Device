@@ -65,14 +65,19 @@ namespace TelemetryDevices.Services.Helpers
             return payloadBitArray;
         }
 
-        private static ulong ExtractBitsAsULong(BitArray payloadBitArray, int startBitPosition, int bitLength)
+        private static ulong ExtractBitsAsULong(
+            BitArray payloadBitArray,
+            int startBitPosition,
+            int bitLength
+        )
         {
             ulong extractedValue = 0;
             for (int bitOffset = 0; bitOffset < bitLength; bitOffset++)
             {
                 if (payloadBitArray[startBitPosition + bitOffset])
                 {
-                    extractedValue |= TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitOffset;
+                    extractedValue |=
+                        TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitOffset;
                 }
             }
             return extractedValue;
@@ -92,13 +97,15 @@ namespace TelemetryDevices.Services.Helpers
             ulong exponentBitMask = (1UL << exponentBitsCount) - 1;
             ulong significandBitMask = (1UL << significandBitsCount) - 1;
 
-            int storedExponentValue = (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
+            int storedExponentValue =
+                (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
             ulong storedSignificandValue = compressedBits & significandBitMask;
 
             int exponentBias = (1 << (exponentBitsCount - 1)) - 1;
             int actualExponentValue = storedExponentValue - exponentBias;
 
-            double significandValue = 1.0 + (double)storedSignificandValue / (1UL << significandBitsCount);
+            double significandValue =
+                1.0 + (double)storedSignificandValue / (1UL << significandBitsCount);
 
             return significandValue * Math.Pow(2, actualExponentValue);
         }

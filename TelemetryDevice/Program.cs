@@ -1,8 +1,8 @@
 using Shared.Services;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
-using TelemetryDevices.Services.Sniffer;
 using TelemetryDevices.Services.Extensions;
+using TelemetryDevices.Services.Sniffer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,9 +36,5 @@ sniffer.AddPort(8000);
 sniffer.AddPort(8001);
 
 var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
-tdManager.AddTelemetryDevice(
-    1,
-    [8000, 8001],
-    new Location(0, 0)
-);
+tdManager.AddTelemetryDevice(1, [8000, 8001], new Location(0, 0));
 app.Run();

@@ -42,7 +42,6 @@ namespace TelemetryDevices.Services.PortsManager
                 _packetSniffer.RemovePort(portNumber);
                 _logger.LogInformation("Removed port {PortNumber}", portNumber);
             }
-            else
             {
                 _logger.LogWarning("Port {PortNumber} not found for removal", portNumber);
             }
@@ -86,7 +85,6 @@ namespace TelemetryDevices.Services.PortsManager
             Channel destinationChannel
         )
         {
-
             UpdatePortMappings(sourcePort, destinationPort, sourceChannel, destinationChannel);
             UpdateChannelPortNumbers(
                 sourceChannel,
@@ -138,7 +136,11 @@ namespace TelemetryDevices.Services.PortsManager
             destinationChannel.PortNumber = sourcePort;
         }
 
-        private void UpdateSnifferPorts(int sourcePort, int destinationPort, params int[] assignedPortNumbers)
+        private void UpdateSnifferPorts(
+            int sourcePort,
+            int destinationPort,
+            params int[] assignedPortNumbers
+        )
         {
             _packetSniffer.RemovePort(sourcePort);
             _packetSniffer.RemovePort(destinationPort);
@@ -158,7 +160,10 @@ namespace TelemetryDevices.Services.PortsManager
         {
             var assignedChannel = GetChannelByPort(portNumber);
 
-            int? extractedTailId = TailIdExtractor.GetTailIdByICD(packetPayload, assignedChannel.ICD);
+            int? extractedTailId = TailIdExtractor.GetTailIdByICD(
+                packetPayload,
+                assignedChannel.ICD
+            );
             if (!extractedTailId.HasValue)
             {
                 _logger.LogWarning(

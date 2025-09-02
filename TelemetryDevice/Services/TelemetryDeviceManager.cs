@@ -53,11 +53,19 @@ namespace TelemetryDevices.Services
             List<ICD> availableIcds
         )
         {
-            for (int channelIndex = 0; channelIndex < availableIcds.Count && channelIndex < portNumbers.Count; channelIndex++)
+            for (
+                int channelIndex = 0;
+                channelIndex < availableIcds.Count && channelIndex < portNumbers.Count;
+                channelIndex++
+            )
             {
                 var currentIcd = availableIcds[channelIndex];
                 IPipeLine telemetryPipeline = _pipeLineFactory.GetPipeLine(currentIcd);
-                newTelemetryDevice.AddChannel(portNumbers[channelIndex], telemetryPipeline, currentIcd);
+                newTelemetryDevice.AddChannel(
+                    portNumbers[channelIndex],
+                    telemetryPipeline,
+                    currentIcd
+                );
 
                 var createdChannel = newTelemetryDevice.Channels.FirstOrDefault(c =>
                     c.PortNumber == portNumbers[channelIndex]

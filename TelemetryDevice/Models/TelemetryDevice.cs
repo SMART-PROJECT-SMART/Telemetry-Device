@@ -28,7 +28,9 @@ namespace TelemetryDevices.Models
 
         public bool RemoveChannel(int portNumber)
         {
-            var channelIndex = Channels.FindIndex(telemetryChannel => telemetryChannel.PortNumber == portNumber);
+            var channelIndex = Channels.FindIndex(telemetryChannel =>
+                telemetryChannel.PortNumber == portNumber
+            );
 
             if (channelIndex == -1)
                 return false;
@@ -39,7 +41,9 @@ namespace TelemetryDevices.Models
 
         public Channel? GetChannelByPort(int portNumber)
         {
-            return Channels.FirstOrDefault(telemetryChannel => telemetryChannel.PortNumber == portNumber);
+            return Channels.FirstOrDefault(telemetryChannel =>
+                telemetryChannel.PortNumber == portNumber
+            );
         }
     }
 }

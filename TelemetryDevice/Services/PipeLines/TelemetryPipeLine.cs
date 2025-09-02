@@ -17,7 +17,11 @@ public class TelemetryPipeLine : IPipeLine
     private ActionBlock<Dictionary<TelemetryFields, double>> _outputBlock;
     public ICD ICD { get; set; }
 
-    public TelemetryPipeLine(IValidator validator, ITelemetryDecoder telemetryDecoder, IOutputHandler outputHandler)
+    public TelemetryPipeLine(
+        IValidator validator,
+        ITelemetryDecoder telemetryDecoder,
+        IOutputHandler outputHandler
+    )
     {
         _validator = validator;
         _telemetryDecoder = telemetryDecoder;
@@ -60,10 +64,11 @@ public class TelemetryPipeLine : IPipeLine
 
     private void BuildDecodingBlock()
     {
-        _decodingBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(validationResult =>
-            validationResult.IsValid
-                ? _telemetryDecoder.DecodeData(validationResult.Data, ICD)
-                : new Dictionary<TelemetryFields, double>()
+        _decodingBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(
+            validationResult =>
+                validationResult.IsValid
+                    ? _telemetryDecoder.DecodeData(validationResult.Data, ICD)
+                    : new Dictionary<TelemetryFields, double>()
         );
     }
 
@@ -78,7 +83,10 @@ public class TelemetryPipeLine : IPipeLine
     private void LinkBlocks()
     {
         _validationBlock.LinkTo(_decodingBlock, validationResult => validationResult.IsValid);
-        _validationBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>(), validationResult => !validationResult.IsValid);
+        _validationBlock.LinkTo(
+            DataflowBlock.NullTarget<DecodingResult>(),
+            validationResult => !validationResult.IsValid
+        );
         _decodingBlock.LinkTo(_outputBlock);
     }
 }

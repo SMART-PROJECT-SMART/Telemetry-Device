@@ -11,16 +11,22 @@ namespace TelemetryDevices.Services.Helpers
             {
                 0 => TelemetryDeviceConstants.Network.UDP_FILTER,
                 1 => supportedProtocols[0],
-                _ => $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, supportedProtocols)})"
+                _ =>
+                    $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, supportedProtocols)})",
             };
         }
 
-        public static string BuildFilterFromPorts(IReadOnlyCollection<int> monitoredPorts, string baseProtocolFilter)
+        public static string BuildFilterFromPorts(
+            IReadOnlyCollection<int> monitoredPorts,
+            string baseProtocolFilter
+        )
         {
             if (monitoredPorts.Count == 0)
                 return baseProtocolFilter;
 
-            IOrderedEnumerable<int> sortedPortNumbers = monitoredPorts.OrderBy(portNumber => portNumber);
+            IOrderedEnumerable<int> sortedPortNumbers = monitoredPorts.OrderBy(portNumber =>
+                portNumber
+            );
 
             var filterStringBuilder = new StringBuilder();
             filterStringBuilder.Append(baseProtocolFilter);
@@ -31,7 +37,10 @@ namespace TelemetryDevices.Services.Helpers
                 if (!isFirstPort)
                     filterStringBuilder.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
                 filterStringBuilder.Append(
-                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, currentPortNumber)
+                    string.Format(
+                        TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER,
+                        currentPortNumber
+                    )
                 );
                 isFirstPort = false;
             }

@@ -23,16 +23,26 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddAppConfiguration(this IServiceCollection services, IConfiguration appConfiguration)
+        public static IServiceCollection AddAppConfiguration(
+            this IServiceCollection services,
+            IConfiguration appConfiguration
+        )
         {
             return services.Configure<NetworkingConfiguration>(
-                appConfiguration.GetSection(TelemetryDeviceConstants.Configuration.NETWORKING_SECTION)
+                appConfiguration.GetSection(
+                    TelemetryDeviceConstants.Configuration.NETWORKING_SECTION
+                )
             );
         }
 
-        public static IServiceCollection AddKafkaServices(this IServiceCollection services, IConfiguration appConfiguration)
+        public static IServiceCollection AddKafkaServices(
+            this IServiceCollection services,
+            IConfiguration appConfiguration
+        )
         {
-            services.Configure<KafkaConfiguration>(appConfiguration.GetSection(TelemetryDeviceConstants.Configuration.KAFKA));
+            services.Configure<KafkaConfiguration>(
+                appConfiguration.GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
+            );
 
             var kafkaSettings = appConfiguration
                 .GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
@@ -41,9 +51,9 @@ namespace TelemetryDevices.Services.Extensions
             var kafkaProducerConfig = new ProducerConfig
             {
                 BootstrapServers = kafkaSettings.BootstrapServers,
-                Acks = Acks.All,
+                Acks = Acks.Leader,
                 EnableIdempotence = true,
-                CompressionType = CompressionType.Gzip
+                CompressionType = CompressionType.Gzip,
             };
 
             services.AddSingleton(kafkaProducerConfig);
@@ -84,16 +94,20 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-
         public static IServiceCollection AddPacketProcessor(this IServiceCollection services)
         {
             services.AddSingleton<IPacketProcessor, PacketProcessor>();
             return services;
         }
 
-        public static IServiceCollection AddSharedConfiguration(this IServiceCollection services, IConfiguration appConfiguration)
+        public static IServiceCollection AddSharedConfiguration(
+            this IServiceCollection services,
+            IConfiguration appConfiguration
+        )
         {
-            services.Configure<ICDSettings>(appConfiguration.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY));
+            services.Configure<ICDSettings>(
+                appConfiguration.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY)
+            );
             return services;
         }
     }

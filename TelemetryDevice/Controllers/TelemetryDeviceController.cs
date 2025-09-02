@@ -27,7 +27,11 @@ namespace TelemetryDevices.Controllers
         [HttpPost("add-telemetry-device")]
         public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto deviceDto)
         {
-            _telemetryDeviceManager.AddTelemetryDevice(deviceDto.TailId, deviceDto.PortNumbers, deviceDto.Location);
+            _telemetryDeviceManager.AddTelemetryDevice(
+                deviceDto.TailId,
+                deviceDto.PortNumbers,
+                deviceDto.Location
+            );
             return Ok($"Telemetry device with tail ID {deviceDto.TailId} added successfully.");
         }
 
@@ -44,7 +48,11 @@ namespace TelemetryDevices.Controllers
             int defaultTailId = 1;
             var defaultPortNumbers = new List<int> { 8000, 8001 };
             Location defaultLocation = new Location(0, 0);
-            _telemetryDeviceManager.AddTelemetryDevice(defaultTailId, defaultPortNumbers, defaultLocation);
+            _telemetryDeviceManager.AddTelemetryDevice(
+                defaultTailId,
+                defaultPortNumbers,
+                defaultLocation
+            );
             return Ok(
                 $"Telemetry device with tail ID {defaultTailId} started with ports {string.Join(", ", defaultPortNumbers)}."
             );

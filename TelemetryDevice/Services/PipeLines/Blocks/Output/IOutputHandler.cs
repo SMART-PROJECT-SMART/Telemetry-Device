@@ -5,9 +5,11 @@ using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public interface IOutputHandler 
+    public interface IOutputHandler
     {
-
-        void HandleOutput(Dictionary<TelemetryFields, double> decodedTelemetryData,ICD telemetryIcd);
+        void HandleOutput(
+            Dictionary<TelemetryFields, double> decodedTelemetryData,
+            ICD telemetryIcd
+        );
     }
 }

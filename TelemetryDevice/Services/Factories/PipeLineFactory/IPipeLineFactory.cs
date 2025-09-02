@@ -1,6 +1,6 @@
 ﻿using Shared.Common.Enums;
-using TelemetryDevices.Services.PipeLines;
 using Shared.Models.ICDModels;
+using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.Factories.PipeLineFactory
 {
