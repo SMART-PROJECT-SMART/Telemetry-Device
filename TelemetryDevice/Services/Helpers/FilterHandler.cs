@@ -20,13 +20,13 @@ namespace TelemetryDevices.Services.Helpers
             if (monitoredPorts.Count == 0)
                 return baseProtocolFilter;
 
-            var sortedPortNumbers = monitoredPorts.OrderBy(portNumber => portNumber);
+            IOrderedEnumerable<int> sortedPortNumbers = monitoredPorts.OrderBy(portNumber => portNumber);
 
             var filterStringBuilder = new StringBuilder();
             filterStringBuilder.Append(baseProtocolFilter);
             filterStringBuilder.Append(TelemetryDeviceConstants.Network.AND_SEPERATOR);
             bool isFirstPort = true;
-            foreach (var currentPortNumber in sortedPortNumbers)
+            foreach (int currentPortNumber in sortedPortNumbers)
             {
                 if (!isFirstPort)
                     filterStringBuilder.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
