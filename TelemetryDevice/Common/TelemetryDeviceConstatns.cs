@@ -64,6 +64,8 @@
             public const int DOUBLE_SIGN_BIT_POSITION = 63;
             public const int MAX_EXPONENT_BITS = 8;
             public const int EXPONENT_BITS_DIVISOR = 4;
+            public const uint DEFAULT_UINT_VALUE = 0u;
+            public const byte DEFAULT_BYTE_VALUE = 0;
         }
 
         public static class TelemetryData

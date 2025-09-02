@@ -17,7 +17,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             
             int dataBitsLength = icdBitsLength + signBitsLength;
             int dataPlusChecksumBits = dataBitsLength + checksumBitsLength;
-            int paddingBitsLength = (8 - (dataPlusChecksumBits % 8)) % 8;
+            int paddingBitsLength = (TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE - (dataPlusChecksumBits % TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE)) % TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE;
             int expectedTotalBits = dataBitsLength + checksumBitsLength + paddingBitsLength;
 
             if (totalBitsCount < dataBitsLength + checksumBitsLength)
@@ -46,8 +46,8 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
         private static uint ExtractUInt(BitArray bitArray, int startPosition, int bitsCount)
         {
             if (startPosition < 0 || startPosition + bitsCount > bitArray.Length)
-                return 0u;
-            uint extractedValue = 0u;
+                return TelemetryDeviceConstants.TelemetryCompression.DEFAULT_UINT_VALUE;
+            uint extractedValue = TelemetryDeviceConstants.TelemetryCompression.DEFAULT_UINT_VALUE;
             for (int bitOffset = 0; bitOffset < bitsCount; bitOffset++)
                 if (bitArray[startPosition + bitOffset])
                     extractedValue |= (uint)(
@@ -76,7 +76,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 
         private static byte GetByte(BitArray dataBits, int byteIndex, int bitsPerByteConstant)
         {
-            byte extractedByteValue = 0;
+            byte extractedByteValue = TelemetryDeviceConstants.TelemetryCompression.DEFAULT_BYTE_VALUE;
             int startBitPosition = byteIndex * bitsPerByteConstant;
             int bitsInCurrentByte = Math.Min(bitsPerByteConstant, dataBits.Length - startBitPosition);
             for (int bitPositionInByte = 0; bitPositionInByte < bitsInCurrentByte; bitPositionInByte++)
