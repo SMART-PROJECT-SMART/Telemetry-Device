@@ -36,7 +36,7 @@ namespace TelemetryDevices.Services.Extensions
 
             var kafkaSettings = appConfiguration
                 .GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
-                .Get<KafkaConfiguration>();
+                .Get<KafkaConfiguration>()!;
 
             var kafkaProducerConfig = new ProducerConfig
             {
@@ -62,7 +62,7 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddPipeline(this IServiceCollection services)
+        public static IServiceCollection AddPipelineBlocks(this IServiceCollection services)
         {
             services.AddTransient<IValidator, ChecksumValidator>();
             services.AddTransient<ITelemetryDecoder, TelemetryDataDecoder>();
