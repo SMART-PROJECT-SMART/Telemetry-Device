@@ -7,13 +7,12 @@ namespace TelemetryDevices.Services.Helpers
     {
         public static string BuildProtocolFilter(List<string> supportedProtocols)
         {
-            if (supportedProtocols.Count == 0)
-                return TelemetryDeviceConstants.Network.UDP_FILTER;
-
-            if (supportedProtocols.Count == 1)
-                return supportedProtocols[0];
-
-            return $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, supportedProtocols)})";
+            return supportedProtocols.Count switch
+            {
+                0 => TelemetryDeviceConstants.Network.UDP_FILTER,
+                1 => supportedProtocols[0],
+                _ => $"({string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, supportedProtocols)})"
+            };
         }
 
         public static string BuildFilterFromPorts(IReadOnlyCollection<int> monitoredPorts, string baseProtocolFilter)

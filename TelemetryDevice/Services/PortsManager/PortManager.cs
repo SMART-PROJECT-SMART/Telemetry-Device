@@ -86,11 +86,6 @@ namespace TelemetryDevices.Services.PortsManager
             Channel destinationChannel
         )
         {
-            _logger.LogInformation(
-                "Swapping ports {SourcePort} and {DestinationPort}",
-                sourcePort,
-                destinationPort
-            );
 
             UpdatePortMappings(sourcePort, destinationPort, sourceChannel, destinationChannel);
             UpdateChannelPortNumbers(
@@ -113,12 +108,6 @@ namespace TelemetryDevices.Services.PortsManager
             Channel sourceChannel
         )
         {
-            _logger.LogInformation(
-                "Changing port {SourcePort} to {DestinationPort}",
-                sourcePort,
-                destinationPort
-            );
-
             _portToChannel.Remove(sourcePort);
             _portToChannel[destinationPort] = sourceChannel;
 

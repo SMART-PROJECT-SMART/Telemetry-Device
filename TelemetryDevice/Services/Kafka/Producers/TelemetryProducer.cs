@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Newtonsoft.Json;
 using Shared.Common.Enums;
+using System.Text;
 
 namespace TelemetryDevices.Services.Kafka.Producers
 {
@@ -19,7 +20,7 @@ namespace TelemetryDevices.Services.Kafka.Producers
             var kafkaMessage = new Message<string, byte[]>
             {
                 Key = tailIdKey,
-                Value = System.Text.Encoding.UTF8.GetBytes(serializedTelemetryData)
+                Value = Encoding.UTF8.GetBytes(serializedTelemetryData)
             };
 
             await _producer.ProduceAsync(topicName, kafkaMessage).ConfigureAwait(false);
