@@ -1,4 +1,5 @@
-﻿using Shared.Common.Enums;
+﻿using System.Threading.Tasks.Dataflow;
+using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Services.Kafka.Producers;
 
@@ -7,12 +8,10 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
     public class KafkaOutputHandler : IOutputHandler
     {
         private readonly ITelemetryProducer _producer;
-        private readonly ILogger<KafkaOutputHandler> _logger;
 
-        public KafkaOutputHandler(ITelemetryProducer producer, ILogger<KafkaOutputHandler> logger)
+        public KafkaOutputHandler(ITelemetryProducer producer)
         {
             _producer = producer;
-            _logger = logger;
         }
 
         public void HandleOutput(
@@ -20,12 +19,29 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             ICD telemetryIcd
         )
         {
-            decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
+            try
+            {
+                decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
 
-            var kafkaMessageKey = tailIdValue.ToString();
-            var kafkaTopicName = telemetryIcd?.ToString() ?? "unknown-icd";
+                var kafkaMessageKey = tailIdValue.ToString();
+                var kafkaTopicName = telemetryIcd?.ToString() ?? "unknown-icd";
+                
+                var produceTask = _producer.ProduceAsync(kafkaTopicName, kafkaMessageKey, decodedTelemetryData);
+                
+                produceTask.Wait(TimeSpan.FromSeconds(5));
+            }
+            catch (Exception ex)
+            {
+                // Silently handle exceptions
+            }
+        }
 
-            _ = _producer.ProduceAsync(kafkaTopicName, kafkaMessageKey, decodedTelemetryData);
+        public ActionBlock<Dictionary<TelemetryFields, double>> GetBlock(ICD icd)
+        {
+            return new ActionBlock<Dictionary<TelemetryFields, double>>(decodedTelemetryData =>
+            {
+                HandleOutput(decodedTelemetryData, icd);
+            });
         }
     }
 }

@@ -2,9 +2,11 @@
 using Shared.Configuration;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Factories.PipeLineFactory;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.PacketProcessing;
+using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PipeLines.Builder;
+using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
@@ -19,7 +21,6 @@ namespace TelemetryDevices.Services.Extensions
         {
             services.AddControllers();
             services.AddOpenApi();
-            services.AddLogging();
             return services;
         }
 
@@ -51,7 +52,7 @@ namespace TelemetryDevices.Services.Extensions
             var kafkaProducerConfig = new ProducerConfig
             {
                 BootstrapServers = kafkaSettings.BootstrapServers,
-                Acks = Acks.Leader,
+                Acks = Acks.All,
                 EnableIdempotence = true,
                 CompressionType = CompressionType.Gzip,
             };
@@ -77,8 +78,7 @@ namespace TelemetryDevices.Services.Extensions
             services.AddTransient<IValidator, ChecksumValidator>();
             services.AddTransient<ITelemetryDecoder, TelemetryDataDecoder>();
             services.AddTransient<IOutputHandler, KafkaOutputHandler>();
-            services.AddTransient<TelemetryPipeLine>();
-            services.AddSingleton<IPipeLineFactory, PipeLineFactory>();
+            services.AddTransient<IPipeLineDirector, PipelineDirector>();
             return services;
         }
 

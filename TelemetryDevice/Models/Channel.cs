@@ -10,22 +10,23 @@ namespace TelemetryDevices.Models
         public IPipeLine PipeLine { get; set; }
         public ICD ICD { get; set; }
 
-        public Channel() { }
-
-        public Channel(int portNumber, ICD channelIcd)
+        public Channel(int portNumber, IPipeLine pipeLine, ICD icd)
         {
             PortNumber = portNumber;
-            ICD = channelIcd;
+            PipeLine = pipeLine;
+            ICD = icd;
         }
 
-        public Channel(int portNumber, IPipeLine telemetryPipeline, ICD channelIcd)
+        public void ProcessTelemetryData(byte[] telemetryData)
         {
-            PortNumber = portNumber;
-            PipeLine = telemetryPipeline;
-            ICD = channelIcd;
-            if (telemetryPipeline != null && channelIcd != null)
+            if (PipeLine != null)
             {
-                telemetryPipeline.SetICD(channelIcd);
+                var channelIcd = ICD;
+                if (channelIcd != null)
+                {
+                    PipeLine.SetTelemetryICD(channelIcd);
+                    _ = PipeLine.ProcessTelemetryDataAsync(telemetryData);
+                }
             }
         }
     }
