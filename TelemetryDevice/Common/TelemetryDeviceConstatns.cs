@@ -16,6 +16,8 @@
             public const int STARTING_PORT_NUMBER = 8000;
             public const int MAX_PORT_NUMBER = 8999;
             public const int PORT_INCREMENT = 1;
+            public const string AND_SEPERATOR = " and (";
+            public const string AND_SEPERATOR_END = ")";
         }
 
         public static class Config

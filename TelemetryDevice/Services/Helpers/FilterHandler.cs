@@ -25,7 +25,7 @@ namespace TelemetryDevices.Services.Helpers
 
             var filterStringBuilder = new StringBuilder();
             filterStringBuilder.Append(baseProtocolFilter);
-            filterStringBuilder.Append(" and (");
+            filterStringBuilder.Append(TelemetryDeviceConstants.Network.AND_SEPERATOR);
             bool isFirstPort = true;
             foreach (var currentPortNumber in sortedPortNumbers)
             {
@@ -36,7 +36,7 @@ namespace TelemetryDevices.Services.Helpers
                 );
                 isFirstPort = false;
             }
-            filterStringBuilder.Append(')');
+            filterStringBuilder.Append(TelemetryDeviceConstants.Network.AND_SEPERATOR_END);
             return filterStringBuilder.ToString();
         }
     }
