@@ -1,6 +1,8 @@
-﻿using Shared.Common.Enums;
+﻿using System.Threading.Tasks.Dataflow;
+using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Common.Enums;
+using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
@@ -11,5 +13,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             byte[] rawTelemetryData,
             ICD telemetryIcd
         );
+        TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> GetBlock(ICD icd);
     }
 }

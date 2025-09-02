@@ -1,12 +1,18 @@
 ﻿using System.Collections;
+using System.Threading.Tasks.Dataflow;
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Common;
+using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public class TelemetryDataDecoder : ITelemetryDecoder
     {
+        public TelemetryDataDecoder()
+        {
+        }
+
         private readonly Dictionary<TelemetryFields, double> _decodedData =
             new Dictionary<TelemetryFields, double>();
 
@@ -19,6 +25,28 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             Dictionary<TelemetryFields, double> decompressedTelemetryData =
                 DecompressTelemetryDataByICD(compressedBitArray, telemetryIcd);
             return decompressedTelemetryData;
+        }
+
+        public TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> GetBlock(ICD icd)
+        {
+            return new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(decodingResult =>
+            {
+                try
+                {
+                    if (!decodingResult.IsValid)
+                    {
+                        return new Dictionary<TelemetryFields, double>();
+                    }
+                    
+                    var decodedData = DecodeData(decodingResult.Data, icd);
+                    
+                    return decodedData;
+                }
+                catch (Exception ex)
+                {
+                    return new Dictionary<TelemetryFields, double>();
+                }
+            });
         }
 
         private BitArray ConvertBytesToBitArray(byte[] rawTelemetryData)

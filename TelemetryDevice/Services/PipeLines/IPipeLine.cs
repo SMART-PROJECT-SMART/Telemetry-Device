@@ -4,8 +4,8 @@ namespace TelemetryDevices.Services.PipeLines
 {
     public interface IPipeLine
     {
-        public Task ProcessDataAsync(byte[] telemetryData);
-        public void SetICD(ICD telemetryIcd);
-        public ICD GetICD();
+        public Task ProcessTelemetryDataAsync(byte[] telemetryData);
+        public void SetTelemetryICD(ICD telemetryIcd);
+        public ICD GetTelemetryICD();
     }
 }

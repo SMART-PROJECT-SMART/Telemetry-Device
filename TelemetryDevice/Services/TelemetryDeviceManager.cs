@@ -2,8 +2,7 @@
 using Shared.Models.ICDModels;
 using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.Factories.PipeLineFactory;
-using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PortsManager;
 
 namespace TelemetryDevices.Services
@@ -13,17 +12,17 @@ namespace TelemetryDevices.Services
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId =
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
-        private readonly IPipeLineFactory _pipeLineFactory;
+        private readonly IPipeLineDirector _telemetryPipelineDirector;
         private readonly IPortManager _portManager;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
-            IPipeLineFactory pipeLineFactory,
+            IPipeLineDirector telemetryPipelineDirector,
             IPortManager portManager
         )
         {
             _icdDirectory = icdDirectory;
-            _pipeLineFactory = pipeLineFactory;
+            _telemetryPipelineDirector = telemetryPipelineDirector;
             _portManager = portManager;
         }
 
@@ -34,7 +33,7 @@ namespace TelemetryDevices.Services
             _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
 
             var availableIcds = _icdDirectory.GetAllICDs().ToList();
-            CreateChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
+            CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
         }
 
         private void ValidateTelemetryDeviceDoesNotExist(int tailId)
@@ -47,7 +46,7 @@ namespace TelemetryDevices.Services
             }
         }
 
-        private void CreateChannelsForDevice(
+        private void CreateTelemetryChannelsForDevice(
             TelemetryDevice newTelemetryDevice,
             List<int> portNumbers,
             List<ICD> availableIcds
@@ -59,33 +58,33 @@ namespace TelemetryDevices.Services
                 channelIndex++
             )
             {
-                var currentIcd = availableIcds[channelIndex];
-                IPipeLine telemetryPipeline = _pipeLineFactory.GetPipeLine(currentIcd);
+                var currentTelemetryIcd = availableIcds[channelIndex];
+                var telemetryPipeline = _telemetryPipelineDirector.CreateStandardTelemetryPipeline(currentTelemetryIcd);
                 newTelemetryDevice.AddChannel(
                     portNumbers[channelIndex],
                     telemetryPipeline,
-                    currentIcd
+                    currentTelemetryIcd
                 );
 
-                var createdChannel = newTelemetryDevice.Channels.FirstOrDefault(c =>
+                var createdTelemetryChannel = newTelemetryDevice.Channels.FirstOrDefault(c =>
                     c.PortNumber == portNumbers[channelIndex]
                 );
-                if (createdChannel != null)
+                if (createdTelemetryChannel != null)
                 {
-                    _portManager.AddPort(portNumbers[channelIndex], createdChannel);
+                    _portManager.AddPort(portNumbers[channelIndex], createdTelemetryChannel);
                 }
             }
         }
 
         public bool RemoveTelemetryDevice(int tailId)
         {
-            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out var targetDevice))
+            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out var targetTelemetryDevice))
             {
                 return false;
             }
-            foreach (var deviceChannel in targetDevice.Channels)
+            foreach (var telemetryDeviceChannel in targetTelemetryDevice.Channels)
             {
-                _portManager.RemovePort(deviceChannel.PortNumber);
+                _portManager.RemovePort(telemetryDeviceChannel.PortNumber);
             }
             return _telemetryDevicesByTailId.Remove(tailId);
         }

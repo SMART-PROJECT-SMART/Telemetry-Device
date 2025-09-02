@@ -9,7 +9,6 @@ namespace TelemetryDevices.Services.Sniffer
 {
     public class PacketSniffer : IDisposable, IPacketSniffer
     {
-        private readonly ILogger<PacketSniffer> _logger;
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
@@ -17,12 +16,10 @@ namespace TelemetryDevices.Services.Sniffer
         public event Action<byte[], int> PacketReceived;
 
         public PacketSniffer(
-            ILogger<PacketSniffer> logger,
             IOptions<NetworkingConfiguration> networkingConfig,
             IPacketProcessor packetProcessor
         )
         {
-            _logger = logger;
             _networkingConfig = networkingConfig;
             _packetProcessor = packetProcessor;
             var availableDevices = CaptureDeviceList.Instance;
@@ -47,9 +44,6 @@ namespace TelemetryDevices.Services.Sniffer
 
             if (_devices.Count != 0)
                 return;
-            _logger.LogWarning(
-                "No devices found for configured interfaces, using first available device"
-            );
             var fallbackCaptureDevice = availableDevices.First();
             InitializeDevice(fallbackCaptureDevice);
             _devices.Add(fallbackCaptureDevice);
@@ -78,17 +72,12 @@ namespace TelemetryDevices.Services.Sniffer
             captureDevice.OnPacketArrival += OnPacketArrival;
             ApplyFilterToDevice(captureDevice);
             captureDevice.StartCapture();
-            _logger.LogInformation(
-                "Started capture on device: {DeviceName}",
-                captureDevice.Description
-            );
         }
 
         public void AddPort(int port)
         {
             if (!_ports.Add(port))
                 return;
-            _logger.LogInformation($"Added port {port} to monitoring. Total ports: {_ports.Count}");
             ApplyFilterToAllDevices();
         }
 
@@ -119,10 +108,6 @@ namespace TelemetryDevices.Services.Sniffer
             {
                 ApplyFilterToDevice(captureDevice, compositePortFilter);
             }
-
-            _logger.LogInformation(
-                $"Applied filter to {_devices.Count} devices: {compositePortFilter}"
-            );
         }
 
         private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
