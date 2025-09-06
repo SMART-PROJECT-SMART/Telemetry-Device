@@ -35,6 +35,7 @@
         {
             public const int MAX_HEX_PREVIEW_LENGTH = 32;
             public const string HEX_PREVIEW_SUFFIX = "...";
+            public const int MINIMUM_PAYLOAD_LENGTH = 0;
         }
 
         public static class Configuration
@@ -49,6 +50,7 @@
         {
             public const string BASE_TOPIC_NAME = "telemetry-tailId-";
             public const string PRODUCER_NAME = "TelemetryProducer";
+            public const int PRODUCE_TIMEOUT_SECONDS = 5;
         }
 
         public static class TelemetryCompression
@@ -68,6 +70,22 @@
             public const int EXPONENT_BITS_DIVISOR = 4;
             public const uint DEFAULT_UINT_VALUE = 0u;
             public const byte DEFAULT_BYTE_VALUE = 0;
+            public const int BYTE_ALIGNMENT = 8;
+            public const int BIT_SHIFT_ONE = 1;
+            public const double DEFAULT_DOUBLE_VALUE = 0.0;
+            public const ulong DEFAULT_ULONG_VALUE = 0UL;
+            public const double SIGNIFICAND_BASE_VALUE = 1.0;
+            public const int MATH_POWER_BASE = 2;
+        }
+
+        public static class DefaultValues
+        {
+            public const int DEFAULT_TAIL_ID = 1;
+            public const int DEFAULT_PORT_1 = 8000;
+            public const int DEFAULT_PORT_2 = 8001;
+            public const double DEFAULT_LOCATION_LAT = 0.0;
+            public const double DEFAULT_LOCATION_LON = 0.0;
+            public const int CHANNEL_NOT_FOUND_INDEX = -1;
         }
 
         public static class TelemetryData

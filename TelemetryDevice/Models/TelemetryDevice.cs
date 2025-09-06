@@ -1,5 +1,6 @@
 ﻿using Shared.Models.ICDModels;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Models
 {
@@ -32,7 +33,7 @@ namespace TelemetryDevices.Models
                 telemetryChannel.PortNumber == portNumber
             );
 
-            if (channelIndex == -1)
+            if (channelIndex == TelemetryDeviceConstants.DefaultValues.CHANNEL_NOT_FOUND_INDEX)
                 return false;
 
             Channels.RemoveAt(channelIndex);

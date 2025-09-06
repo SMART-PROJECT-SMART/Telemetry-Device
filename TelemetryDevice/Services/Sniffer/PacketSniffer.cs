@@ -76,15 +76,13 @@ namespace TelemetryDevices.Services.Sniffer
 
         public void AddPort(int port)
         {
-            if (!_ports.Add(port))
-                return;
+            _ports.Add(port);
             ApplyFilterToAllDevices();
         }
 
         public void RemovePort(int port)
         {
-            if (!_ports.Remove(port))
-                return;
+            _ports.Remove(port);
             ApplyFilterToAllDevices();
         }
 

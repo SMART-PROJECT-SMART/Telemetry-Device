@@ -2,6 +2,7 @@
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
@@ -28,11 +29,10 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
                 
                 var produceTask = _producer.ProduceAsync(kafkaTopicName, kafkaMessageKey, decodedTelemetryData);
                 
-                produceTask.Wait(TimeSpan.FromSeconds(5));
+                produceTask.Wait(TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.PRODUCE_TIMEOUT_SECONDS));
             }
             catch (Exception ex)
             {
-                // Silently handle exceptions
             }
         }
 

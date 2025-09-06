@@ -5,6 +5,7 @@ using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
 using TelemetryDevices.Services.PortsManager;
+using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Controllers
 {
@@ -45,9 +46,9 @@ namespace TelemetryDevices.Controllers
         [HttpGet("run")]
         public IActionResult Run()
         {
-            int defaultTailId = 1;
-            var defaultPortNumbers = new List<int> { 8000, 8001 };
-            Location defaultLocation = new Location(0, 0);
+            int defaultTailId = TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID;
+            var defaultPortNumbers = new List<int> { TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1, TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2 };
+            Location defaultLocation = new Location(TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT, TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON);
             _telemetryDeviceManager.AddTelemetryDevice(
                 defaultTailId,
                 defaultPortNumbers,

@@ -22,11 +22,6 @@ namespace TelemetryDevices.Services.PortsManager
 
         public void AddPort(int portNumber, Channel assignedChannel)
         {
-            if (_portToChannel.ContainsKey(portNumber))
-            {
-                return;
-            }
-
             _portToChannel[portNumber] = assignedChannel;
             _packetSniffer.AddPort(portNumber);
         }
@@ -152,18 +147,14 @@ namespace TelemetryDevices.Services.PortsManager
             var assignedChannel = GetChannelByPort(portNumber);
             
             if (assignedChannel == null)
-            {
                 return;
-            }
 
             int? extractedTailId = TailIdExtractor.GetTailIdByICD(
                 packetPayload,
                 assignedChannel.ICD
             );
             if (!extractedTailId.HasValue)
-            {
                 return;
-            }
 
             assignedChannel.ProcessTelemetryData(packetPayload);
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TelemetryDevices.Services.Sniffer;
+using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Controllers
 {
@@ -31,9 +32,9 @@ namespace TelemetryDevices.Controllers
         [HttpGet("run")]
         public IActionResult Run()
         {
-            _packetSniffer.AddPort(8000);
-            _packetSniffer.AddPort(8001);
-            return Ok("Sniffer started with ports 8000 and 8001.");
+            _packetSniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1);
+            _packetSniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2);
+            return Ok($"Sniffer started with ports {TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1} and {TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2}.");
         }
     }
 }
