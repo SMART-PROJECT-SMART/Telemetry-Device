@@ -22,23 +22,15 @@ namespace TelemetryDevices.Services.PipeLines
 
         public Task ProcessTelemetryDataAsync(byte[] telemetryData)
         {
-            try
-            {
                 var firstTelemetryBlock = _telemetryPipelineBlocks.First() as TransformBlock<byte[], DecodingResult>;
                 if (firstTelemetryBlock == null)
                 {
                     throw new InvalidOperationException("First telemetry block is not a valid TransformBlock<byte[], DecodingResult>");
                 }
                 
-                // Post the data to the first block - this will trigger the pipeline execution
                 var posted = firstTelemetryBlock.Post(telemetryData);
                 
                 return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                throw; // Re-throw to allow proper error handling upstream
-            }
         }
 
         public void SetTelemetryICD(ICD telemetryIcd)
@@ -53,8 +45,6 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void LinkTelemetryPipelineBlocks()
         {
-            try
-            {
                 for (int blockIndex = 0; blockIndex < _telemetryPipelineBlocks.Count - 1; blockIndex++)
                 {
                     var currentTelemetryBlock = _telemetryPipelineBlocks[blockIndex];
@@ -72,11 +62,6 @@ namespace TelemetryDevices.Services.PipeLines
                         decoderBlockCurrent.LinkTo(outputBlock);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw; // Re-throw to prevent pipeline creation with broken links
-            }
         }
     }
 }
