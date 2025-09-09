@@ -47,19 +47,20 @@ namespace TelemetryDevices.Services.PipeLines
         {
                 for (int blockIndex = 0; blockIndex < _telemetryPipelineBlocks.Count - 1; blockIndex++)
                 {
-                    var currentTelemetryBlock = _telemetryPipelineBlocks[blockIndex];
-                    var nextTelemetryBlock = _telemetryPipelineBlocks[blockIndex + 1];
+                    IDataflowBlock currentTelemetryBlock = _telemetryPipelineBlocks[blockIndex];
+                    IDataflowBlock nextTelemetryBlock = _telemetryPipelineBlocks[blockIndex + 1];
 
-                    if (currentTelemetryBlock is TransformBlock<byte[], DecodingResult> validationBlock &&
-                        nextTelemetryBlock is TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> decoderBlockNext)
+                    switch (currentTelemetryBlock)
                     {
-                        validationBlock.LinkTo(decoderBlockNext, result => result.IsValid);
-                        validationBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>(), result => !result.IsValid);
-                    }
-                    else if (currentTelemetryBlock is TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> decoderBlockCurrent &&
-                             nextTelemetryBlock is ActionBlock<Dictionary<TelemetryFields, double>> outputBlock)
-                    {
-                        decoderBlockCurrent.LinkTo(outputBlock);
+                        case TransformBlock<byte[], DecodingResult> validationBlock when
+                            nextTelemetryBlock is TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> decoderBlockNext:
+                            validationBlock.LinkTo(decoderBlockNext, result => result.IsValid);
+                            validationBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>(), result => !result.IsValid);
+                            break;
+                        case TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> decoderBlockCurrent when
+                            nextTelemetryBlock is ActionBlock<Dictionary<TelemetryFields, double>> outputBlock:
+                            decoderBlockCurrent.LinkTo(outputBlock);
+                            break;
                     }
                 }
         }
