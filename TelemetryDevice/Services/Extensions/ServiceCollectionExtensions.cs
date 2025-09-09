@@ -4,8 +4,6 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.PacketProcessing;
-using TelemetryDevices.Services.PipeLines;
-using TelemetryDevices.Services.PipeLines.Builder;
 using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
@@ -88,7 +86,7 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddTelemetryServices(this IServiceCollection services)
+        public static IServiceCollection AddTelemetryDeviceManager(this IServiceCollection services)
         {
             services.AddSingleton<TelemetryDeviceManager>();
             return services;
@@ -100,7 +98,7 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddSharedConfiguration(
+        public static IServiceCollection AddICDConfiguration(
             this IServiceCollection services,
             IConfiguration appConfiguration
         )

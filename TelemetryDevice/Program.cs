@@ -14,10 +14,10 @@ builder.Services.AddAppConfiguration(builder.Configuration);
 builder.Services.AddPacketSniffer();
 
 builder.Services.AddPipelineBlocks();
-builder.Services.AddTelemetryServices();
+builder.Services.AddTelemetryDeviceManager();
 builder.Services.AddPacketProcessor();
 builder.Services.AddIcdDirectory();
-builder.Services.AddSharedConfiguration(builder.Configuration);
+builder.Services.AddICDConfiguration(builder.Configuration);
 builder.Services.AddPortManager();
 builder.Services.AddKafkaServices(builder.Configuration);
 builder.Services.AddKafkaTelemetryProducer();
