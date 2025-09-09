@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks.Dataflow;
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
@@ -22,15 +19,14 @@ namespace TelemetryDevices.Services.PipeLines
 
         public Task ProcessTelemetryDataAsync(byte[] telemetryData)
         {
-                var firstTelemetryBlock = _telemetryPipelineBlocks.First() as TransformBlock<byte[], DecodingResult>;
-                if (firstTelemetryBlock == null)
-                {
-                    throw new InvalidOperationException("First telemetry block is not a valid TransformBlock<byte[], DecodingResult>");
-                }
-                
-                var posted = firstTelemetryBlock.Post(telemetryData);
-                
-                return Task.CompletedTask;
+            if (_telemetryPipelineBlocks.First() is not ITargetBlock<byte[]> firstTelemetryBlock)
+            {
+                throw new InvalidOperationException("First telemetry block does not accept byte[] input");
+            }
+            
+            firstTelemetryBlock.Post(telemetryData);
+            
+            return Task.CompletedTask;
         }
 
         public void SetTelemetryICD(ICD telemetryIcd)

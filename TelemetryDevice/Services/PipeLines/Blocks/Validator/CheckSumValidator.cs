@@ -30,8 +30,8 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             if (expectedChecksum == actualChecksumPrePadding && totalBitsCount == expectedTotalBits)
                 return true;
 
-            uint actualChecksumLast32Bits = ExtractUInt(telemetryBits, totalBitsCount - checksumBitsLength, checksumBitsLength);
-            return expectedChecksum == actualChecksumLast32Bits;
+            uint actualCheckSumBits = ExtractUInt(telemetryBits, totalBitsCount - checksumBitsLength, checksumBitsLength);
+            return expectedChecksum == actualCheckSumBits;
         }
 
         public TransformBlock<byte[], DecodingResult> GetBlock(ICD icd)
