@@ -12,11 +12,7 @@ namespace TelemetryDevices.Services.Helpers
         {
             ICDItem tailIdIcdItem = telemetryIcd.Document.FirstOrDefault(icdItem =>
                 icdItem.Name == TelemetryFields.TailId
-            );
-            if (tailIdIcdItem == null)
-            {
-                return null;
-            }
+            )!;
 
             BitArray payloadBitArray = packetPayload.ToBitArray();
             if (payloadBitArray.Length < tailIdIcdItem.StartBitArrayIndex + tailIdIcdItem.BitLength)
