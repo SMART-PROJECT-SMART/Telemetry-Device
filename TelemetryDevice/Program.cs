@@ -1,9 +1,9 @@
 using Shared.Services;
+using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
 using TelemetryDevices.Services.Extensions;
 using TelemetryDevices.Services.Sniffer;
-using TelemetryDevices.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,5 +37,15 @@ sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1);
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2);
 
 var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
-tdManager.AddTelemetryDevice(TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID, [TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1, TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2], new Location(TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT, TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON));
+tdManager.AddTelemetryDevice(
+    TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID,
+    [
+        TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,
+        TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2,
+    ],
+    new Location(
+        TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT,
+        TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON
+    )
+);
 app.Run();

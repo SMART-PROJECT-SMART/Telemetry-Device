@@ -1,6 +1,6 @@
 ﻿using Shared.Models.ICDModels;
-using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Common;
+using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Models
 {

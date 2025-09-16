@@ -145,7 +145,7 @@ namespace TelemetryDevices.Services.PortsManager
         public void ProcessPacketOnPort(int portNumber, byte[] packetPayload)
         {
             var assignedChannel = GetChannelByPort(portNumber);
-            
+
             if (assignedChannel == null)
                 return;
 

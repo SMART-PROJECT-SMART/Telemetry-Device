@@ -12,11 +12,21 @@ public class PacketProcessor : IPacketProcessor
 
         switch (ipv4Packet.PayloadPacket)
         {
-            case UdpPacket { PayloadData.Length: > TelemetryDeviceConstants.PacketProcessing.MINIMUM_PAYLOAD_LENGTH } udpPacket:
+            case UdpPacket
+            {
+                PayloadData.Length: > TelemetryDeviceConstants
+                    .PacketProcessing
+                    .MINIMUM_PAYLOAD_LENGTH
+            } udpPacket:
                 packetCapturedCallback.Invoke(udpPacket.PayloadData, udpPacket.DestinationPort);
                 break;
 
-            case TcpPacket { PayloadData.Length: > TelemetryDeviceConstants.PacketProcessing.MINIMUM_PAYLOAD_LENGTH } tcpPacket:
+            case TcpPacket
+            {
+                PayloadData.Length: > TelemetryDeviceConstants
+                    .PacketProcessing
+                    .MINIMUM_PAYLOAD_LENGTH
+            } tcpPacket:
                 packetCapturedCallback.Invoke(tcpPacket.PayloadData, tcpPacket.DestinationPort);
                 break;
         }

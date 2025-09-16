@@ -4,10 +4,10 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.PacketProcessing;
-using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
+using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 

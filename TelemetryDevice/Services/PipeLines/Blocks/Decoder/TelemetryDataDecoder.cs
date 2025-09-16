@@ -11,9 +11,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public class TelemetryDataDecoder : ITelemetryDecoder
     {
-        public TelemetryDataDecoder()
-        {
-        }
+        public TelemetryDataDecoder() { }
 
         private readonly Dictionary<TelemetryFields, double> _decodedData =
             new Dictionary<TelemetryFields, double>();
@@ -31,15 +29,17 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 
         public TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> GetBlock(ICD icd)
         {
-            return new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(decodingResult =>
-            {
-                if (!decodingResult.IsValid)
+            return new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(
+                decodingResult =>
                 {
-                    return new Dictionary<TelemetryFields, double>();
+                    if (!decodingResult.IsValid)
+                    {
+                        return new Dictionary<TelemetryFields, double>();
+                    }
+
+                    return DecodeData(decodingResult.Data, icd);
                 }
-                
-                return DecodeData(decodingResult.Data, icd);
-            });
+            );
         }
 
         private Dictionary<TelemetryFields, double> DecompressTelemetryDataByICD(
@@ -73,7 +73,9 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             BitArray signBitSection = new BitArray(signBitsCount);
 
             for (int signBitIndex = 0; signBitIndex < signBitsCount; signBitIndex++)
-                signBitSection[signBitIndex] = compressedTelemetryData[mainDataLength + signBitIndex];
+                signBitSection[signBitIndex] = compressedTelemetryData[
+                    mainDataLength + signBitIndex
+                ];
 
             return signBitSection;
         }
@@ -95,10 +97,11 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
                     telemetryParameter.StartBitArrayIndex,
                     telemetryParameter.BitLength
                 );
-                double reconstructedParameterValue = BitManipulationHelper.ConvertFromMeaningfulBits(
-                    extractedBitValue,
-                    telemetryParameter.BitLength
-                );
+                double reconstructedParameterValue =
+                    BitManipulationHelper.ConvertFromMeaningfulBits(
+                        extractedBitValue,
+                        telemetryParameter.BitLength
+                    );
 
                 if (signBitSection[telemetryFieldIndex])
                     reconstructedParameterValue = -reconstructedParameterValue;

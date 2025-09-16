@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks.Dataflow;
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
-using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Common;
+using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
@@ -20,14 +20,20 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             ICD telemetryIcd
         )
         {
-                decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
+            decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
 
-                var kafkaMessageKey = tailIdValue.ToString();
-                var kafkaTopicName = telemetryIcd?.ToString() ?? "unknown-icd";
-                
-                var produceTask = _producer.ProduceAsync(kafkaTopicName, kafkaMessageKey, decodedTelemetryData);
-                
-                produceTask.Wait(TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.PRODUCE_TIMEOUT_SECONDS));
+            var kafkaMessageKey = tailIdValue.ToString();
+            var kafkaTopicName = telemetryIcd?.ToString() ?? "unknown-icd";
+
+            var produceTask = _producer.ProduceAsync(
+                kafkaTopicName,
+                kafkaMessageKey,
+                decodedTelemetryData
+            );
+
+            produceTask.Wait(
+                TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.PRODUCE_TIMEOUT_SECONDS)
+            );
         }
 
         public ActionBlock<Dictionary<TelemetryFields, double>> GetBlock(ICD icd)

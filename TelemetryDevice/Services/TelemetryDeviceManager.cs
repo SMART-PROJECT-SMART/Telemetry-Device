@@ -59,7 +59,9 @@ namespace TelemetryDevices.Services
             )
             {
                 var currentTelemetryIcd = availableIcds[channelIndex];
-                var telemetryPipeline = _telemetryPipelineDirector.CreateStandardTelemetryPipeline(currentTelemetryIcd);
+                var telemetryPipeline = _telemetryPipelineDirector.CreateStandardTelemetryPipeline(
+                    currentTelemetryIcd
+                );
                 newTelemetryDevice.AddChannel(
                     portNumbers[channelIndex],
                     telemetryPipeline,

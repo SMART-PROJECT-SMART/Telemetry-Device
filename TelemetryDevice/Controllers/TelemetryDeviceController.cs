@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Common.Enums;
+using TelemetryDevices.Common;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;
 using TelemetryDevices.Services.PortsManager;
-using TelemetryDevices.Common;
 
 namespace TelemetryDevices.Controllers
 {
@@ -47,8 +47,15 @@ namespace TelemetryDevices.Controllers
         public IActionResult Run()
         {
             int defaultTailId = TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID;
-            var defaultPortNumbers = new List<int> { TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1, TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2 };
-            Location defaultLocation = new Location(TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT, TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON);
+            var defaultPortNumbers = new List<int>
+            {
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2,
+            };
+            Location defaultLocation = new Location(
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT,
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON
+            );
             _telemetryDeviceManager.AddTelemetryDevice(
                 defaultTailId,
                 defaultPortNumbers,

@@ -14,9 +14,7 @@ namespace TelemetryDevices.Services.PipeLines.Builder
         private readonly List<IDataflowBlock> _telemetryPipelineBlocks = new();
         private ICD _telemetryIcd;
 
-        public PipelineBuilder()
-        {
-        }
+        public PipelineBuilder() { }
 
         public IPipeLineBuilder AddValidator(IValidator telemetryValidator, ICD telemetryIcd)
         {
@@ -49,16 +47,18 @@ namespace TelemetryDevices.Services.PipeLines.Builder
         {
             if (_telemetryIcd == null)
             {
-                throw new InvalidOperationException("Telemetry ICD must be set before building the pipeline.");
+                throw new InvalidOperationException(
+                    "Telemetry ICD must be set before building the pipeline."
+                );
             }
-            
+
             var telemetryPipelineBlocksCopy = new List<IDataflowBlock>(_telemetryPipelineBlocks);
             var telemetryIcdCopy = _telemetryIcd;
-            
+
             var telemetryPipeline = new Pipeline(telemetryPipelineBlocksCopy, telemetryIcdCopy);
-            
+
             Reset();
-            
+
             return telemetryPipeline;
         }
 

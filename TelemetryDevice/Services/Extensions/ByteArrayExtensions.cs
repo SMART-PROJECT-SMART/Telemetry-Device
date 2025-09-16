@@ -5,13 +5,12 @@ namespace TelemetryDevices.Services.Extensions
 {
     public static class ByteArrayExtensions
     {
-        
         public static BitArray ToBitArray(this byte[] bytes)
         {
             BitArray bitArray = new BitArray(
                 bytes.Length * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
             );
-            
+
             for (int byteIndex = 0; byteIndex < bytes.Length; byteIndex++)
             {
                 for (
@@ -33,7 +32,7 @@ namespace TelemetryDevices.Services.Extensions
                         ) != 0;
                 }
             }
-            
+
             return bitArray;
         }
     }
