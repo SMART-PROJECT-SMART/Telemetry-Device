@@ -28,6 +28,11 @@ namespace TelemetryDevices.Services.Sniffer
 
         private void InitializeDevices(CaptureDeviceList availableDevices)
         {
+            if (availableDevices.Count == 0)
+            {
+                throw new InvalidOperationException("No network capture devices available");
+            }
+
             var networkingConfig = _networkingConfig.Value;
 
             foreach (
@@ -42,11 +47,12 @@ namespace TelemetryDevices.Services.Sniffer
                 _devices.Add(matchedCaptureDevice);
             }
 
-            if (_devices.Count != 0)
-                return;
-            var fallbackCaptureDevice = availableDevices.First();
-            InitializeDevice(fallbackCaptureDevice);
-            _devices.Add(fallbackCaptureDevice);
+            if (_devices.Count == 0)
+            {
+                var fallbackCaptureDevice = availableDevices.First();
+                InitializeDevice(fallbackCaptureDevice);
+                _devices.Add(fallbackCaptureDevice);
+            }
         }
 
         private ICaptureDevice? GetCaptureDevice(
@@ -91,35 +97,27 @@ namespace TelemetryDevices.Services.Sniffer
             return _ports.ToList();
         }
 
-        private void ApplyFilterToAllDevices()
+        private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
+        {
+            deviceFilter ??= BuildCurrentFilter();
+            captureDevice.Filter = deviceFilter;
+        }
+
+        private string BuildCurrentFilter()
         {
             var networkingConfig = _networkingConfig.Value;
-            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
-                networkingConfig.Protocols
-            );
-            string compositePortFilter = FilterHandler.BuildFilterFromPorts(
-                _ports,
-                baseProtocolFilter
-            );
+            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(networkingConfig.Protocols);
+            return FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
+        }
 
+        private void ApplyFilterToAllDevices()
+        {
+            string compositePortFilter = BuildCurrentFilter();
+            
             foreach (var captureDevice in _devices)
             {
                 ApplyFilterToDevice(captureDevice, compositePortFilter);
             }
-        }
-
-        private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
-        {
-            if (deviceFilter == null)
-            {
-                var networkingConfig = _networkingConfig.Value;
-                string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
-                    networkingConfig.Protocols
-                );
-                deviceFilter = FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
-            }
-
-            captureDevice.Filter = deviceFilter;
         }
 
         private void OnPacketArrival(object sender, PacketCapture captureEventArgs)

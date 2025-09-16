@@ -62,19 +62,11 @@ namespace TelemetryDevices.Services
                 var telemetryPipeline = _telemetryPipelineDirector.CreateStandardTelemetryPipeline(
                     currentTelemetryIcd
                 );
-                newTelemetryDevice.AddChannel(
-                    portNumbers[channelIndex],
-                    telemetryPipeline,
-                    currentTelemetryIcd
-                );
 
-                var createdTelemetryChannel = newTelemetryDevice.Channels.FirstOrDefault(c =>
-                    c.PortNumber == portNumbers[channelIndex]
-                );
-                if (createdTelemetryChannel != null)
-                {
-                    _portManager.AddPort(portNumbers[channelIndex], createdTelemetryChannel);
-                }
+                var channel = new Channel(portNumbers[channelIndex], telemetryPipeline, currentTelemetryIcd);
+                newTelemetryDevice.Channels.Add(channel);
+
+                _portManager.AddPort(portNumbers[channelIndex], channel);
             }
         }
 
