@@ -13,9 +13,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
     {
         public TelemetryDataDecoder() { }
 
-        private readonly Dictionary<TelemetryFields, double> _decodedData =
-            new Dictionary<TelemetryFields, double>();
-
         public Dictionary<TelemetryFields, double> DecodeData(
             byte[] rawTelemetryData,
             ICD telemetryIcd

@@ -20,31 +20,5 @@ namespace TelemetryDevices.Models
             Location = location;
             Channels = new List<Channel>();
         }
-
-        public void AddChannel(int portNumber, IPipeLine telemetryPipeline, ICD channelIcd)
-        {
-            var newTelemetryChannel = new Channel(portNumber, telemetryPipeline, channelIcd);
-            Channels.Add(newTelemetryChannel);
-        }
-
-        public bool RemoveChannel(int portNumber)
-        {
-            var channelIndex = Channels.FindIndex(telemetryChannel =>
-                telemetryChannel.PortNumber == portNumber
-            );
-
-            if (channelIndex == TelemetryDeviceConstants.DefaultValues.CHANNEL_NOT_FOUND_INDEX)
-                return false;
-
-            Channels.RemoveAt(channelIndex);
-            return true;
-        }
-
-        public Channel? GetChannelByPort(int portNumber)
-        {
-            return Channels.FirstOrDefault(telemetryChannel =>
-                telemetryChannel.PortNumber == portNumber
-            );
-        }
     }
 }
