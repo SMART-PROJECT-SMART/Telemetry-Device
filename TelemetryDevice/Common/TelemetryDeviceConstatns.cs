@@ -26,11 +26,6 @@
             public const string JSON_SEARCH_PATTERN = "*.json";
         }
 
-        public static class LoopbackInterface
-        {
-            public const string LOOPBACK_DESCRIPTION = "Loopback";
-        }
-
         public static class PacketProcessing
         {
             public const int MAX_HEX_PREVIEW_LENGTH = 32;
