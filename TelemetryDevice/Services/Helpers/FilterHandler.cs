@@ -24,28 +24,15 @@ namespace TelemetryDevices.Services.Helpers
             if (monitoredPorts.Count == 0)
                 return baseProtocolFilter;
 
-            IOrderedEnumerable<int> sortedPortNumbers = monitoredPorts.OrderBy(portNumber =>
-                portNumber
-            );
+            var portFilters = monitoredPorts
+                .OrderBy(port => port)
+                .Select(port => string.Format(
+                    TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, 
+                    port));
 
-            var filterStringBuilder = new StringBuilder();
-            filterStringBuilder.Append(baseProtocolFilter);
-            filterStringBuilder.Append(TelemetryDeviceConstants.Network.AND_SEPERATOR);
-            bool isFirstPort = true;
-            foreach (int currentPortNumber in sortedPortNumbers)
-            {
-                if (!isFirstPort)
-                    filterStringBuilder.Append(TelemetryDeviceConstants.Network.FILTER_SEPARATOR);
-                filterStringBuilder.Append(
-                    string.Format(
-                        TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER,
-                        currentPortNumber
-                    )
-                );
-                isFirstPort = false;
-            }
-            filterStringBuilder.Append(TelemetryDeviceConstants.Network.AND_SEPERATOR_END);
-            return filterStringBuilder.ToString();
+            return $"{baseProtocolFilter}{TelemetryDeviceConstants.Network.AND_SEPERATOR}" +
+                   $"{string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, portFilters)}" +
+                   $"{TelemetryDeviceConstants.Network.AND_SEPERATOR_END}";
         }
     }
 }
