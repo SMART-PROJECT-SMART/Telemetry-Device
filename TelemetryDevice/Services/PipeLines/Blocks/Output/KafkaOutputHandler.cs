@@ -20,8 +20,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             ICD telemetryIcd
         )
         {
-            try
-            {
                 decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
 
                 var kafkaMessageKey = tailIdValue.ToString();
@@ -30,10 +28,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
                 var produceTask = _producer.ProduceAsync(kafkaTopicName, kafkaMessageKey, decodedTelemetryData);
                 
                 produceTask.Wait(TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.PRODUCE_TIMEOUT_SECONDS));
-            }
-            catch (Exception ex)
-            {
-            }
         }
 
         public ActionBlock<Dictionary<TelemetryFields, double>> GetBlock(ICD icd)

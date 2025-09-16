@@ -5,9 +5,11 @@ using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines
 {
-    public class Pipeline : IPipeLine
+    public class Pipeline : IPipeLine, IDisposable
     {
         private readonly List<IDataflowBlock> _telemetryPipelineBlocks;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private bool _disposed;
         public ICD TelemetryICD { get; private set; }
 
         public Pipeline(List<IDataflowBlock> telemetryPipelineBlocks, ICD telemetryIcd)
@@ -17,16 +19,20 @@ namespace TelemetryDevices.Services.PipeLines
             LinkTelemetryPipelineBlocks();
         }
 
-        public Task ProcessTelemetryDataAsync(byte[] telemetryData)
+        public async Task ProcessTelemetryDataAsync(byte[] telemetryData)
         {
+            if (_disposed) throw new ObjectDisposedException(nameof(Pipeline));
+            
             if (_telemetryPipelineBlocks.First() is not ITargetBlock<byte[]> firstTelemetryBlock)
             {
                 throw new InvalidOperationException("First telemetry block does not accept byte[] input");
             }
             
-            firstTelemetryBlock.Post(telemetryData);
-            
-            return Task.CompletedTask;
+            var posted = await firstTelemetryBlock.SendAsync(telemetryData, _cancellationTokenSource.Token);
+            if (!posted)
+            {
+                throw new InvalidOperationException("Failed to post data to pipeline");
+            }
         }
 
         public void SetTelemetryICD(ICD telemetryIcd)
@@ -59,6 +65,21 @@ namespace TelemetryDevices.Services.PipeLines
                             break;
                     }
                 }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            
+            _cancellationTokenSource.Cancel();
+            
+            foreach (var block in _telemetryPipelineBlocks.OfType<IDisposable>())
+            {
+                block.Dispose();
+            }
+            
+            _cancellationTokenSource.Dispose();
+            _disposed = true;
         }
     }
 }
