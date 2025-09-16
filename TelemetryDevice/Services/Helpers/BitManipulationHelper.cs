@@ -28,48 +28,72 @@ namespace TelemetryDevices.Services.Helpers
             if (compressedBits == TelemetryDeviceConstants.TelemetryCompression.DEFAULT_ULONG_VALUE)
                 return TelemetryDeviceConstants.TelemetryCompression.DEFAULT_DOUBLE_VALUE;
 
-            int exponentBitsCount = Math.Min(
+            int exponentBitsCount = CalculateExponentBitsCount(totalBitLength);
+            int significandBitsCount = totalBitLength - exponentBitsCount;
+
+            ulong exponentBitMask = CreateExponentMask(exponentBitsCount);
+            ulong significandBitMask = CreateSignificandMask(significandBitsCount);
+
+            int storedExponentValue = ExtractStoredExponent(compressedBits, significandBitsCount, exponentBitMask);
+            ulong storedSignificandValue = ExtractStoredSignificand(compressedBits, significandBitMask);
+
+            int actualExponentValue = CalculateActualExponent(storedExponentValue, exponentBitsCount);
+            double significandValue = CalculateSignificandValue(storedSignificandValue, significandBitsCount);
+
+            return ReconstructFloatingPointValue(significandValue, actualExponentValue);
+        }
+
+        private static int CalculateExponentBitsCount(int totalBitLength)
+        {
+            return Math.Min(
                 TelemetryDeviceConstants.TelemetryCompression.MAX_EXPONENT_BITS,
                 totalBitLength / TelemetryDeviceConstants.TelemetryCompression.EXPONENT_BITS_DIVISOR
             );
-            int significandBitsCount = totalBitLength - exponentBitsCount;
+        }   
 
-            ulong exponentBitMask =
-                (TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << exponentBitsCount)
+        private static ulong CreateExponentMask(int exponentBitsCount)
+        {
+            return (TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << exponentBitsCount)
                 - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE;
-            ulong significandBitMask =
-                (
-                    TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
-                    << significandBitsCount
-                ) - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE;
+        }
 
-            int storedExponentValue =
-                (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
-            ulong storedSignificandValue = compressedBits & significandBitMask;
+        private static ulong CreateSignificandMask(int significandBitsCount)
+        {
+            return (TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << significandBitsCount)
+                - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE;
+        }
 
-            int exponentBias =
-                (
-                    TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                    << (
-                        exponentBitsCount
-                        - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                    )
-                ) - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE;
-            int actualExponentValue = storedExponentValue - exponentBias;
+        private static int ExtractStoredExponent(ulong compressedBits, int significandBitsCount, ulong exponentBitMask)
+        {
+            return (int)(compressedBits >> significandBitsCount) & (int)exponentBitMask;
+        }
 
-            double significandValue =
-                TelemetryDeviceConstants.TelemetryCompression.SIGNIFICAND_BASE_VALUE
+        private static ulong ExtractStoredSignificand(ulong compressedBits, ulong significandBitMask)
+        {
+            return compressedBits & significandBitMask;
+        }
+
+        private static int CalculateActualExponent(int storedExponentValue, int exponentBitsCount)
+        {
+            int exponentBias = (TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
+                << (exponentBitsCount - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE))
+                - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE;
+            return storedExponentValue - exponentBias;
+        }
+
+        private static double CalculateSignificandValue(ulong storedSignificandValue, int significandBitsCount)
+        {
+            return TelemetryDeviceConstants.TelemetryCompression.SIGNIFICAND_BASE_VALUE
                 + (double)storedSignificandValue
-                    / (
-                        TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
-                        << significandBitsCount
-                    );
+                    / (TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << significandBitsCount);
+        }
 
-            return significandValue
-                * Math.Pow(
-                    TelemetryDeviceConstants.TelemetryCompression.MATH_POWER_BASE,
-                    actualExponentValue
-                );
+        private static double ReconstructFloatingPointValue(double significandValue, int actualExponentValue)
+        {
+            return significandValue * Math.Pow(
+                TelemetryDeviceConstants.TelemetryCompression.MATH_POWER_BASE,
+                actualExponentValue
+            );
         }
     }
 }
