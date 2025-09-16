@@ -19,15 +19,9 @@ namespace TelemetryDevices.Models
 
         public void ProcessTelemetryData(byte[] telemetryData)
         {
-            if (PipeLine != null)
-            {
-                var channelIcd = ICD;
-                if (channelIcd != null)
-                {
-                    PipeLine.SetTelemetryICD(channelIcd);
-                    _ = PipeLine.ProcessTelemetryDataAsync(telemetryData);
-                }
-            }
+            var channelIcd = ICD;
+            PipeLine.SetTelemetryICD(channelIcd);
+            _ = PipeLine.ProcessTelemetryDataAsync(telemetryData);
         }
     }
 }
