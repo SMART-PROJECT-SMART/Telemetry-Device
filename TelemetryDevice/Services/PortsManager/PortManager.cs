@@ -146,17 +146,7 @@ namespace TelemetryDevices.Services.PortsManager
         {
             var assignedChannel = GetChannelByPort(portNumber);
 
-            if (assignedChannel == null)
-                return;
-
-            int? extractedTailId = TailIdExtractor.GetTailIdByICD(
-                packetPayload,
-                assignedChannel.ICD
-            );
-            if (!extractedTailId.HasValue)
-                return;
-
-            assignedChannel.ProcessTelemetryData(packetPayload);
+            assignedChannel?.ProcessTelemetryData(packetPayload);
         }
     }
 }
