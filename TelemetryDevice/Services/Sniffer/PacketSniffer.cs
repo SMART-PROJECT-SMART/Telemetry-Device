@@ -106,14 +106,16 @@ namespace TelemetryDevices.Services.Sniffer
         private string BuildCurrentFilter()
         {
             var networkingConfig = _networkingConfig.Value;
-            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(networkingConfig.Protocols);
+            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
+                networkingConfig.Protocols
+            );
             return FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
         }
 
         private void ApplyFilterToAllDevices()
         {
             string compositePortFilter = BuildCurrentFilter();
-            
+
             foreach (var captureDevice in _devices)
             {
                 ApplyFilterToDevice(captureDevice, compositePortFilter);

@@ -26,13 +26,13 @@ namespace TelemetryDevices.Services.Helpers
 
             var portFilters = monitoredPorts
                 .OrderBy(port => port)
-                .Select(port => string.Format(
-                    TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, 
-                    port));
+                .Select(port =>
+                    string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, port)
+                );
 
-            return $"{baseProtocolFilter}{TelemetryDeviceConstants.Network.AND_SEPERATOR}" +
-                   $"{string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, portFilters)}" +
-                   $"{TelemetryDeviceConstants.Network.AND_SEPERATOR_END}";
+            return $"{baseProtocolFilter}{TelemetryDeviceConstants.Network.AND_SEPERATOR}"
+                + $"{string.Join(TelemetryDeviceConstants.Network.FILTER_SEPARATOR, portFilters)}"
+                + $"{TelemetryDeviceConstants.Network.AND_SEPERATOR_END}";
         }
     }
 }

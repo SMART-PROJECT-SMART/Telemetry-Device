@@ -63,7 +63,11 @@ namespace TelemetryDevices.Services
                     currentTelemetryIcd
                 );
 
-                var channel = new Channel(portNumbers[channelIndex], telemetryPipeline, currentTelemetryIcd);
+                var channel = new Channel(
+                    portNumbers[channelIndex],
+                    telemetryPipeline,
+                    currentTelemetryIcd
+                );
                 newTelemetryDevice.Channels.Add(channel);
 
                 _portManager.AddPort(portNumbers[channelIndex], channel);
