@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using PacketDotNet;
 using SharpPcap;
+using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Helpers;
 using TelemetryDevices.Services.PacketProcessing;
@@ -122,14 +123,24 @@ namespace TelemetryDevices.Services.Sniffer
             }
         }
 
-        private void OnPacketArrival(object sender, PacketCapture captureEventArgs)
+        private void OnPacketArrival(object sender, PacketCapture captureArgs)
         {
-            RawCapture rawPacketData = captureEventArgs.GetPacket();
-            Packet parsedPacket = Packet.ParsePacket(
-                rawPacketData.LinkLayerType,
-                rawPacketData.Data
-            );
-            _packetProcessor.ProcessPacket(parsedPacket, PacketReceived);
+            TransportPacket? transportPacket = ExtractTransportPacket(captureArgs);
+            if (transportPacket == null) return;
+
+            PacketReceived?.Invoke(transportPacket.PayloadData, transportPacket.DestinationPort);
+        }
+
+        private TransportPacket? ExtractTransportPacket(PacketCapture captureArgs)
+        {
+            RawCapture rawCapture = captureArgs.GetPacket();
+            Packet parsedPacket = Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
+
+            if (parsedPacket?.PayloadPacket is not IPv4Packet ipv4Packet) return null;
+            if (ipv4Packet.PayloadPacket is not TransportPacket transportPacket) return null;
+            if (transportPacket.PayloadData?.Length <= TelemetryDeviceConstants.PacketProcessing.MINIMUM_PAYLOAD_LENGTH) return null;
+
+            return transportPacket;
         }
 
         public void Dispose()
