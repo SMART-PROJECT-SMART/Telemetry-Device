@@ -23,10 +23,12 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
 
             var kafkaMessageKey = tailIdValue.ToString();
-            var kafkaTopicName = telemetryIcd?.ToString() ?? "unknown-icd";
+            var kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue}";
+            var kafkaPartition = Math.Abs((telemetryIcd?.FileName ?? "unknown-icd").GetHashCode());
 
             var produceTask = _producer.ProduceAsync(
                 kafkaTopicName,
+                kafkaPartition,
                 kafkaMessageKey,
                 decodedTelemetryData
             );

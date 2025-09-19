@@ -29,5 +29,23 @@ namespace TelemetryDevices.Services.Kafka.Producers
 
             await _producer.ProduceAsync(topicName, kafkaMessage).ConfigureAwait(false);
         }
+
+        public async Task ProduceAsync(
+            string topicName,
+            int partition,
+            string messageKey,
+            Dictionary<TelemetryFields, double> telemetryData
+        )
+        {
+            var serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);
+            var kafkaMessage = new Message<string, byte[]>
+            {
+                Key = messageKey,
+                Value = Encoding.UTF8.GetBytes(serializedTelemetryData),
+            };
+
+            var topicPartition = new TopicPartition(topicName, new Partition(partition));
+            await _producer.ProduceAsync(topicPartition, kafkaMessage).ConfigureAwait(false);
+        }
     }
 }

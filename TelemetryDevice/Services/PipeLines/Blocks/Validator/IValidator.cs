@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks.Dataflow;
 using Shared.Models.ICDModels;
-using TelemetryDevices.Common.Enums;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines;
 
