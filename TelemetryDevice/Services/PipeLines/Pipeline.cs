@@ -2,19 +2,26 @@ using System.Threading.Tasks.Dataflow;
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Models;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 
 namespace TelemetryDevices.Services.PipeLines
 {
     public class Pipeline : IPipeLine, IDisposable
     {
-        private readonly List<IDataflowBlock> _telemetryPipelineBlocks;
+        private readonly IValidator _validatorBlock;
+        private readonly ITelemetryDecoder _decoderBlock;
+        private readonly IOutputHandler _outputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private bool _disposed;
         public ICD TelemetryICD { get; private set; }
 
-        public Pipeline(List<IDataflowBlock> telemetryPipelineBlocks, ICD telemetryIcd)
+        public Pipeline(IValidator validatorBlock,ITelemetryDecoder decoderBlock,IOutputHandler outputBlock, ICD telemetryIcd)
         {
-            _telemetryPipelineBlocks = telemetryPipelineBlocks;
+            _validatorBlock = validatorBlock;
+            _decoderBlock = decoderBlock;
+            _outputBlock = outputBlock;
             TelemetryICD = telemetryIcd;
             LinkTelemetryPipelineBlocks();
         }
@@ -53,6 +60,7 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void LinkTelemetryPipelineBlocks()
         {
+            _validatorBlock
             for (int blockIndex = 0; blockIndex < _telemetryPipelineBlocks.Count - 1; blockIndex++)
             {
                 IDataflowBlock currentTelemetryBlock = _telemetryPipelineBlocks[blockIndex];
