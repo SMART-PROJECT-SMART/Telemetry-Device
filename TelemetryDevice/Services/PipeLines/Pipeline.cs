@@ -31,14 +31,7 @@ namespace TelemetryDevices.Services.PipeLines
             if (_disposed)
                 throw new ObjectDisposedException(nameof(Pipeline));
 
-            if (_telemetryPipelineBlocks.First() is not ITargetBlock<byte[]> firstTelemetryBlock)
-            {
-                throw new InvalidOperationException(
-                    "First telemetry block does not accept byte[] input"
-                );
-            }
-
-            var posted = await firstTelemetryBlock.SendAsync(
+            var posted = await _validatorBlock.SendAsync(
                 telemetryData,
                 _cancellationTokenSource.Token
             );
@@ -60,36 +53,10 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void LinkTelemetryPipelineBlocks()
         {
-            _validatorBlock
-            for (int blockIndex = 0; blockIndex < _telemetryPipelineBlocks.Count - 1; blockIndex++)
-            {
-                IDataflowBlock currentTelemetryBlock = _telemetryPipelineBlocks[blockIndex];
-                IDataflowBlock nextTelemetryBlock = _telemetryPipelineBlocks[blockIndex + 1];
+            _validatorBlock.LinkTo(_decoderBlock, result => result.IsValid);
+            _validatorBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>());
+            _decoderBlock.LinkTo(_outPutBlock);
 
-                switch (currentTelemetryBlock)
-                {
-                    case TransformBlock<byte[], DecodingResult> validationBlock
-                        when nextTelemetryBlock
-                            is TransformBlock<
-                                DecodingResult,
-                                Dictionary<TelemetryFields, double>
-                            > decoderBlockNext:
-                        validationBlock.LinkTo(decoderBlockNext, result => result.IsValid);
-                        validationBlock.LinkTo(
-                            DataflowBlock.NullTarget<DecodingResult>(),
-                            result => !result.IsValid
-                        );
-                        break;
-                    case TransformBlock<
-                        DecodingResult,
-                        Dictionary<TelemetryFields, double>
-                    > decoderBlockCurrent
-                        when nextTelemetryBlock
-                            is ActionBlock<Dictionary<TelemetryFields, double>> outputBlock:
-                        decoderBlockCurrent.LinkTo(outputBlock);
-                        break;
-                }
-            }
         }
 
         public void Dispose()
@@ -98,11 +65,6 @@ namespace TelemetryDevices.Services.PipeLines
                 return;
 
             _cancellationTokenSource.Cancel();
-
-            foreach (var block in _telemetryPipelineBlocks.OfType<IDisposable>())
-            {
-                block.Dispose();
-            }
 
             _cancellationTokenSource.Dispose();
             _disposed = true;
