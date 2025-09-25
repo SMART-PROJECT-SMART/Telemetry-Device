@@ -4,12 +4,11 @@ using Shared.Models.ICDModels;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public interface IOutputHandler
+    public interface IOutputHandler : ITargetBlock<Dictionary<TelemetryFields, double>>
     {
         void HandleOutput(
             Dictionary<TelemetryFields, double> decodedTelemetryData,
             ICD telemetryIcd
         );
-        ActionBlock<Dictionary<TelemetryFields, double>> CreateBlock(ICD icd);
     }
 }

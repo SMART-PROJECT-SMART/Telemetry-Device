@@ -2,8 +2,8 @@
 using Shared.Models.ICDModels;
 using Shared.Services.ICDsDirectory;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PortsManager;
+using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Services
 {
@@ -12,18 +12,18 @@ namespace TelemetryDevices.Services
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId =
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
-        private readonly IPipeLineDirector _telemetryPipelineDirector;
         private readonly IPortManager _portManager;
+        private readonly ITelemetryProducer _telemetryProducer;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
-            IPipeLineDirector telemetryPipelineDirector,
-            IPortManager portManager
+            IPortManager portManager,
+            ITelemetryProducer telemetryProducer
         )
         {
             _icdDirectory = icdDirectory;
-            _telemetryPipelineDirector = telemetryPipelineDirector;
             _portManager = portManager;
+            _telemetryProducer = telemetryProducer;
         }
 
         public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
@@ -59,17 +59,13 @@ namespace TelemetryDevices.Services
             )
             {
                 var currentTelemetryIcd = availableIcds[channelIndex];
-                var telemetryPipeline = _telemetryPipelineDirector.CreateStandardTelemetryPipeline(
-                    currentTelemetryIcd
-                );
-
                 var channel = new Channel(
                     portNumbers[channelIndex],
-                    telemetryPipeline,
-                    currentTelemetryIcd
+                    currentTelemetryIcd,
+                    _telemetryProducer
                 );
-                newTelemetryDevice.Channels.Add(channel);
 
+                newTelemetryDevice.Channels.Add(channel);
                 _portManager.AddPort(portNumbers[channelIndex], channel);
             }
         }

@@ -2,16 +2,11 @@
 using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
-    public interface ITelemetryDecoder
+    public interface ITelemetryDecoder : IPropagatorBlock<DecodingResult, Dictionary<TelemetryFields, double>>
     {
-        public Dictionary<TelemetryFields, double> DecodeData(
-            byte[] rawTelemetryData,
-            ICD telemetryIcd
-        );
-        TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> CreateBlock(ICD icd);
+        Dictionary<TelemetryFields, double> DecodeData(byte[] rawTelemetryData, ICD telemetryIcd);
     }
 }

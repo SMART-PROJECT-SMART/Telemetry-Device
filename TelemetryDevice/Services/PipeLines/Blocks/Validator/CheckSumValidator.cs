@@ -8,6 +8,19 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
     public class ChecksumValidator : IValidator
     {
+        private readonly TransformBlock<byte[], DecodingResult> _transformBlock;
+        private readonly ICD _icd;
+
+        public ChecksumValidator(ICD icd)
+        {
+            _icd = icd;
+            _transformBlock = new TransformBlock<byte[], DecodingResult>(rawTelemetryData =>
+            {
+                bool isDataValid = Validate(rawTelemetryData, _icd);
+                return new DecodingResult(isDataValid, rawTelemetryData);
+            });
+        }
+
         public bool Validate(byte[] compressedTelemetryData, ICD icd)
         {
             var telemetryBits = new BitArray(compressedTelemetryData);
@@ -49,14 +62,31 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             return expectedChecksum == actualCheckSumBits;
         }
 
-        public TransformBlock<byte[], DecodingResult> CreateBlock(ICD icd)
-        {
-            return new TransformBlock<byte[], DecodingResult>(rawTelemetryData =>
-            {
-                bool isDataValid = Validate(rawTelemetryData, icd);
-                return new DecodingResult(isDataValid, rawTelemetryData);
-            });
-        }
+        public Task Completion => _transformBlock.Completion;
+        public void Complete() => _transformBlock.Complete();
+        public void Fault(Exception exception) => ((IDataflowBlock)_transformBlock).Fault(exception);
+        
+        public bool Post(byte[] item) => ((ITargetBlock<byte[]>)_transformBlock).Post(item);
+        public Task<bool> SendAsync(byte[] item, CancellationToken cancellationToken = default) => 
+            ((ITargetBlock<byte[]>)_transformBlock).SendAsync(item, cancellationToken);
+        
+        public bool TryReceive(Predicate<DecodingResult> filter, out DecodingResult item) => 
+            _transformBlock.TryReceive(out item);
+        public bool TryReceiveAll(out IList<DecodingResult> items) => 
+            _transformBlock.TryReceiveAll(out items);
+        
+        public IDisposable LinkTo(ITargetBlock<DecodingResult> target, DataflowLinkOptions linkOptions) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).LinkTo(target, linkOptions);
+        
+        public DecodingResult ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<DecodingResult> target, out bool messageConsumed) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).ConsumeMessage(messageHeader, target, out messageConsumed);
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<DecodingResult> target) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).ReserveMessage(messageHeader, target);
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<DecodingResult> target) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).ReleaseReservation(messageHeader, target);
+        
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, byte[] messageValue, ISourceBlock<byte[]> source, bool consumeToAccept) => 
+            ((ITargetBlock<byte[]>)_transformBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
 
         private BitArray SubBits(BitArray sourceBits, int startIndex, int bitsCount)
         {

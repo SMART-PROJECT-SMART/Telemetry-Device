@@ -17,7 +17,7 @@ namespace TelemetryDevices.Services.PipeLines
         private bool _disposed;
         public ICD TelemetryICD { get; private set; }
 
-        public Pipeline(IValidator validatorBlock,ITelemetryDecoder decoderBlock,IOutputHandler outputBlock, ICD telemetryIcd)
+        public Pipeline(IValidator validatorBlock, ITelemetryDecoder decoderBlock, IOutputHandler outputBlock, ICD telemetryIcd)
         {
             _validatorBlock = validatorBlock;
             _decoderBlock = decoderBlock;
@@ -53,11 +53,9 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void LinkTelemetryPipelineBlocks()
         {
-            _validatorBlock.CreateBlock(TelemetryICD).LinkTo(_decoderBlock, result => result.IsValid);
-
-            _validatorBlock.CreateBlock(TelemetryICD).LinkTo(DataflowBlock.NullTarget<DecodingResult>());
-            _decoderBlock.CreateBlock(TelemetryICD).LinkTo(_outPutBlock);
-
+            _validatorBlock.LinkTo(_decoderBlock, new DataflowLinkOptions(), result => result.IsValid);
+            _validatorBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>());
+            _decoderBlock.LinkTo(_outputBlock, new DataflowLinkOptions());
         }
 
         public void Dispose()
@@ -66,7 +64,9 @@ namespace TelemetryDevices.Services.PipeLines
                 return;
 
             _cancellationTokenSource.Cancel();
-
+            _validatorBlock?.Complete();
+            _decoderBlock?.Complete();
+            _outputBlock?.Complete();
             _cancellationTokenSource.Dispose();
             _disposed = true;
         }

@@ -1,6 +1,10 @@
 ﻿using Shared.Common.Enums;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
+using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Models
 {
@@ -10,16 +14,24 @@ namespace TelemetryDevices.Models
         public IPipeLine PipeLine { get; set; }
         public ICD ICD { get; set; }
 
-        public Channel(int portNumber, IPipeLine pipeLine, ICD icd)
+        public Channel(int portNumber, ICD icd, ITelemetryProducer telemetryProducer)
         {
             PortNumber = portNumber;
-            PipeLine = pipeLine;
             ICD = icd;
+            PipeLine = CreatePipeline(icd, telemetryProducer);
+        }
+
+        private Pipeline CreatePipeline(ICD icd, ITelemetryProducer telemetryProducer)
+        {
+            var validator = new ChecksumValidator(icd);
+            var decoder = new TelemetryDataDecoder(icd);
+            var outputHandler = new KafkaOutputHandler(telemetryProducer, icd);
+
+            return new Pipeline(validator, decoder, outputHandler, icd);
         }
 
         public void ProcessTelemetryData(byte[] telemetryData)
         {
-            PipeLine.SetTelemetryICD(ICD);
             _ = PipeLine.ProcessTelemetryDataAsync(telemetryData);
         }
     }

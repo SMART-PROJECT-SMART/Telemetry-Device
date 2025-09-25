@@ -11,7 +11,23 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public class TelemetryDataDecoder : ITelemetryDecoder
     {
-        public TelemetryDataDecoder() { }
+        private readonly TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> _transformBlock;
+        private readonly ICD _icd;
+
+        public TelemetryDataDecoder(ICD icd)
+        {
+            _icd = icd;
+            _transformBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(
+                decodingResult =>
+                {
+                    if (!decodingResult.IsValid)
+                    {
+                        return new Dictionary<TelemetryFields, double>();
+                    }
+
+                    return DecodeData(decodingResult.Data, _icd);
+                });
+        }
 
         public Dictionary<TelemetryFields, double> DecodeData(
             byte[] rawTelemetryData,
@@ -24,20 +40,31 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             return decompressedTelemetryData;
         }
 
-        public TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> CreateBlock(ICD icd)
-        {
-            return new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(
-                decodingResult =>
-                {
-                    if (!decodingResult.IsValid)
-                    {
-                        return new Dictionary<TelemetryFields, double>();
-                    }
-
-                    return DecodeData(decodingResult.Data, icd);
-                }
-            );
-        }
+        public Task Completion => _transformBlock.Completion;
+        public void Complete() => _transformBlock.Complete();
+        public void Fault(Exception exception) => ((IDataflowBlock)_transformBlock).Fault(exception);
+        
+        public bool Post(DecodingResult item) => ((ITargetBlock<DecodingResult>)_transformBlock).Post(item);
+        public Task<bool> SendAsync(DecodingResult item, CancellationToken cancellationToken = default) => 
+            ((ITargetBlock<DecodingResult>)_transformBlock).SendAsync(item, cancellationToken);
+        
+        public bool TryReceive(Predicate<Dictionary<TelemetryFields, double>> filter, out Dictionary<TelemetryFields, double> item) => 
+            _transformBlock.TryReceive(out item);
+        public bool TryReceiveAll(out IList<Dictionary<TelemetryFields, double>> items) => 
+            _transformBlock.TryReceiveAll(out items);
+        
+        public IDisposable LinkTo(ITargetBlock<Dictionary<TelemetryFields, double>> target, DataflowLinkOptions linkOptions) => 
+            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).LinkTo(target, linkOptions);
+        
+        public Dictionary<TelemetryFields, double> ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<Dictionary<TelemetryFields, double>> target, out bool messageConsumed) => 
+            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).ConsumeMessage(messageHeader, target, out messageConsumed);
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<Dictionary<TelemetryFields, double>> target) => 
+            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).ReserveMessage(messageHeader, target);
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<Dictionary<TelemetryFields, double>> target) => 
+            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).ReleaseReservation(messageHeader, target);
+        
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, DecodingResult messageValue, ISourceBlock<DecodingResult> source, bool consumeToAccept) => 
+            ((ITargetBlock<DecodingResult>)_transformBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
 
         private Dictionary<TelemetryFields, double> DecompressTelemetryDataByICD(
             BitArray compressedTelemetryData,

@@ -3,11 +3,6 @@ using Shared.Configuration;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
-using TelemetryDevices.Services.PacketProcessing;
-using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
-using TelemetryDevices.Services.PipeLines.Blocks.Output;
-using TelemetryDevices.Services.PipeLines.Blocks.Validator;
-using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -71,15 +66,6 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddPipelineBlocks(this IServiceCollection services)
-        {
-            services.AddTransient<IValidator, ChecksumValidator>();
-            services.AddTransient<ITelemetryDecoder, TelemetryDataDecoder>();
-            services.AddTransient<IOutputHandler, KafkaOutputHandler>();
-            services.AddTransient<IPipeLineDirector, PipelineDirector>();
-            return services;
-        }
-
         public static IServiceCollection AddPortManager(this IServiceCollection services)
         {
             services.AddSingleton<IPortManager, PortManager>();
@@ -89,12 +75,6 @@ namespace TelemetryDevices.Services.Extensions
         public static IServiceCollection AddTelemetryDeviceManager(this IServiceCollection services)
         {
             services.AddSingleton<TelemetryDeviceManager>();
-            return services;
-        }
-
-        public static IServiceCollection AddPacketProcessor(this IServiceCollection services)
-        {
-            services.AddSingleton<IPacketProcessor, PacketProcessor>();
             return services;
         }
 

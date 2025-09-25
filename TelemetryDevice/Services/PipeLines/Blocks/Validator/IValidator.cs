@@ -1,13 +1,11 @@
 ﻿using System.Threading.Tasks.Dataflow;
 using Shared.Models.ICDModels;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
-    public interface IValidator
+    public interface IValidator : IPropagatorBlock<byte[], DecodingResult>
     {
-        public bool Validate(byte[] compressedTelemetryData, ICD icd);
-        TransformBlock<byte[], DecodingResult> CreateBlock(ICD icd);
+        bool Validate(byte[] compressedTelemetryData, ICD icd);
     }
 }
