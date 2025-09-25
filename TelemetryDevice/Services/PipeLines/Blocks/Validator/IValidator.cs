@@ -8,6 +8,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
     public interface IValidator
     {
         public bool Validate(byte[] compressedTelemetryData, ICD icd);
-        TransformBlock<byte[], DecodingResult> GetBlock(ICD icd);
+        TransformBlock<byte[], DecodingResult> CreateBlock(ICD icd);
     }
 }

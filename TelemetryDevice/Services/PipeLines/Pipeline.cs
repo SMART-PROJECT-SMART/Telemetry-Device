@@ -53,9 +53,10 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void LinkTelemetryPipelineBlocks()
         {
-            _validatorBlock.LinkTo(_decoderBlock, result => result.IsValid);
-            _validatorBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>());
-            _decoderBlock.LinkTo(_outPutBlock);
+            _validatorBlock.CreateBlock(TelemetryICD).LinkTo(_decoderBlock, result => result.IsValid);
+
+            _validatorBlock.CreateBlock(TelemetryICD).LinkTo(DataflowBlock.NullTarget<DecodingResult>());
+            _decoderBlock.CreateBlock(TelemetryICD).LinkTo(_outPutBlock);
 
         }
 

@@ -10,6 +10,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             Dictionary<TelemetryFields, double> decodedTelemetryData,
             ICD telemetryIcd
         );
-        ActionBlock<Dictionary<TelemetryFields, double>> GetBlock(ICD icd);
+        ActionBlock<Dictionary<TelemetryFields, double>> CreateBlock(ICD icd);
     }
 }

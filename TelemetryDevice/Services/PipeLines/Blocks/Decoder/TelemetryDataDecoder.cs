@@ -24,7 +24,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             return decompressedTelemetryData;
         }
 
-        public TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> GetBlock(ICD icd)
+        public TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> CreateBlock(ICD icd)
         {
             return new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(
                 decodingResult =>

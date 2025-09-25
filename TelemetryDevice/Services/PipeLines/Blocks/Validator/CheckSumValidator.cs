@@ -49,7 +49,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             return expectedChecksum == actualCheckSumBits;
         }
 
-        public TransformBlock<byte[], DecodingResult> GetBlock(ICD icd)
+        public TransformBlock<byte[], DecodingResult> CreateBlock(ICD icd)
         {
             return new TransformBlock<byte[], DecodingResult>(rawTelemetryData =>
             {

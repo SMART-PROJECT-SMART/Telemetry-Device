@@ -19,21 +19,21 @@ namespace TelemetryDevices.Services.PipeLines.Builder
         public IPipeLineBuilder AddValidator(IValidator telemetryValidator, ICD telemetryIcd)
         {
             _telemetryIcd = telemetryIcd;
-            _telemetryPipelineBlocks.Add(telemetryValidator.GetBlock(telemetryIcd));
+            _telemetryPipelineBlocks.Add(telemetryValidator.CreateBlock(telemetryIcd));
             return this;
         }
 
         public IPipeLineBuilder AddDecoder(ITelemetryDecoder telemetryDecoder, ICD telemetryIcd)
         {
             _telemetryIcd = telemetryIcd;
-            _telemetryPipelineBlocks.Add(telemetryDecoder.GetBlock(telemetryIcd));
+            _telemetryPipelineBlocks.Add(telemetryDecoder.CreateBlock(telemetryIcd));
             return this;
         }
 
         public IPipeLineBuilder AddOutput(IOutputHandler telemetryOutputHandler, ICD telemetryIcd)
         {
             _telemetryIcd = telemetryIcd;
-            _telemetryPipelineBlocks.Add(telemetryOutputHandler.GetBlock(telemetryIcd));
+            _telemetryPipelineBlocks.Add(telemetryOutputHandler.CreateBlock(telemetryIcd));
             return this;
         }
 

@@ -38,7 +38,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             );
         }
 
-        public ActionBlock<Dictionary<TelemetryFields, double>> GetBlock(ICD icd)
+        public ActionBlock<Dictionary<TelemetryFields, double>> CreateBlock(ICD icd)
         {
             return new ActionBlock<Dictionary<TelemetryFields, double>>(decodedTelemetryData =>
             {

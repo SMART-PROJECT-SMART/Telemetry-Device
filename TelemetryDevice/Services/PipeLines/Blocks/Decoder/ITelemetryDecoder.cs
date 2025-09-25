@@ -12,6 +12,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             byte[] rawTelemetryData,
             ICD telemetryIcd
         );
-        TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> GetBlock(ICD icd);
+        TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> CreateBlock(ICD icd);
     }
 }
