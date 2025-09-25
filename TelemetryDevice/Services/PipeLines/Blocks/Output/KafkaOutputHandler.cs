@@ -31,7 +31,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 
             var kafkaMessageKey = tailIdValue.ToString();
             var kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue}";
-            var kafkaPartition = Math.Abs((telemetryIcd?.FileName ?? "unknown-icd").GetHashCode());
+            var kafkaPartition = _icd.Id;
 
             var produceTask = _producer.ProduceAsync(
                 kafkaTopicName,
