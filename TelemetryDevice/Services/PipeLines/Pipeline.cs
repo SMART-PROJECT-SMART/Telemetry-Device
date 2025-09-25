@@ -1,6 +1,5 @@
 using System.Threading.Tasks.Dataflow;
-using Shared.Common.Enums;
-using Shared.Models.ICDModels;
+using Core.Models.ICDModels;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;

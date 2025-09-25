@@ -1,4 +1,4 @@
-using Shared.Services;
+using Core.Services;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services;

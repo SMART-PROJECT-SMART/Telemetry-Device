@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Threading.Tasks.Dataflow;
-using Shared.Models.ICDModels;
+using Core.Models.ICDModels;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 

@@ -1,8 +1,7 @@
 ﻿using System.Collections;
 using System.Threading.Tasks.Dataflow;
-using Shared.Common.Enums;
-using Shared.Models.ICDModels;
-using TelemetryDevices.Common;
+using Core.Common.Enums;
+using Core.Models.ICDModels;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Extensions;
 using TelemetryDevices.Services.Helpers;

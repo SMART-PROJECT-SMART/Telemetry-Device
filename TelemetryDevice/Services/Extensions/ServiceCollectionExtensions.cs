@@ -1,5 +1,5 @@
 ﻿using Confluent.Kafka;
-using Shared.Configuration;
+using Core.Configuration;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;

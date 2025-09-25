@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks.Dataflow;
-using Shared.Common.Enums;
-using Shared.Models.ICDModels;
+using Core.Common.Enums;
+using Core.Models.ICDModels;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {

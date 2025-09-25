@@ -1,5 +1,5 @@
-﻿using Shared.Common.Enums;
-using Shared.Models.ICDModels;
+﻿using Core.Common.Enums;
+using Core.Models.ICDModels;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;

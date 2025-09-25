@@ -1,6 +1,5 @@
-﻿using Shared.Common.Enums;
-using Shared.Models.ICDModels;
-using Shared.Services.ICDsDirectory;
+﻿using Core.Models.ICDModels;
+using Core.Services.ICDsDirectory;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Kafka.Producers;

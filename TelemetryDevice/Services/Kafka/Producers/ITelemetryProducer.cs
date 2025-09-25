@@ -1,4 +1,4 @@
-﻿using Shared.Common.Enums;
+﻿using Core.Common.Enums;
 
 namespace TelemetryDevices.Services.Kafka.Producers
 {

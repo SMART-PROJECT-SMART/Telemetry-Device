@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks.Dataflow;
-using Shared.Models.ICDModels;
+using Core.Models.ICDModels;
 using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
