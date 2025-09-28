@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
 using Core.Configuration;
+using Microsoft.Extensions.Options;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -86,6 +88,22 @@ namespace TelemetryDevices.Services.Extensions
             services.Configure<ICDSettings>(
                 appConfiguration.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY)
             );
+            return services;
+        }
+        public static IServiceCollection AddKafkaTopicManager(this IServiceCollection services)
+        {
+            services.AddSingleton<IAdminClient>(provider =>
+            {
+                var kafkaConfig = provider.GetService<IOptions<KafkaConfiguration>>()?.Value;
+                var adminConfig = new AdminClientConfig
+                {
+                    BootstrapServers = kafkaConfig?.BootstrapServers
+                };
+                return new AdminClientBuilder(adminConfig).Build();
+            });
+
+            services.AddSingleton<IKafkaTopicManager, KafkaTopicManager>();
+
             return services;
         }
     }
