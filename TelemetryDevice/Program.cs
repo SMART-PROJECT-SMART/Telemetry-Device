@@ -19,6 +19,8 @@ builder.Services.AddICDConfiguration(builder.Configuration);
 builder.Services.AddPortManager();
 builder.Services.AddKafkaServices(builder.Configuration);
 builder.Services.AddKafkaTelemetryProducer();
+builder.Services.AddKafkaTopicManager();
+builder.Services.AddKafkaTopicManager();
 
 var app = builder.Build();
 

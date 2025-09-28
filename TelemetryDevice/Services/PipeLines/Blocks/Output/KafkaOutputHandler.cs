@@ -41,7 +41,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             );
 
             produceTask.Wait(
-                TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.PRODUCE_TIMEOUT_SECONDS)
+                TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.WAIT_TIMEOUT_SECONDS)
             );
         }
 
