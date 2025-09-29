@@ -6,15 +6,21 @@ using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
-    public class ChecksumValidatorBlock : IValidatorBlock
+    public class ChecksumValidator : IValidator
     {
 
-        public ChecksumValidatorBlock()
+        public ChecksumValidator()
         {
             
         }
 
-        public bool Validate(byte[] compressedTelemetryData, ICD icd)
+        public ValidationResult Validate(byte[] compressedTelemetryData, ICD icd)
+        {
+            var isValid = PerformValidation(compressedTelemetryData, icd);
+            return new ValidationResult(isValid, compressedTelemetryData);
+        }
+
+        private bool PerformValidation(byte[] compressedTelemetryData, ICD icd)
         {
             var telemetryBits = new BitArray(compressedTelemetryData);
             int totalBitsCount = telemetryBits.Length;
@@ -25,14 +31,9 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 
             int dataBitsLength = icdBitsLength + signBitsLength;
             int dataPlusChecksumBits = dataBitsLength + checksumBitsLength;
-            int paddingBitsLength =
-                (
-                    TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                    - (
-                        dataPlusChecksumBits
-                        % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                    )
-                ) % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT;
+            int paddingBitsLength = (TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
+                - (dataPlusChecksumBits % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT))
+                % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT;
             int expectedTotalBits = dataBitsLength + checksumBitsLength + paddingBitsLength;
 
             var dataBitsSection = SubBits(telemetryBits, 0, dataBitsLength);
@@ -44,6 +45,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
                 checksumStartPosition,
                 checksumBitsLength
             );
+
             if (expectedChecksum == actualChecksumPrePadding && totalBitsCount == expectedTotalBits)
                 return true;
 
@@ -54,14 +56,11 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             );
             return expectedChecksum == actualCheckSumBits;
         }
+
         private BitArray SubBits(BitArray sourceBits, int startIndex, int bitsCount)
         {
             var destinationBits = new BitArray(bitsCount);
-            for (
-                int bitIndex = 0;
-                bitIndex < bitsCount && startIndex + bitIndex < sourceBits.Length;
-                bitIndex++
-            )
+            for (int bitIndex = 0; bitIndex < bitsCount && startIndex + bitIndex < sourceBits.Length; bitIndex++)
                 destinationBits[bitIndex] = sourceBits[startIndex + bitIndex];
             return destinationBits;
         }
@@ -69,15 +68,9 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
         private static uint ExtractUInt(BitArray bitArray, int startPosition, int bitsCount)
         {
             uint extractedValue = TelemetryDeviceConstants.TelemetryCompression.DEFAULT_UINT_VALUE;
-            for (
-                int bitOffset = 0;
-                bitOffset < bitsCount && startPosition + bitOffset < bitArray.Length;
-                bitOffset++
-            )
+            for (int bitOffset = 0; bitOffset < bitsCount && startPosition + bitOffset < bitArray.Length; bitOffset++)
                 if (bitArray[startPosition + bitOffset])
-                    extractedValue |= (uint)(
-                        TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitOffset
-                    );
+                    extractedValue |= (uint)(TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE << bitOffset);
             return extractedValue;
         }
 
@@ -90,11 +83,10 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             for (int currentByteIndex = 0; currentByteIndex < totalByteCount; currentByteIndex++)
             {
                 byte currentByteValue = GetByte(dataBits, currentByteIndex, bitsPerByteConstant);
-                runningChecksum =
-                    runningChecksum
-                        * TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MULTIPLIER
-                        + TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_INCREMENT
-                        + currentByteValue
+                runningChecksum = runningChecksum
+                    * TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MULTIPLIER
+                    + TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_INCREMENT
+                    + currentByteValue
                     & TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MODULO;
             }
             return runningChecksum;
@@ -102,24 +94,13 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 
         private static byte GetByte(BitArray dataBits, int byteIndex, int bitsPerByteConstant)
         {
-            byte extractedByteValue = TelemetryDeviceConstants
-                .TelemetryCompression
-                .DEFAULT_BYTE_VALUE;
+            byte extractedByteValue = TelemetryDeviceConstants.TelemetryCompression.DEFAULT_BYTE_VALUE;
             int startBitPosition = byteIndex * bitsPerByteConstant;
-            int bitsInCurrentByte = Math.Min(
-                bitsPerByteConstant,
-                dataBits.Length - startBitPosition
-            );
-            for (
-                int bitPositionInByte = 0;
-                bitPositionInByte < bitsInCurrentByte;
-                bitPositionInByte++
-            )
+            int bitsInCurrentByte = Math.Min(bitsPerByteConstant, dataBits.Length - startBitPosition);
+
+            for (int bitPositionInByte = 0; bitPositionInByte < bitsInCurrentByte; bitPositionInByte++)
                 if (dataBits[startBitPosition + bitPositionInByte])
-                    extractedByteValue |= (byte)(
-                        TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                        << bitPositionInByte
-                    );
+                    extractedByteValue |= (byte)(TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE << bitPositionInByte);
             return extractedByteValue;
         }
     }

@@ -8,32 +8,27 @@ using TelemetryDevices.Services.Helpers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
-    public class TelemetryDecoderBlock : ITelemetryDecoderBlock
+    public class TelemetryDecoder : ITelemetryDecoder
     {
 
-        public TelemetryDecoderBlock()
-        {
-        }
 
-        public Dictionary<TelemetryFields, double> DecodeData(
-            byte[] rawTelemetryData,
-            ICD telemetryIcd
-        )
+        public DecodingResult DecodeData(ValidationResult validationResult, ICD telemetryIcd)
         {
-            BitArray compressedBitArray = rawTelemetryData.ToBitArray();
+            if (!validationResult.IsValid)
+            {
+                return new DecodingResult(new Dictionary<TelemetryFields, double>());
+            }
+            BitArray compressedBitArray = validationResult.Data.ToBitArray();
             Dictionary<TelemetryFields, double> decompressedTelemetryData =
                 DecompressTelemetryDataByICD(compressedBitArray, telemetryIcd);
-            return decompressedTelemetryData;
+            return new DecodingResult(decompressedTelemetryData);
         }
+
         private Dictionary<TelemetryFields, double> DecompressTelemetryDataByICD(
             BitArray compressedTelemetryData,
-            ICD telemetryIcd
-        )
+            ICD telemetryIcd)
         {
-            BitArray mainDataBitSection = ExtractMainDataBits(
-                compressedTelemetryData,
-                telemetryIcd
-            );
+            BitArray mainDataBitSection = ExtractMainDataBits(compressedTelemetryData, telemetryIcd);
             BitArray signBitSection = ExtractSignBits(compressedTelemetryData, telemetryIcd);
             return ReconstructTelemetryValues(mainDataBitSection, signBitSection, telemetryIcd);
         }
@@ -56,9 +51,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             BitArray signBitSection = new BitArray(signBitsCount);
 
             for (int signBitIndex = 0; signBitIndex < signBitsCount; signBitIndex++)
-                signBitSection[signBitIndex] = compressedTelemetryData[
-                    mainDataLength + signBitIndex
-                ];
+                signBitSection[signBitIndex] = compressedTelemetryData[mainDataLength + signBitIndex];
 
             return signBitSection;
         }
@@ -66,8 +59,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
         private Dictionary<TelemetryFields, double> ReconstructTelemetryValues(
             BitArray mainDataBitSection,
             BitArray signBitSection,
-            ICD telemetryIcd
-        )
+            ICD telemetryIcd)
         {
             Dictionary<TelemetryFields, double> reconstructedTelemetryData =
                 new Dictionary<TelemetryFields, double>();

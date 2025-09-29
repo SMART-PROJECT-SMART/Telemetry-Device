@@ -5,6 +5,9 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -59,6 +62,14 @@ namespace TelemetryDevices.Services.Extensions
         public static IServiceCollection AddKafkaTelemetryProducer(this IServiceCollection services)
         {
             services.AddSingleton<ITelemetryProducer, TelemetryProducer>();
+            return services;
+        }
+
+        public static IServiceCollection AddBlocksServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IValidator, ChecksumValidator>();
+            services.AddSingleton<ITelemetryDecoder, TelemetryDecoder>();
+            services.AddSingleton<IOutputHandler, KafkaOutputHandler>();
             return services;
         }
 

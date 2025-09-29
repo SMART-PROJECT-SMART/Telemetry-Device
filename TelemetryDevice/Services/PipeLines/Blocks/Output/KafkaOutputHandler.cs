@@ -7,18 +7,18 @@ using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public class KafkaOutputBlock : IOutputBlock
+    public class KafkaOutputHandler : IOutputHandler
     {
         private readonly ITelemetryProducer _producer;
 
-        public KafkaOutputBlock(ITelemetryProducer producer)
+        public KafkaOutputHandler(ITelemetryProducer producer)
         {
             _producer = producer;
         }
 
         public void HandleOutput(DecodingResult decodingResult, ICD telemetryIcd)
         {
-            var tailIdValue = decodingResult.GetValue(TelemetryFields.TailId) ?? 0;
+            var tailIdValue = decodingResult.GetValue(TelemetryFields.TailId);
 
             var kafkaMessageKey = tailIdValue.ToString();
             var kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue}";
@@ -26,15 +26,11 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 
             var decodedTelemetryData = decodingResult.ToDictionary();
 
-            var produceTask = _producer.ProduceAsync(
+            _ = _producer.ProduceAsync(
                 kafkaTopicName,
                 kafkaPartition,
                 kafkaMessageKey,
                 decodedTelemetryData
-            );
-
-            produceTask.Wait(
-                TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.WAIT_TIMEOUT_SECONDS)
             );
         }
     }

@@ -14,21 +14,13 @@ namespace TelemetryDevices.Models
         public IPipeLine PipeLine { get; set; }
         public ICD ICD { get; set; }
 
-        public Channel(int portNumber, ICD icd, ITelemetryProducer telemetryProducer)
+        public Channel(int portNumber, ICD icd, IValidator validator, ITelemetryDecoder telemetryDecoder, IOutputHandler outputHandler)
         {
             PortNumber = portNumber;
             ICD = icd;
-            PipeLine = CreatePipeline(icd, telemetryProducer);
+            PipeLine = new Pipeline(validator, telemetryDecoder, outputHandler, icd);
         }
 
-        private Pipeline CreatePipeline(ICD icd, ITelemetryProducer telemetryProducer)
-        {
-            var validator = new ChecksumValidatorBlock(icd);
-            var decoder = new TelemetryDecoderBlock(icd);
-            var outputHandler = new KafkaOutputBlock(telemetryProducer, icd);
-
-            return new Pipeline(validator, decoder, outputHandler, icd);
-        }
 
         public void ProcessTelemetryData(byte[] telemetryData)
         {

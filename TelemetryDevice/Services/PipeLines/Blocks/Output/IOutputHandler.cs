@@ -5,7 +5,7 @@ using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public interface IOutputBlock
+    public interface IOutputHandler
     {
         void HandleOutput(DecodingResult decodingResult, ICD telemetryIcd);
     }

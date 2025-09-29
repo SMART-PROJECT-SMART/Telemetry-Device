@@ -5,8 +5,9 @@ using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
-    public interface ITelemetryDecoderBlock
+    public interface ITelemetryDecoder
     {
-        Dictionary<TelemetryFields, double> DecodeData(byte[] rawTelemetryData, ICD telemetryIcd);
+        public DecodingResult DecodeData(ValidationResult validationResult, ICD telemetryIcd);
+
     }
 }

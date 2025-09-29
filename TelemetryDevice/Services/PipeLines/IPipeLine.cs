@@ -2,7 +2,7 @@
 
 namespace TelemetryDevices.Services.PipeLines
 {
-    public interface IPipeLine
+    public interface IPipeLine : IDisposable
     {
         public Task ProcessTelemetryDataAsync(byte[] telemetryData);
         public void SetTelemetryICD(ICD telemetryIcd);

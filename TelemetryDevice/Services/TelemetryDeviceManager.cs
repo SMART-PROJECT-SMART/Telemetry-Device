@@ -5,6 +5,9 @@ using TelemetryDevices.Models;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Output;
 
 namespace TelemetryDevices.Services
 {
@@ -15,27 +18,37 @@ namespace TelemetryDevices.Services
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly ITelemetryProducer _telemetryProducer;
-        private readonly IKafkaTopicManager _kafkaTopicManager; 
+        private readonly IKafkaTopicManager _kafkaTopicManager;
+        private readonly IValidator _validator;
+        private readonly ITelemetryDecoder _telemetryDecoder;
+        private readonly IOutputHandler _outputHandler;
+        
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
             ITelemetryProducer telemetryProducer,
-            IKafkaTopicManager kafkaTopicManager
+            IKafkaTopicManager kafkaTopicManager,
+            IValidator validator,
+            ITelemetryDecoder telemetryDecoder,
+            IOutputHandler outputHandler
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _telemetryProducer = telemetryProducer;
             _kafkaTopicManager = kafkaTopicManager;
+            _validator = validator;
+            _telemetryDecoder = telemetryDecoder;
+            _outputHandler = outputHandler;
         }
 
         public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
-            var newTelemetryDevice = new TelemetryDevice(location);
+            TelemetryDevice newTelemetryDevice = new TelemetryDevice(location);
             _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
 
-            var availableIcds = _icdDirectory.GetAllICDs().ToList();
+            List<ICD> availableIcds = _icdDirectory.GetAllICDs().ToList();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
             await _kafkaTopicManager.EnsureTopicExistsAsync(
                 $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{tailId}"
@@ -64,11 +77,13 @@ namespace TelemetryDevices.Services
                 channelIndex++
             )
             {
-                var currentTelemetryIcd = availableIcds[channelIndex];
-                var channel = new Channel(
+                ICD currentTelemetryIcd = availableIcds[channelIndex];
+                Channel channel = new Channel(
                     portNumbers[channelIndex],
                     currentTelemetryIcd,
-                    _telemetryProducer
+                    _validator,
+                    _telemetryDecoder,
+                    _outputHandler
                 );
 
                 newTelemetryDevice.Channels.Add(channel);
@@ -78,11 +93,11 @@ namespace TelemetryDevices.Services
 
         public bool RemoveTelemetryDevice(int tailId)
         {
-            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out var targetTelemetryDevice))
+            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out TelemetryDevice? targetTelemetryDevice))
             {
                 return false;
             }
-            foreach (var telemetryDeviceChannel in targetTelemetryDevice.Channels)
+            foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
             {
                 _portManager.RemovePort(telemetryDeviceChannel.PortNumber);
             }
