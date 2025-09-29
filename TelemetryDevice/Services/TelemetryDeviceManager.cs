@@ -1,8 +1,10 @@
 ﻿using Core.Models.ICDModels;
 using Core.Services.ICDsDirectory;
+using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Services.Kafka.Topic_Manager;
 
 namespace TelemetryDevices.Services
 {
@@ -13,19 +15,21 @@ namespace TelemetryDevices.Services
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly ITelemetryProducer _telemetryProducer;
-
+        private readonly IKafkaTopicManager _kafkaTopicManager; 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
-            ITelemetryProducer telemetryProducer
+            ITelemetryProducer telemetryProducer,
+            IKafkaTopicManager kafkaTopicManager
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _telemetryProducer = telemetryProducer;
+            _kafkaTopicManager = kafkaTopicManager;
         }
 
-        public void AddTelemetryDevice(int tailId, List<int> portNumbers, Location location)
+        public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
             var newTelemetryDevice = new TelemetryDevice(location);
@@ -33,6 +37,9 @@ namespace TelemetryDevices.Services
 
             var availableIcds = _icdDirectory.GetAllICDs().ToList();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
+            await _kafkaTopicManager.EnsureTopicExistsAsync(
+                $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{tailId}"
+            );
         }
 
         private void ValidateTelemetryDeviceDoesNotExist(int tailId)

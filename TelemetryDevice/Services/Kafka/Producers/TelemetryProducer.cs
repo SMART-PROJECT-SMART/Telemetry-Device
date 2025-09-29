@@ -9,12 +9,10 @@ namespace TelemetryDevices.Services.Kafka.Producers
     public class TelemetryProducer : ITelemetryProducer
     {
         private readonly IProducer<string, byte[]> _producer;
-        private readonly IKafkaTopicManager _kafkaTopicManager;
 
-        public TelemetryProducer(ProducerConfig producerConfig,IKafkaTopicManager kafkaTopicManager)
+        public TelemetryProducer(ProducerConfig producerConfig)
         {
             _producer = new ProducerBuilder<string, byte[]>(producerConfig).Build();
-            _kafkaTopicManager = kafkaTopicManager;
         }
 
         public async Task ProduceAsync(
@@ -24,7 +22,6 @@ namespace TelemetryDevices.Services.Kafka.Producers
             Dictionary<TelemetryFields, double> telemetryData
         )
         {
-            await _kafkaTopicManager.EnsureTopicExistsAsync(topicName);
             var serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);
             var kafkaMessage = new Message<string, byte[]>
             {
