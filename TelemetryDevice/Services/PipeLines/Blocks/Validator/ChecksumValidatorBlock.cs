@@ -8,17 +8,10 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
     public class ChecksumValidatorBlock : IValidatorBlock
     {
-        private readonly TransformBlock<byte[], ValidationResult> _transformBlock;
-        private readonly ICD _icd;
 
-        public ChecksumValidatorBlock(ICD icd)
+        public ChecksumValidatorBlock()
         {
-            _icd = icd;
-            _transformBlock = new TransformBlock<byte[], ValidationResult>(rawTelemetryData =>
-            {
-                bool isDataValid = Validate(rawTelemetryData, _icd);
-                return new ValidationResult(isDataValid, rawTelemetryData);
-            });
+            
         }
 
         public bool Validate(byte[] compressedTelemetryData, ICD icd)
@@ -61,33 +54,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             );
             return expectedChecksum == actualCheckSumBits;
         }
-
-        public Task Completion => _transformBlock.Completion;
-        public void Complete() => _transformBlock.Complete();
-        public void Fault(Exception exception) => ((IDataflowBlock)_transformBlock).Fault(exception);
-        
-        public bool Post(byte[] item) => ((ITargetBlock<byte[]>)_transformBlock).Post(item);
-        public Task<bool> SendAsync(byte[] item, CancellationToken cancellationToken = default) => 
-            ((ITargetBlock<byte[]>)_transformBlock).SendAsync(item, cancellationToken);
-        
-        public bool TryReceive(Predicate<ValidationResult> filter, out ValidationResult item) => 
-            _transformBlock.TryReceive(out item);
-        public bool TryReceiveAll(out IList<ValidationResult> items) => 
-            _transformBlock.TryReceiveAll(out items);
-        
-        public IDisposable LinkTo(ITargetBlock<ValidationResult> target, DataflowLinkOptions linkOptions) => 
-            ((ISourceBlock<ValidationResult>)_transformBlock).LinkTo(target, linkOptions);
-        
-        public ValidationResult ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<ValidationResult> target, out bool messageConsumed) => 
-            ((ISourceBlock<ValidationResult>)_transformBlock).ConsumeMessage(messageHeader, target, out messageConsumed);
-        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<ValidationResult> target) => 
-            ((ISourceBlock<ValidationResult>)_transformBlock).ReserveMessage(messageHeader, target);
-        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<ValidationResult> target) => 
-            ((ISourceBlock<ValidationResult>)_transformBlock).ReleaseReservation(messageHeader, target);
-        
-        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, byte[] messageValue, ISourceBlock<byte[]> source, bool consumeToAccept) => 
-            ((ITargetBlock<byte[]>)_transformBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
-
         private BitArray SubBits(BitArray sourceBits, int startIndex, int bitsCount)
         {
             var destinationBits = new BitArray(bitsCount);
