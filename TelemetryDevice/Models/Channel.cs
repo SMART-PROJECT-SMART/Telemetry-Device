@@ -23,9 +23,9 @@ namespace TelemetryDevices.Models
 
         private Pipeline CreatePipeline(ICD icd, ITelemetryProducer telemetryProducer)
         {
-            var validator = new ChecksumValidator(icd);
-            var decoder = new TelemetryDataDecoder(icd);
-            var outputHandler = new KafkaOutputHandler(telemetryProducer, icd);
+            var validator = new ChecksumValidatorBlock(icd);
+            var decoder = new TelemetryDecoderBlock(icd);
+            var outputHandler = new KafkaOutputBlock(telemetryProducer, icd);
 
             return new Pipeline(validator, decoder, outputHandler, icd);
         }
