@@ -2,36 +2,36 @@
 using Core.Common.Enums;
 using Core.Models.ICDModels;
 using TelemetryDevices.Common;
+using TelemetryDevices.Models;
 using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public class KafkaOutputHandler : IOutputHandler
+    public class KafkaOutputBlock : IOutputBlock
     {
         private readonly ITelemetryProducer _producer;
-        private readonly ActionBlock<Dictionary<TelemetryFields, double>> _actionBlock;
+        private readonly ActionBlock<DecodingResult> _actionBlock;
         private readonly ICD _icd;
 
-        public KafkaOutputHandler(ITelemetryProducer producer, ICD icd)
+        public KafkaOutputBlock(ITelemetryProducer producer, ICD icd)
         {
             _producer = producer;
             _icd = icd;
-            _actionBlock = new ActionBlock<Dictionary<TelemetryFields, double>>(decodedTelemetryData =>
+            _actionBlock = new ActionBlock<DecodingResult>(decodingResult =>
             {
-                HandleOutput(decodedTelemetryData, _icd);
+                HandleOutput(decodingResult, _icd);
             });
         }
 
-        public void HandleOutput(
-            Dictionary<TelemetryFields, double> decodedTelemetryData,
-            ICD telemetryIcd
-        )
+        public void HandleOutput(DecodingResult decodingResult, ICD telemetryIcd)
         {
-            decodedTelemetryData.TryGetValue(TelemetryFields.TailId, out var tailIdValue);
+            var tailIdValue = decodingResult.GetValue(TelemetryFields.TailId) ?? 0;
 
             var kafkaMessageKey = tailIdValue.ToString();
             var kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue}";
             var kafkaPartition = _icd.Id;
+
+            var decodedTelemetryData = decodingResult.ToDictionary();
 
             var produceTask = _producer.ProduceAsync(
                 kafkaTopicName,
@@ -45,13 +45,14 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             );
         }
 
+
         public Task Completion => _actionBlock.Completion;
         public void Complete() => _actionBlock.Complete();
         public void Fault(Exception exception) => ((IDataflowBlock)_actionBlock).Fault(exception);
-        public bool Post(Dictionary<TelemetryFields, double> item) => _actionBlock.Post(item);
-        public Task<bool> SendAsync(Dictionary<TelemetryFields, double> item, CancellationToken cancellationToken = default) => 
+        public bool Post(DecodingResult item) => _actionBlock.Post(item);
+        public Task<bool> SendAsync(DecodingResult item, CancellationToken cancellationToken = default) => 
             _actionBlock.SendAsync(item, cancellationToken);
-        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, Dictionary<TelemetryFields, double> messageValue, ISourceBlock<Dictionary<TelemetryFields, double>> source, bool consumeToAccept) => 
-            ((ITargetBlock<Dictionary<TelemetryFields, double>>)_actionBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, DecodingResult messageValue, ISourceBlock<DecodingResult> source, bool consumeToAccept) => 
+            ((ITargetBlock<DecodingResult>)_actionBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
     }
 }

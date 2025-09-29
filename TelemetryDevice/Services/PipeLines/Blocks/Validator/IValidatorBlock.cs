@@ -4,7 +4,7 @@ using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
-    public interface IValidator : IPropagatorBlock<byte[], DecodingResult>
+    public interface IValidatorBlock : IPropagatorBlock<byte[], ValidationResult>
     {
         bool Validate(byte[] compressedTelemetryData, ICD icd);
     }

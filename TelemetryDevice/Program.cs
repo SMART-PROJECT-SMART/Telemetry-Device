@@ -36,7 +36,7 @@ sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1);
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2);
 
 var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
-tdManager.AddTelemetryDeviceAsync(
+await tdManager.AddTelemetryDeviceAsync(
     TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID,
     [
         TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,

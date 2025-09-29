@@ -9,19 +9,20 @@ namespace TelemetryDevices.Services.PipeLines
 {
     public class Pipeline : IPipeLine, IDisposable
     {
-        private readonly IValidator _validatorBlock;
-        private readonly ITelemetryDecoder _decoderBlock;
-        private readonly IOutputHandler _outputBlock;
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly IValidatorBlock _validatorBlock;
+        private readonly ITelemetryDecoderBlock _decoderBlock;
+        private readonly IOutputBlock _outputBlock;
+        private readonly CancellationTokenSource _cancellationTokenSource;
         private bool _disposed;
         public ICD TelemetryICD { get; private set; }
 
-        public Pipeline(IValidator validatorBlock, ITelemetryDecoder decoderBlock, IOutputHandler outputBlock, ICD telemetryIcd)
+        public Pipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock decoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
         {
             _validatorBlock = validatorBlock;
             _decoderBlock = decoderBlock;
             _outputBlock = outputBlock;
             TelemetryICD = telemetryIcd;
+            _cancellationTokenSource = new CancellationTokenSource();
             LinkTelemetryPipelineBlocks();
         }
 
@@ -52,9 +53,14 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void LinkTelemetryPipelineBlocks()
         {
-            _validatorBlock.LinkTo(_decoderBlock, new DataflowLinkOptions(), result => result.IsValid);
-            _validatorBlock.LinkTo(DataflowBlock.NullTarget<DecodingResult>());
-            _decoderBlock.LinkTo(_outputBlock, new DataflowLinkOptions());
+            _validatorBlock.LinkTo(_decoderBlock, 
+                new DataflowLinkOptions { PropagateCompletion = true }, 
+                result => result.IsValid);
+            _validatorBlock.LinkTo(DataflowBlock.NullTarget<ValidationResult>());
+            _decoderBlock.LinkTo(_outputBlock, new DataflowLinkOptions 
+            { 
+                PropagateCompletion = true 
+            });
         }
 
         public void Dispose()

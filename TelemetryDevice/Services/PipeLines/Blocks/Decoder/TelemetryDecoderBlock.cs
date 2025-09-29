@@ -8,23 +8,24 @@ using TelemetryDevices.Services.Helpers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
-    public class TelemetryDataDecoder : ITelemetryDecoder
+    public class TelemetryDecoderBlock : ITelemetryDecoderBlock
     {
-        private readonly TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>> _transformBlock;
+        private readonly TransformBlock<ValidationResult, DecodingResult> _transformBlock;
         private readonly ICD _icd;
 
-        public TelemetryDataDecoder(ICD icd)
+        public TelemetryDecoderBlock(ICD icd)
         {
             _icd = icd;
-            _transformBlock = new TransformBlock<DecodingResult, Dictionary<TelemetryFields, double>>(
-                decodingResult =>
+            _transformBlock = new TransformBlock<ValidationResult, DecodingResult>(
+                validationResult =>
                 {
-                    if (!decodingResult.IsValid)
+                    if (!validationResult.IsValid)
                     {
-                        return new Dictionary<TelemetryFields, double>();
+                        return new DecodingResult(new Dictionary<TelemetryFields, double>());
                     }
 
-                    return DecodeData(decodingResult.Data, _icd);
+                    var decodedData = DecodeData(validationResult.Data, _icd);
+                    return new DecodingResult(decodedData);
                 });
         }
 
@@ -43,27 +44,27 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
         public void Complete() => _transformBlock.Complete();
         public void Fault(Exception exception) => ((IDataflowBlock)_transformBlock).Fault(exception);
         
-        public bool Post(DecodingResult item) => ((ITargetBlock<DecodingResult>)_transformBlock).Post(item);
-        public Task<bool> SendAsync(DecodingResult item, CancellationToken cancellationToken = default) => 
-            ((ITargetBlock<DecodingResult>)_transformBlock).SendAsync(item, cancellationToken);
+        public bool Post(ValidationResult item) => ((ITargetBlock<ValidationResult>)_transformBlock).Post(item);
+        public Task<bool> SendAsync(ValidationResult item, CancellationToken cancellationToken = default) => 
+            ((ITargetBlock<ValidationResult>)_transformBlock).SendAsync(item, cancellationToken);
         
-        public bool TryReceive(Predicate<Dictionary<TelemetryFields, double>> filter, out Dictionary<TelemetryFields, double> item) => 
+        public bool TryReceive(Predicate<DecodingResult> filter, out DecodingResult item) => 
             _transformBlock.TryReceive(out item);
-        public bool TryReceiveAll(out IList<Dictionary<TelemetryFields, double>> items) => 
+        public bool TryReceiveAll(out IList<DecodingResult> items) => 
             _transformBlock.TryReceiveAll(out items);
         
-        public IDisposable LinkTo(ITargetBlock<Dictionary<TelemetryFields, double>> target, DataflowLinkOptions linkOptions) => 
-            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).LinkTo(target, linkOptions);
+        public IDisposable LinkTo(ITargetBlock<DecodingResult> target, DataflowLinkOptions linkOptions) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).LinkTo(target, linkOptions);
         
-        public Dictionary<TelemetryFields, double> ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<Dictionary<TelemetryFields, double>> target, out bool messageConsumed) => 
-            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).ConsumeMessage(messageHeader, target, out messageConsumed);
-        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<Dictionary<TelemetryFields, double>> target) => 
-            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).ReserveMessage(messageHeader, target);
-        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<Dictionary<TelemetryFields, double>> target) => 
-            ((ISourceBlock<Dictionary<TelemetryFields, double>>)_transformBlock).ReleaseReservation(messageHeader, target);
+        public DecodingResult ConsumeMessage(DataflowMessageHeader messageHeader, ITargetBlock<DecodingResult> target, out bool messageConsumed) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).ConsumeMessage(messageHeader, target, out messageConsumed);
+        public bool ReserveMessage(DataflowMessageHeader messageHeader, ITargetBlock<DecodingResult> target) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).ReserveMessage(messageHeader, target);
+        public void ReleaseReservation(DataflowMessageHeader messageHeader, ITargetBlock<DecodingResult> target) => 
+            ((ISourceBlock<DecodingResult>)_transformBlock).ReleaseReservation(messageHeader, target);
         
-        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, DecodingResult messageValue, ISourceBlock<DecodingResult> source, bool consumeToAccept) => 
-            ((ITargetBlock<DecodingResult>)_transformBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
+        public DataflowMessageStatus OfferMessage(DataflowMessageHeader messageHeader, ValidationResult messageValue, ISourceBlock<ValidationResult> source, bool consumeToAccept) => 
+            ((ITargetBlock<ValidationResult>)_transformBlock).OfferMessage(messageHeader, messageValue, source, consumeToAccept);
 
         private Dictionary<TelemetryFields, double> DecompressTelemetryDataByICD(
             BitArray compressedTelemetryData,
