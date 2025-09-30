@@ -9,24 +9,24 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
     public class KafkaOutputBlock : IOutputBlock
     {
-        private readonly ITelemetryProducer _producer;
+        private readonly IKafkaTelemetryProducer _kafkaTelemetryProducer;
 
-        public KafkaOutputBlock(ITelemetryProducer producer)
+        public KafkaOutputBlock(IKafkaTelemetryProducer kafkaTelemetryProducer)
         {
-            _producer = producer;
+            _kafkaTelemetryProducer = kafkaTelemetryProducer;
         }
 
         public void HandleOutput(DecodingResult decodingResult, ICD telemetryIcd)
         {
-            var tailIdValue = decodingResult.GetValue(TelemetryFields.TailId);
+            double? tailIdValue = decodingResult.GetValue(TelemetryFields.TailId);
 
-            var kafkaMessageKey = tailIdValue.ToString();
-            var kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue}";
-            var kafkaPartition = telemetryIcd.Id;
+            string kafkaMessageKey = tailIdValue.ToString()!;
+            string kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue!}";
+            int kafkaPartition = telemetryIcd.Id;
 
-            var decodedTelemetryData = decodingResult.ToDictionary();
+            Dictionary<TelemetryFields,double> decodedTelemetryData = decodingResult.ToDictionary();
 
-            _ = _producer.ProduceAsync(
+            _ = _kafkaTelemetryProducer.ProduceAsync(
                 kafkaTopicName,
                 kafkaPartition,
                 kafkaMessageKey,

@@ -2,7 +2,7 @@
 
 namespace TelemetryDevices.Services.Kafka.Producers
 {
-    public interface ITelemetryProducer
+    public interface IKafkaTelemetryProducer
     {
         
         public Task ProduceAsync(

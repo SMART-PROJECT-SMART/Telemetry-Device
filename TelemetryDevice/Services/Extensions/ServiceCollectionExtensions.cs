@@ -61,7 +61,7 @@ namespace TelemetryDevices.Services.Extensions
 
         public static IServiceCollection AddKafkaTelemetryProducer(this IServiceCollection services)
         {
-            services.AddSingleton<ITelemetryProducer, TelemetryProducer>();
+            services.AddSingleton<IKafkaTelemetryProducer, KafkaTelemetryProducer>();
             return services;
         }
 

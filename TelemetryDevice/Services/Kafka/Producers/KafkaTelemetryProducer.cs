@@ -6,11 +6,11 @@ using TelemetryDevices.Services.Kafka.Topic_Manager;
 
 namespace TelemetryDevices.Services.Kafka.Producers
 {
-    public class TelemetryProducer : ITelemetryProducer
+    public class KafkaTelemetryProducer : IKafkaTelemetryProducer
     {
         private readonly IProducer<string, byte[]> _producer;
 
-        public TelemetryProducer(ProducerConfig producerConfig)
+        public KafkaTelemetryProducer(ProducerConfig producerConfig)
         {
             _producer = new ProducerBuilder<string, byte[]>(producerConfig).Build();
         }
@@ -22,7 +22,7 @@ namespace TelemetryDevices.Services.Kafka.Producers
             Dictionary<TelemetryFields, double> telemetryData
         )
         {
-            var serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);
+            string serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);
             var kafkaMessage = new Message<string, byte[]>
             {
                 Key = messageKey,

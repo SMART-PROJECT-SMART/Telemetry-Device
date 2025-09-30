@@ -17,7 +17,7 @@ namespace TelemetryDevices.Services.PipeLines
         private readonly ActionBlock<DecodingResult> _pipelineOutputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private bool _disposed;
-        public ICD TelemetryICD { get; private set; }
+        public ICD TelemetryICD { get;}
 
         public Pipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock decoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
         {
@@ -65,17 +65,6 @@ namespace TelemetryDevices.Services.PipeLines
                 throw new InvalidOperationException("Failed to post data to pipeline");
             }
         }
-
-        public void SetTelemetryICD(ICD telemetryIcd)
-        {
-            TelemetryICD = telemetryIcd;
-        }
-
-        public ICD GetTelemetryICD()
-        {
-            return TelemetryICD;
-        }
-
         private void LinkTelemetryPipelineBlocks()
         {
             _pipelineValidatorBlock.LinkTo(_pipelineDecoderBlock, 
@@ -94,9 +83,9 @@ namespace TelemetryDevices.Services.PipeLines
                 return;
 
             _cancellationTokenSource.Cancel();
-            _pipelineValidatorBlock?.Complete();
-            _pipelineDecoderBlock?.Complete();
-            _pipelineOutputBlock?.Complete();
+            _pipelineValidatorBlock.Complete();
+            _pipelineDecoderBlock.Complete();
+            _pipelineOutputBlock.Complete();
             _cancellationTokenSource.Dispose();
             _disposed = true;
         }
