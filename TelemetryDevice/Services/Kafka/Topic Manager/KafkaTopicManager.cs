@@ -9,44 +9,23 @@ namespace TelemetryDevices.Services.Kafka.Topic_Manager
     {
         private readonly IAdminClient _adminClient;
         private readonly IICDDirectory _icdDirectory;
-        private HashSet<string> _createdTopics;
         
         public KafkaTopicManager(IAdminClient adminClient, IICDDirectory icdDirectory)
         {
             _adminClient = adminClient;
             _icdDirectory = icdDirectory;
-            _createdTopics = new HashSet<string>();
         }
 
         public async Task EnsureTopicExistsAsync(string topicName)
         {
-            if (IsTopicAlreadyTracked(topicName))
-                return;
-
-            if (!DoesTopicExistInClusterAsync(topicName))
+            try
             {
-                await CreateTopicAsync(topicName);
-                MarkTopicAsCreated(topicName);
+                TopicSpecification topicSpec = BuildTopicSpecification(topicName);
+                await _adminClient.CreateTopicsAsync(new List<TopicSpecification> { topicSpec });
             }
-        }
-
-        private bool IsTopicAlreadyTracked(string topicName)
-        {
-            return _createdTopics.Contains(topicName);
-        }
-
-        private bool DoesTopicExistInClusterAsync(string topicName)
-        {
-            Metadata clusterInfo = _adminClient.GetMetadata(
-                TimeSpan.FromSeconds(TelemetryDeviceConstants.Kafka.WAIT_TIMEOUT_SECONDS)
-            );
-            return clusterInfo.Topics.Any(t => t.Topic == topicName);
-        }
-
-        private async Task CreateTopicAsync(string topicName)
-        {
-            var topicSpec = BuildTopicSpecification(topicName);
-            await _adminClient.CreateTopicsAsync(new List<TopicSpecification> { topicSpec });
+            catch (CreateTopicsException ex) when (ex.Results[0].Error.Code == ErrorCode.TopicAlreadyExists)
+            {
+            }
         }
 
         private TopicSpecification BuildTopicSpecification(string topicName)
@@ -58,11 +37,6 @@ namespace TelemetryDevices.Services.Kafka.Topic_Manager
                 NumPartitions = partitionCount,
                 ReplicationFactor = TelemetryDeviceConstants.Kafka.REPLICATION_FACTOR
             };
-        }
-
-        private void MarkTopicAsCreated(string topicName)
-        {
-            _createdTopics.Add(topicName);
         }
     }
 }
