@@ -60,7 +60,7 @@ namespace TelemetryDevices.Services.PipeLines
         {
             _pipelineValidatorBlock.LinkTo(_pipelineDecoderBlock, 
                 new DataflowLinkOptions { PropagateCompletion = true }, 
-                result => result.IsValid);
+                validationResult => validationResult.IsValid);
             _pipelineValidatorBlock.LinkTo(DataflowBlock.NullTarget<ValidationResult>());
             _pipelineDecoderBlock.LinkTo(_pipelineOutputBlock, new DataflowLinkOptions 
             { 

@@ -65,7 +65,7 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddBlocksServices(this IServiceCollection services)
+        public static IServiceCollection AddPipelineBlocks(this IServiceCollection services)
         {
             services.AddSingleton<ITelemetryValidatorBlock, ChecksumTelemetryValidatorBlock>();
             services.AddSingleton<ITelemetryDecoderBlock, TelemetryDecoderBlock>();
