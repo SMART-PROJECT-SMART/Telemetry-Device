@@ -10,14 +10,16 @@ namespace TelemetryDevices.Services.Sniffer
     public class PacketSniffer : IDisposable, IPacketSniffer
     {
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
-        private readonly List<ICaptureDevice> _devices = new();
-        private readonly HashSet<int> _ports = new();
+        private readonly List<ICaptureDevice> _devices;
+        private readonly HashSet<int> _sniffedPorts;
         public event Action<byte[], int> PacketReceived;
 
         public PacketSniffer(IOptions<NetworkingConfiguration> networkingConfig)
         {
             _networkingConfig = networkingConfig;
             var availableDevices = CaptureDeviceList.Instance;
+            _devices = new List<ICaptureDevice>();
+            _sniffedPorts = new HashSet<int>();
             InitializeDevices(availableDevices);
         }
 
@@ -77,19 +79,19 @@ namespace TelemetryDevices.Services.Sniffer
 
         public void AddPort(int port)
         {
-            _ports.Add(port);
+            _sniffedPorts.Add(port);
             ApplyFilterToAllDevices();
         }
 
         public void RemovePort(int port)
         {
-            _ports.Remove(port);
+            _sniffedPorts.Remove(port);
             ApplyFilterToAllDevices();
         }
 
         public List<int> GetPorts()
         {
-            return _ports.ToList();
+            return _sniffedPorts.ToList();
         }
 
         private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
@@ -104,7 +106,7 @@ namespace TelemetryDevices.Services.Sniffer
             string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
                 networkingConfig.Protocols
             );
-            return FilterHandler.BuildFilterFromPorts(_ports, baseProtocolFilter);
+            return FilterHandler.BuildFilterFromPorts(_sniffedPorts, baseProtocolFilter);
         }
 
         private void ApplyFilterToAllDevices()
