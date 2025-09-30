@@ -6,13 +6,14 @@ namespace TelemetryDevices.Services.PortsManager
 {
     public class PortManager : IPortManager
     {
-        private readonly Dictionary<int, Channel> _portToChannel = new();
+        private readonly Dictionary<int, Channel> _portToChannel;
         private readonly IPacketSniffer _packetSniffer;
 
         public PortManager(IPacketSniffer packetSniffer)
         {
             _packetSniffer = packetSniffer;
             _packetSniffer.PacketReceived += OnPacketReceived;
+            _portToChannel = new Dictionary<int, Channel>();
         }
 
         private void OnPacketReceived(byte[] packetPayload, int destinationPort)
