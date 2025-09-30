@@ -14,11 +14,11 @@ namespace TelemetryDevices.Models
         public IPipeLine PipeLine { get; set; }
         public ICD ICD { get; set; }
 
-        public Channel(int portNumber, ICD icd, IValidator validator, ITelemetryDecoder telemetryDecoder, IOutputHandler outputHandler)
+        public Channel(int portNumber, ICD icd, IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock)
         {
             PortNumber = portNumber;
             ICD = icd;
-            PipeLine = new Pipeline(validator, telemetryDecoder, outputHandler, icd);
+            PipeLine = new Pipeline(validatorBlock, telemetryDecoderBlock, outputBlock, icd);
         }
 
 

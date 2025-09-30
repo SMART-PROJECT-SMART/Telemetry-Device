@@ -7,11 +7,11 @@ using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public class KafkaOutputHandler : IOutputHandler
+    public class KafkaOutputBlock : IOutputBlock
     {
         private readonly ITelemetryProducer _producer;
 
-        public KafkaOutputHandler(ITelemetryProducer producer)
+        public KafkaOutputBlock(ITelemetryProducer producer)
         {
             _producer = producer;
         }

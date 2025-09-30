@@ -17,29 +17,26 @@ namespace TelemetryDevices.Services
             new Dictionary<int, TelemetryDevice>();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
-        private readonly ITelemetryProducer _telemetryProducer;
         private readonly IKafkaTopicManager _kafkaTopicManager;
-        private readonly IValidator _validator;
-        private readonly ITelemetryDecoder _telemetryDecoder;
-        private readonly IOutputHandler _outputHandler;
+        private readonly IValidatorBlock _validatorBlock;
+        private readonly ITelemetryDecoderBlock _telemetryDecoderBlock;
+        private readonly IOutputBlock _outputBlock;
         
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
-            ITelemetryProducer telemetryProducer,
             IKafkaTopicManager kafkaTopicManager,
-            IValidator validator,
-            ITelemetryDecoder telemetryDecoder,
-            IOutputHandler outputHandler
+            IValidatorBlock validatorBlock,
+            ITelemetryDecoderBlock telemetryDecoderBlock,
+            IOutputBlock outputBlock
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
-            _telemetryProducer = telemetryProducer;
             _kafkaTopicManager = kafkaTopicManager;
-            _validator = validator;
-            _telemetryDecoder = telemetryDecoder;
-            _outputHandler = outputHandler;
+            _validatorBlock = validatorBlock;
+            _telemetryDecoderBlock = telemetryDecoderBlock;
+            _outputBlock = outputBlock;
         }
 
         public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
@@ -81,9 +78,9 @@ namespace TelemetryDevices.Services
                 Channel channel = new Channel(
                     portNumbers[channelIndex],
                     currentTelemetryIcd,
-                    _validator,
-                    _telemetryDecoder,
-                    _outputHandler
+                    _validatorBlock,
+                    _telemetryDecoderBlock,
+                    _outputBlock
                 );
 
                 newTelemetryDevice.Channels.Add(channel);

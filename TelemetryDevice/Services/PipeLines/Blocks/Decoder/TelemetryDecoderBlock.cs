@@ -8,16 +8,10 @@ using TelemetryDevices.Services.Helpers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
-    public class TelemetryDecoder : ITelemetryDecoder
+    public class TelemetryDecoderBlock : ITelemetryDecoderBlock
     {
-
-
         public DecodingResult DecodeData(ValidationResult validationResult, ICD telemetryIcd)
         {
-            if (!validationResult.IsValid)
-            {
-                return new DecodingResult(new Dictionary<TelemetryFields, double>());
-            }
             BitArray compressedBitArray = validationResult.Data.ToBitArray();
             Dictionary<TelemetryFields, double> decompressedTelemetryData =
                 DecompressTelemetryDataByICD(compressedBitArray, telemetryIcd);
