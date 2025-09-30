@@ -10,7 +10,7 @@ namespace TelemetryDevices.Services
 {
     public class TelemetryDeviceManager
     {
-        private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId = new();
+        private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId;
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly IKafkaTopicManager _kafkaTopicManager;
@@ -27,6 +27,7 @@ namespace TelemetryDevices.Services
             _portManager = portManager;
             _kafkaTopicManager = kafkaTopicManager;
             _serviceProvider = serviceProvider;
+            _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
         }
 
         public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
