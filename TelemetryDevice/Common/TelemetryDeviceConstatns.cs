@@ -45,7 +45,8 @@
         {
             public const string BASE_TOPIC_NAME = "telemetry-tailId-";
             public const string PRODUCER_NAME = "TelemetryProducer";
-            public const int PRODUCE_TIMEOUT_SECONDS = 5;
+            public const int WAIT_TIMEOUT_SECONDS = 5;
+            public const int REPLICATION_FACTOR = 1;
         }
 
         public static class TelemetryCompression

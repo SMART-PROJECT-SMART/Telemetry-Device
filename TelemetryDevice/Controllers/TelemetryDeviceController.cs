@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Common.Enums;
+using Core.Common.Enums;
 using TelemetryDevices.Common;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
@@ -28,7 +28,7 @@ namespace TelemetryDevices.Controllers
         [HttpPost("add-telemetry-device")]
         public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto deviceDto)
         {
-            _telemetryDeviceManager.AddTelemetryDevice(
+            _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
                 deviceDto.TailId,
                 deviceDto.PortNumbers,
                 deviceDto.Location
@@ -56,7 +56,7 @@ namespace TelemetryDevices.Controllers
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT,
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON
             );
-            _telemetryDeviceManager.AddTelemetryDevice(
+            _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
                 defaultTailId,
                 defaultPortNumbers,
                 defaultLocation

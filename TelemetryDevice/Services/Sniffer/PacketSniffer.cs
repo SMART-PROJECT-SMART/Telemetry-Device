@@ -4,7 +4,6 @@ using SharpPcap;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Helpers;
-using TelemetryDevices.Services.PacketProcessing;
 
 namespace TelemetryDevices.Services.Sniffer
 {
@@ -13,16 +12,13 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices = new();
         private readonly HashSet<int> _ports = new();
-        private readonly IPacketProcessor _packetProcessor;
         public event Action<byte[], int> PacketReceived;
 
         public PacketSniffer(
-            IOptions<NetworkingConfiguration> networkingConfig,
-            IPacketProcessor packetProcessor
+            IOptions<NetworkingConfiguration> networkingConfig
         )
         {
             _networkingConfig = networkingConfig;
-            _packetProcessor = packetProcessor;
             var availableDevices = CaptureDeviceList.Instance;
             InitializeDevices(availableDevices);
         }

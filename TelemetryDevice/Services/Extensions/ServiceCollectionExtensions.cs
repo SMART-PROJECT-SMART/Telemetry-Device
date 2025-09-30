@@ -1,13 +1,13 @@
 ﻿using Confluent.Kafka;
-using Shared.Configuration;
+using Core.Configuration;
+using Microsoft.Extensions.Options;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
-using TelemetryDevices.Services.PacketProcessing;
+using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
-using TelemetryDevices.Services.PipeLines.Director;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
@@ -65,18 +65,17 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddPacketSniffer(this IServiceCollection services)
+        public static IServiceCollection AddBlocksServices(this IServiceCollection services)
         {
-            services.AddSingleton<IPacketSniffer, PacketSniffer>();
+            services.AddSingleton<IValidatorBlock, ChecksumValidatorBlock>();
+            services.AddSingleton<ITelemetryDecoderBlock, TelemetryDecoderBlock>();
+            services.AddSingleton<IOutputBlock, KafkaOutputBlock>();
             return services;
         }
 
-        public static IServiceCollection AddPipelineBlocks(this IServiceCollection services)
+        public static IServiceCollection AddPacketSniffer(this IServiceCollection services)
         {
-            services.AddTransient<IValidator, ChecksumValidator>();
-            services.AddTransient<ITelemetryDecoder, TelemetryDataDecoder>();
-            services.AddTransient<IOutputHandler, KafkaOutputHandler>();
-            services.AddTransient<IPipeLineDirector, PipelineDirector>();
+            services.AddSingleton<IPacketSniffer, PacketSniffer>();
             return services;
         }
 
@@ -92,12 +91,6 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddPacketProcessor(this IServiceCollection services)
-        {
-            services.AddSingleton<IPacketProcessor, PacketProcessor>();
-            return services;
-        }
-
         public static IServiceCollection AddICDConfiguration(
             this IServiceCollection services,
             IConfiguration appConfiguration
@@ -106,6 +99,22 @@ namespace TelemetryDevices.Services.Extensions
             services.Configure<ICDSettings>(
                 appConfiguration.GetSection(TelemetryDeviceConstants.Config.ICD_DIRECTORY)
             );
+            return services;
+        }
+        public static IServiceCollection AddKafkaTopicManager(this IServiceCollection services)
+        {
+            services.AddSingleton<IAdminClient>(provider =>
+            {
+                var kafkaConfig = provider.GetService<IOptions<KafkaConfiguration>>()?.Value;
+                var adminConfig = new AdminClientConfig
+                {
+                    BootstrapServers = kafkaConfig?.BootstrapServers
+                };
+                return new AdminClientBuilder(adminConfig).Build();
+            });
+
+            services.AddSingleton<IKafkaTopicManager, KafkaTopicManager>();
+
             return services;
         }
     }

@@ -1,4 +1,4 @@
-﻿using Shared.Models.ICDModels;
+﻿using Core.Models.ICDModels;
 using TelemetryDevices.Common;
 using TelemetryDevices.Services.PipeLines;
 
