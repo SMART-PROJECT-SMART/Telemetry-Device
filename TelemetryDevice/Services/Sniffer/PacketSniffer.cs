@@ -17,7 +17,7 @@ namespace TelemetryDevices.Services.Sniffer
         public PacketSniffer(IOptions<NetworkingConfiguration> networkingConfig)
         {
             _networkingConfig = networkingConfig;
-            var availableDevices = CaptureDeviceList.Instance;
+            CaptureDeviceList availableDevices = CaptureDeviceList.Instance;
             _devices = new List<ICaptureDevice>();
             _sniffedPorts = new HashSet<int>();
             InitializeDevices(availableDevices);
@@ -30,10 +30,10 @@ namespace TelemetryDevices.Services.Sniffer
                 throw new InvalidOperationException("No network capture devices available");
             }
 
-            var networkingConfig = _networkingConfig.Value;
+            NetworkingConfiguration networkingConfig = _networkingConfig.Value;
 
             foreach (
-                var matchedCaptureDevice in networkingConfig
+                ICaptureDevice matchedCaptureDevice in networkingConfig
                     .Interfaces.Select(configuredInterfaceName =>
                         GetCaptureDevice(availableDevices, configuredInterfaceName)
                     )
@@ -46,7 +46,7 @@ namespace TelemetryDevices.Services.Sniffer
 
             if (_devices.Count == 0)
             {
-                var fallbackCaptureDevice = availableDevices.First();
+                ICaptureDevice fallbackCaptureDevice = availableDevices.First();
                 InitializeDevice(fallbackCaptureDevice);
                 _devices.Add(fallbackCaptureDevice);
             }
