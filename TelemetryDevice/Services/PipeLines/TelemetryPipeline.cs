@@ -7,15 +7,15 @@ using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 
 namespace TelemetryDevices.Services.PipeLines
 {
-    public class Pipeline : IPipeLine
+    public class TelemetryPipeline : IPipeLine
     {
         private readonly TransformBlock<byte[], ValidationResult> _pipelineValidatorBlock;
         private readonly TransformBlock<ValidationResult, DecodingResult> _pipelineDecoderBlock;
         private readonly ActionBlock<DecodingResult> _pipelineOutputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private bool _disposed;
+        private bool _isDisposed;
 
-        public Pipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
+        public TelemetryPipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -45,8 +45,8 @@ namespace TelemetryDevices.Services.PipeLines
         }
         public async Task ProcessTelemetryDataAsync(byte[] telemetryData)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(Pipeline));
+            if (_isDisposed)
+                throw new ObjectDisposedException(nameof(TelemetryPipeline));
 
             bool posted = await _pipelineValidatorBlock.SendAsync(
                 telemetryData,
@@ -71,13 +71,13 @@ namespace TelemetryDevices.Services.PipeLines
 
         public void Dispose()
         {
-            if (_disposed)
+            if (_isDisposed)
                 return;
 
             _cancellationTokenSource.Cancel();
             _pipelineValidatorBlock.Complete();
             _cancellationTokenSource.Dispose();
-            _disposed = true;
+            _isDisposed = true;
         }
     }
 }

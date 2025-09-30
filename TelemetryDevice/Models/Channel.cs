@@ -18,7 +18,7 @@ namespace TelemetryDevices.Models
         {
             PortNumber = portNumber;
             ICD = icd;
-            PipeLine = new Pipeline(validatorBlock, telemetryDecoderBlock, outputBlock, icd);
+            PipeLine = new TelemetryPipeline(validatorBlock, telemetryDecoderBlock, outputBlock, icd);
         }
 
 
