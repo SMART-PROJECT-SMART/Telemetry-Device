@@ -7,7 +7,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public interface ITelemetryDecoderBlock
     {
-        public DecodingResult DecodeData(ValidationResult validationResult, ICD telemetryIcd);
+        public DecodingResult DecodeTelemetryData(ValidationResult validationResult, ICD telemetryIcd);
 
     }
 }

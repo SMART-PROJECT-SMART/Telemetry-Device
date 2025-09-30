@@ -5,17 +5,8 @@
         public static class Network
         {
             public const string UDP_FILTER = "udp";
-            public const string TCP_FILTER = "tcp";
-            public const string ICMP_FILTER = "icmp";
-            public const string UDP_PORT_FILTER = "udp and ({0})";
             public const string DESTINATION_PORT_FILTER = "dst port {0}";
             public const string FILTER_SEPARATOR = " or ";
-            public const string INTERFACE_FILTER = "interface \"{0}\"";
-            public const int BYTE_SIZE = 8;
-            public const string FALLBACK_IP = "127.0.0.1";
-            public const int STARTING_PORT_NUMBER = 8000;
-            public const int MAX_PORT_NUMBER = 8999;
-            public const int PORT_INCREMENT = 1;
             public const string AND_SEPERATOR = " and (";
             public const string AND_SEPERATOR_END = ")";
         }
@@ -23,29 +14,22 @@
         public static class Config
         {
             public const string ICD_DIRECTORY = "ICD";
-            public const string JSON_SEARCH_PATTERN = "*.json";
         }
 
         public static class PacketProcessing
         {
-            public const int MAX_HEX_PREVIEW_LENGTH = 32;
-            public const string HEX_PREVIEW_SUFFIX = "...";
             public const int MINIMUM_PAYLOAD_LENGTH = 0;
         }
 
         public static class Configuration
         {
             public const string NETWORKING_SECTION = "Networking";
-            public const string DEFAULT_PROTOCOL = "udp";
-            public const string DEFAULT_INTERFACE = "loopback";
             public const string KAFKA = "Kafka";
         }
 
         public static class Kafka
         {
             public const string BASE_TOPIC_NAME = "telemetry-tailId-";
-            public const string PRODUCER_NAME = "KafkaTelemetryProducer";
-            public const int WAIT_TIMEOUT_SECONDS = 5;
             public const int REPLICATION_FACTOR = 1;
         }
 
@@ -58,10 +42,6 @@
             public const uint CHECKSUM_MODULO = 0xFFFFFFFF;
             public const int CHECKSUM_BITS = 32;
             public const ulong BIT_SHIFT_BASE = 1UL;
-            public const int ICD_BITS = 328;
-            public const int SIGN_BITS = 21;
-            public const int PADDING_BITS = 3;
-            public const int DOUBLE_SIGN_BIT_POSITION = 63;
             public const int MAX_EXPONENT_BITS = 8;
             public const int EXPONENT_BITS_DIVISOR = 4;
             public const uint DEFAULT_UINT_VALUE = 0u;
@@ -81,12 +61,7 @@
             public const int DEFAULT_PORT_2 = 8001;
             public const double DEFAULT_LOCATION_LAT = 0.0;
             public const double DEFAULT_LOCATION_LON = 0.0;
-            public const int CHANNEL_NOT_FOUND_INDEX = -1;
         }
 
-        public static class TelemetryData
-        {
-            public const double NO_SIGNAL = -120.5;
-        }
     }
 }

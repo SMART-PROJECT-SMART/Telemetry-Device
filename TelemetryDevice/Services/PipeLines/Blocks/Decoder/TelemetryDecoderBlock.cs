@@ -10,7 +10,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
 {
     public class TelemetryDecoderBlock : ITelemetryDecoderBlock
     {
-        public DecodingResult DecodeData(ValidationResult validationResult, ICD telemetryIcd)
+        public DecodingResult DecodeTelemetryData(ValidationResult validationResult, ICD telemetryIcd)
         {
             BitArray compressedBitArray = validationResult.Data.ToBitArray();
             Dictionary<TelemetryFields, double> decompressedTelemetryData =
@@ -22,12 +22,12 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
             BitArray compressedTelemetryData,
             ICD telemetryIcd)
         {
-            BitArray mainDataBitSection = ExtractMainDataBits(compressedTelemetryData, telemetryIcd);
+            BitArray mainDataBitSection = ExtractMainTelemetryDataBits(compressedTelemetryData, telemetryIcd);
             BitArray signBitSection = ExtractSignBits(compressedTelemetryData, telemetryIcd);
             return ReconstructTelemetryValues(mainDataBitSection, signBitSection, telemetryIcd);
         }
 
-        private BitArray ExtractMainDataBits(BitArray compressedTelemetryData, ICD telemetryIcd)
+        private BitArray ExtractMainTelemetryDataBits(BitArray compressedTelemetryData, ICD telemetryIcd)
         {
             int mainDataLength = telemetryIcd.GetSizeInBites();
             BitArray mainDataSection = new BitArray(mainDataLength);

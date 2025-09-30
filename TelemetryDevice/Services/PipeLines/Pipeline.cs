@@ -35,7 +35,7 @@ namespace TelemetryDevices.Services.PipeLines
                 });
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
-                validationResult => _telemetryDecoderBlock.DecodeData(validationResult, TelemetryICD),
+                validationResult => _telemetryDecoderBlock.DecodeTelemetryData(validationResult, TelemetryICD),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
