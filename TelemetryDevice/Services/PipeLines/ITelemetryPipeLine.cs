@@ -5,5 +5,6 @@ namespace TelemetryDevices.Services.PipeLines
     public interface ITelemetryPipeLine : IDisposable
     {
         public Task ProcessTelemetryDataAsync(byte[] telemetryData);
+        public void BuildPipelineBlocks(ICD telemetryIcd);
     }
 }

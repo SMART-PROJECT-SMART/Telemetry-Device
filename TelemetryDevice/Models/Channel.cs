@@ -7,12 +7,10 @@ namespace TelemetryDevices.Models
     {
         public int PortNumber { get; set; }
         public ITelemetryPipeLine TelemetryPipeLine { get; set; }
-        public ICD ICD { get; set; }
 
-        public Channel(int portNumber, ICD icd, ITelemetryPipeLine telemetryPipeline)
+        public Channel(int portNumber, ITelemetryPipeLine telemetryPipeline)
         {
             PortNumber = portNumber;
-            ICD = icd;
             TelemetryPipeLine = telemetryPipeline;
         }
 

@@ -15,7 +15,7 @@ namespace TelemetryDevices.Services
         private readonly IPortManager _portManager;
         private readonly IKafkaTopicManager _kafkaTopicManager;
         private readonly IServiceProvider _serviceProvider;
-        
+
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
@@ -65,18 +65,14 @@ namespace TelemetryDevices.Services
             )
             {
                 ICD currentTelemetryIcd = availableIcds[channelIndex];
-                
-                ITelemetryPipeLine telemetryPipeline = ActivatorUtilities.CreateInstance<TelemetryPipeline>(
-                    _serviceProvider, 
-                    currentTelemetryIcd
-                );
-                
+
+                ITelemetryPipeLine telemetryPipeLine = _serviceProvider.GetRequiredService<ITelemetryPipeLine>();
+
                 Channel channel = new(
                     portNumbers[channelIndex],
-                    currentTelemetryIcd,
-                    telemetryPipeline
+                    telemetryPipeLine
                 );
-
+                channel.TelemetryPipeLine.BuildPipelineBlocks(currentTelemetryIcd);  
                 newTelemetryDevice.Channels.Add(channel);
                 _portManager.AddPort(portNumbers[channelIndex], channel);
             }

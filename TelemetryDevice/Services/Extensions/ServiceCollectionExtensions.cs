@@ -5,6 +5,7 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
+using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
@@ -70,6 +71,9 @@ namespace TelemetryDevices.Services.Extensions
             services.AddSingleton<ITelemetryValidatorBlock, ChecksumTelemetryValidatorBlock>();
             services.AddSingleton<ITelemetryDecoderBlock, TelemetryDecoderBlock>();
             services.AddSingleton<ITelemetryOutputBlock, KafkaTelemetryOutputBlock>();
+            
+            services.AddTransient<ITelemetryPipeLine, TelemetryPipeline>();
+            
             return services;
         }
 
