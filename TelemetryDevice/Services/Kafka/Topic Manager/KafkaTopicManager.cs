@@ -9,7 +9,7 @@ namespace TelemetryDevices.Services.Kafka.Topic_Manager
     {
         private readonly IAdminClient _adminClient;
         private readonly IICDDirectory _icdDirectory;
-        
+
         public KafkaTopicManager(IAdminClient adminClient, IICDDirectory icdDirectory)
         {
             _adminClient = adminClient;
@@ -23,9 +23,8 @@ namespace TelemetryDevices.Services.Kafka.Topic_Manager
                 TopicSpecification topicSpec = BuildTopicSpecification(topicName);
                 await _adminClient.CreateTopicsAsync(new List<TopicSpecification> { topicSpec });
             }
-            catch (CreateTopicsException ex) when (ex.Results[0].Error.Code == ErrorCode.TopicAlreadyExists)
-            {
-            }
+            catch (CreateTopicsException ex)
+                when (ex.Results[0].Error.Code == ErrorCode.TopicAlreadyExists) { }
         }
 
         private TopicSpecification BuildTopicSpecification(string topicName)
@@ -35,7 +34,7 @@ namespace TelemetryDevices.Services.Kafka.Topic_Manager
             {
                 Name = topicName,
                 NumPartitions = partitionCount,
-                ReplicationFactor = TelemetryDeviceConstants.Kafka.REPLICATION_FACTOR
+                ReplicationFactor = TelemetryDeviceConstants.Kafka.REPLICATION_FACTOR,
             };
         }
     }

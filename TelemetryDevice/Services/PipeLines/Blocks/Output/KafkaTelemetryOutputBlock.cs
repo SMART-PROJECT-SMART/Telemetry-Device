@@ -21,10 +21,12 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
             double? tailIdValue = decodingResult.GetValue(TelemetryFields.TailId);
 
             string kafkaMessageKey = tailIdValue.ToString()!;
-            string kafkaTopicName = $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue!}";
+            string kafkaTopicName =
+                $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue!}";
             int kafkaPartition = telemetryIcd.Id;
 
-            Dictionary<TelemetryFields,double> decodedTelemetryData = decodingResult.ToDictionary();
+            Dictionary<TelemetryFields, double> decodedTelemetryData =
+                decodingResult.ToDictionary();
 
             _ = _kafkaTelemetryProducer.ProduceAsync(
                 kafkaTopicName,

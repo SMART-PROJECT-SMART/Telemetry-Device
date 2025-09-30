@@ -18,7 +18,11 @@ namespace TelemetryDevices.Services.PipeLines
         private readonly CancellationTokenSource _cancellationTokenSource;
         private bool _isDisposed;
 
-        public TelemetryPipeline(ITelemetryValidatorBlock telemetryValidatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, ITelemetryOutputBlock telemetryOutputBlock)
+        public TelemetryPipeline(
+            ITelemetryValidatorBlock telemetryValidatorBlock,
+            ITelemetryDecoderBlock telemetryDecoderBlock,
+            ITelemetryOutputBlock telemetryOutputBlock
+        )
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _telemetryValidatorBlock = telemetryValidatorBlock;
@@ -32,22 +36,27 @@ namespace TelemetryDevices.Services.PipeLines
                 data => _telemetryValidatorBlock.ValidateTelemetryData(data, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
-                    CancellationToken = _cancellationTokenSource.Token
-                });
+                    CancellationToken = _cancellationTokenSource.Token,
+                }
+            );
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
-                validationResult => _telemetryDecoderBlock.DecodeTelemetryData(validationResult, telemetryIcd),
+                validationResult =>
+                    _telemetryDecoderBlock.DecodeTelemetryData(validationResult, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
-                    CancellationToken = _cancellationTokenSource.Token
-                });
+                    CancellationToken = _cancellationTokenSource.Token,
+                }
+            );
 
             _pipelineOutputBlock = new ActionBlock<DecodingResult>(
-                decodingResult => _telemetryOutputBlock.OutputTelemetryData(decodingResult, telemetryIcd),
+                decodingResult =>
+                    _telemetryOutputBlock.OutputTelemetryData(decodingResult, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
-                    CancellationToken = _cancellationTokenSource.Token
-                });
+                    CancellationToken = _cancellationTokenSource.Token,
+                }
+            );
             LinkTelemetryPipelineBlocks();
         }
 
@@ -65,16 +74,19 @@ namespace TelemetryDevices.Services.PipeLines
                 throw new InvalidOperationException("Failed to post data to pipeline");
             }
         }
+
         private void LinkTelemetryPipelineBlocks()
         {
-            _pipelineValidatorBlock.LinkTo(_pipelineDecoderBlock, 
-                new DataflowLinkOptions { PropagateCompletion = true }, 
-                validationResult => validationResult.IsValid);
+            _pipelineValidatorBlock.LinkTo(
+                _pipelineDecoderBlock,
+                new DataflowLinkOptions { PropagateCompletion = true },
+                validationResult => validationResult.IsValid
+            );
             _pipelineValidatorBlock.LinkTo(DataflowBlock.NullTarget<ValidationResult>());
-            _pipelineDecoderBlock.LinkTo(_pipelineOutputBlock, new DataflowLinkOptions 
-            { 
-                PropagateCompletion = true 
-            });
+            _pipelineDecoderBlock.LinkTo(
+                _pipelineOutputBlock,
+                new DataflowLinkOptions { PropagateCompletion = true }
+            );
         }
 
         public void Dispose()

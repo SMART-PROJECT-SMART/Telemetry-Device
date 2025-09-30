@@ -62,6 +62,5 @@
             public const double DEFAULT_LOCATION_LAT = 0.0;
             public const double DEFAULT_LOCATION_LON = 0.0;
         }
-
     }
 }

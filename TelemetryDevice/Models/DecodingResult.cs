@@ -5,7 +5,7 @@ namespace TelemetryDevices.Models
     public struct DecodingResult
     {
         public IEnumerable<KeyValuePair<TelemetryFields, double>> DecodedFields { get; set; }
-        
+
         public DecodingResult(IEnumerable<KeyValuePair<TelemetryFields, double>> decodedFields)
         {
             DecodedFields = decodedFields;
@@ -18,8 +18,8 @@ namespace TelemetryDevices.Models
 
         public Dictionary<TelemetryFields, double> ToDictionary()
         {
-            return DecodedFields?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) 
-                   ?? new Dictionary<TelemetryFields, double>();
+            return DecodedFields?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+                ?? new Dictionary<TelemetryFields, double>();
         }
 
         public double? GetValue(TelemetryFields field)

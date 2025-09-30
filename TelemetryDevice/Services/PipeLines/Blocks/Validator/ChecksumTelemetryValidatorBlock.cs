@@ -26,9 +26,14 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 
             int dataBitsLength = icdBitsLength + signBitsLength;
             int dataPlusChecksumBits = dataBitsLength + checksumBitsLength;
-            int paddingBitsLength = (TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                - (dataPlusChecksumBits % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT))
-                % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT;
+            int paddingBitsLength =
+                (
+                    TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
+                    - (
+                        dataPlusChecksumBits
+                        % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
+                    )
+                ) % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT;
             int expectedTotalBits = dataBitsLength + checksumBitsLength + paddingBitsLength;
 
             BitArray dataBitsSection = telemetryBits.SubBits(0, dataBitsLength);
@@ -36,13 +41,18 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             uint expectedChecksum = CalculateChecksum(dataBitsSection);
 
             int checksumStartPosition = totalBitsCount - paddingBitsLength - checksumBitsLength;
-            uint actualChecksumPrePadding = telemetryBits.ExtractUInt(checksumStartPosition, checksumBitsLength);
+            uint actualChecksumPrePadding = telemetryBits.ExtractUInt(
+                checksumStartPosition,
+                checksumBitsLength
+            );
 
             if (expectedChecksum == actualChecksumPrePadding && totalBitsCount == expectedTotalBits)
                 return true;
 
-            uint actualCheckSumBits =
-                telemetryBits.ExtractUInt(totalBitsCount - checksumBitsLength, checksumBitsLength);
+            uint actualCheckSumBits = telemetryBits.ExtractUInt(
+                totalBitsCount - checksumBitsLength,
+                checksumBitsLength
+            );
             return expectedChecksum == actualCheckSumBits;
         }
 
@@ -55,10 +65,11 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             for (int currentByteIndex = 0; currentByteIndex < totalByteCount; currentByteIndex++)
             {
                 byte currentByteValue = dataBits.GetByte(currentByteIndex, bitsPerByteConstant);
-                runningChecksum = runningChecksum
-                    * TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MULTIPLIER
-                    + TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_INCREMENT
-                    + currentByteValue
+                runningChecksum =
+                    runningChecksum
+                        * TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MULTIPLIER
+                        + TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_INCREMENT
+                        + currentByteValue
                     & TelemetryDeviceConstants.TelemetryCompression.CHECKSUM_MODULO;
             }
             return runningChecksum;

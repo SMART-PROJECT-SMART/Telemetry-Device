@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Confluent.Kafka;
-using Newtonsoft.Json;
 using Core.Common.Enums;
+using Newtonsoft.Json;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 
 namespace TelemetryDevices.Services.Kafka.Producers

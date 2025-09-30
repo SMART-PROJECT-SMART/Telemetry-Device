@@ -4,12 +4,11 @@ namespace TelemetryDevices.Services.Kafka.Producers
 {
     public interface IKafkaTelemetryProducer
     {
-        
         public Task ProduceAsync(
             string topicName,
             int partition,
             string messageKey,
-            IEnumerable <KeyValuePair<TelemetryFields, double>> telemetryData
+            IEnumerable<KeyValuePair<TelemetryFields, double>> telemetryData
         );
     }
 }

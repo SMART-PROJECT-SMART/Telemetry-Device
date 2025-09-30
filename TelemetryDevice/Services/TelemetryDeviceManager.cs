@@ -2,9 +2,9 @@
 using Core.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
+using TelemetryDevices.Services.PortsManager;
 
 namespace TelemetryDevices.Services
 {
@@ -30,7 +30,11 @@ namespace TelemetryDevices.Services
             _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
         }
 
-        public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
+        public async Task AddTelemetryDeviceAsync(
+            int tailId,
+            List<int> portNumbers,
+            Location location
+        )
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
             TelemetryDevice newTelemetryDevice = new TelemetryDevice(location);
@@ -67,13 +71,11 @@ namespace TelemetryDevices.Services
             {
                 ICD currentTelemetryIcd = availableIcds[channelIndex];
 
-                ITelemetryPipeLine telemetryPipeLine = _serviceProvider.GetRequiredService<ITelemetryPipeLine>();
+                ITelemetryPipeLine telemetryPipeLine =
+                    _serviceProvider.GetRequiredService<ITelemetryPipeLine>();
 
-                Channel channel = new(
-                    portNumbers[channelIndex],
-                    telemetryPipeLine
-                );
-                channel.TelemetryPipeLine.BuildPipelineBlocks(currentTelemetryIcd);  
+                Channel channel = new(portNumbers[channelIndex], telemetryPipeLine);
+                channel.TelemetryPipeLine.BuildPipelineBlocks(currentTelemetryIcd);
                 newTelemetryDevice.Channels.Add(channel);
                 _portManager.AddPort(portNumbers[channelIndex], channel);
             }
@@ -81,17 +83,22 @@ namespace TelemetryDevices.Services
 
         public bool RemoveTelemetryDevice(int tailId)
         {
-            if (!_telemetryDevicesByTailId.TryGetValue(tailId, out TelemetryDevice? targetTelemetryDevice))
+            if (
+                !_telemetryDevicesByTailId.TryGetValue(
+                    tailId,
+                    out TelemetryDevice? targetTelemetryDevice
+                )
+            )
             {
                 return false;
             }
-            
+
             foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
             {
                 _portManager.RemovePort(telemetryDeviceChannel.PortNumber);
                 telemetryDeviceChannel.TelemetryPipeLine.Dispose();
             }
-            
+
             return _telemetryDevicesByTailId.Remove(tailId);
         }
     }

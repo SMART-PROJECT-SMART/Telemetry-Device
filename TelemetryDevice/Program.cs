@@ -33,7 +33,8 @@ IPacketSniffer sniffer = app.Services.GetRequiredService<IPacketSniffer>();
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1);
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2);
 
-TelemetryDeviceManager telemetryDeviceManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
+TelemetryDeviceManager telemetryDeviceManager =
+    app.Services.GetRequiredService<TelemetryDeviceManager>();
 await telemetryDeviceManager.AddTelemetryDeviceAsync(
     TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID,
     [

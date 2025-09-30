@@ -14,9 +14,7 @@ namespace TelemetryDevices.Services.Sniffer
         private readonly HashSet<int> _ports = new();
         public event Action<byte[], int> PacketReceived;
 
-        public PacketSniffer(
-            IOptions<NetworkingConfiguration> networkingConfig
-        )
+        public PacketSniffer(IOptions<NetworkingConfiguration> networkingConfig)
         {
             _networkingConfig = networkingConfig;
             var availableDevices = CaptureDeviceList.Instance;
@@ -122,7 +120,8 @@ namespace TelemetryDevices.Services.Sniffer
         private void OnPacketArrival(object sender, PacketCapture captureArgs)
         {
             TransportPacket? transportPacket = ExtractTransportPacket(captureArgs);
-            if (transportPacket == null) return;
+            if (transportPacket == null)
+                return;
 
             PacketReceived?.Invoke(transportPacket.PayloadData, transportPacket.DestinationPort);
         }
@@ -132,9 +131,15 @@ namespace TelemetryDevices.Services.Sniffer
             RawCapture rawCapture = captureArgs.GetPacket();
             Packet parsedPacket = Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
 
-            if (parsedPacket?.PayloadPacket is not IPv4Packet ipv4Packet) return null;
-            if (ipv4Packet.PayloadPacket is not TransportPacket transportPacket) return null;
-            if (transportPacket.PayloadData?.Length <= TelemetryDeviceConstants.PacketProcessing.MINIMUM_PAYLOAD_LENGTH) return null;
+            if (parsedPacket?.PayloadPacket is not IPv4Packet ipv4Packet)
+                return null;
+            if (ipv4Packet.PayloadPacket is not TransportPacket transportPacket)
+                return null;
+            if (
+                transportPacket.PayloadData?.Length
+                <= TelemetryDeviceConstants.PacketProcessing.MINIMUM_PAYLOAD_LENGTH
+            )
+                return null;
 
             return transportPacket;
         }

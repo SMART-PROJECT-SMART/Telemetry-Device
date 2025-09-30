@@ -66,14 +66,16 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddTelemetryPipelineServices(this IServiceCollection services)
+        public static IServiceCollection AddTelemetryPipelineServices(
+            this IServiceCollection services
+        )
         {
             services.AddSingleton<ITelemetryValidatorBlock, ChecksumTelemetryValidatorBlock>();
             services.AddSingleton<ITelemetryDecoderBlock, TelemetryDecoderBlock>();
             services.AddSingleton<ITelemetryOutputBlock, KafkaTelemetryOutputBlock>();
-            
+
             services.AddTransient<ITelemetryPipeLine, TelemetryPipeline>();
-            
+
             return services;
         }
 
@@ -110,10 +112,12 @@ namespace TelemetryDevices.Services.Extensions
         {
             services.AddSingleton<IAdminClient>(provider =>
             {
-                IOptions<KafkaConfiguration>? kafkaConfig = provider.GetService<IOptions<KafkaConfiguration>>();
+                IOptions<KafkaConfiguration>? kafkaConfig = provider.GetService<
+                    IOptions<KafkaConfiguration>
+                >();
                 AdminClientConfig adminConfig = new()
                 {
-                    BootstrapServers = kafkaConfig?.Value?.BootstrapServers
+                    BootstrapServers = kafkaConfig?.Value?.BootstrapServers,
                 };
                 return new AdminClientBuilder(adminConfig).Build();
             });
