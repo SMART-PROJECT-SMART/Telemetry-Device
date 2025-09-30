@@ -7,7 +7,7 @@ using TelemetryDevices.Services.Extensions;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
-    public class ChecksumValidatorBlock : IValidatorBlock
+    public class ChecksumTelemetryValidatorBlock : ITelemetryValidatorBlock
     {
         public ValidationResult ValidateTelemetryData(byte[] compressedTelemetryData, ICD icd)
         {

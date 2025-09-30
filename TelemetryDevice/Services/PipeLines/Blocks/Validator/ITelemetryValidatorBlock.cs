@@ -3,7 +3,7 @@ using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
-    public interface IValidatorBlock
+    public interface ITelemetryValidatorBlock
     {
         ValidationResult ValidateTelemetryData(byte[] compressedTelemetryData, ICD icd);
     }

@@ -7,16 +7,16 @@ using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 {
-    public class KafkaOutputBlock : IOutputBlock
+    public class KafkaTelemetryOutputBlock : ITelemetryOutputBlock
     {
         private readonly IKafkaTelemetryProducer _kafkaTelemetryProducer;
 
-        public KafkaOutputBlock(IKafkaTelemetryProducer kafkaTelemetryProducer)
+        public KafkaTelemetryOutputBlock(IKafkaTelemetryProducer kafkaTelemetryProducer)
         {
             _kafkaTelemetryProducer = kafkaTelemetryProducer;
         }
 
-        public void HandleOutput(DecodingResult decodingResult, ICD telemetryIcd)
+        public void OutputTelemetryData(DecodingResult decodingResult, ICD telemetryIcd)
         {
             double? tailIdValue = decodingResult.GetValue(TelemetryFields.TailId);
 

@@ -11,20 +11,20 @@ namespace TelemetryDevices.Models
     public class Channel
     {
         public int PortNumber { get; set; }
-        public IPipeLine PipeLine { get; set; }
+        public ITelemetryPipeLine TelemetryPipeLine { get; set; }
         public ICD ICD { get; set; }
 
-        public Channel(int portNumber, ICD icd, IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock)
+        public Channel(int portNumber, ICD icd, ITelemetryValidatorBlock telemetryValidatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, ITelemetryOutputBlock telemetryOutputBlock)
         {
             PortNumber = portNumber;
             ICD = icd;
-            PipeLine = new TelemetryPipeline(validatorBlock, telemetryDecoderBlock, outputBlock, icd);
+            TelemetryPipeLine = new TelemetryPipeline(telemetryValidatorBlock, telemetryDecoderBlock, telemetryOutputBlock, icd);
         }
 
 
         public void ProcessTelemetryData(byte[] telemetryData)
         {
-            _ = PipeLine.ProcessTelemetryDataAsync(telemetryData);
+            _ = TelemetryPipeLine.ProcessTelemetryDataAsync(telemetryData);
         }
     }
 }

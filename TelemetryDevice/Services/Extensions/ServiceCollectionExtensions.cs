@@ -67,9 +67,9 @@ namespace TelemetryDevices.Services.Extensions
 
         public static IServiceCollection AddBlocksServices(this IServiceCollection services)
         {
-            services.AddSingleton<IValidatorBlock, ChecksumValidatorBlock>();
+            services.AddSingleton<ITelemetryValidatorBlock, ChecksumTelemetryValidatorBlock>();
             services.AddSingleton<ITelemetryDecoderBlock, TelemetryDecoderBlock>();
-            services.AddSingleton<IOutputBlock, KafkaOutputBlock>();
+            services.AddSingleton<ITelemetryOutputBlock, KafkaTelemetryOutputBlock>();
             return services;
         }
 

@@ -9,7 +9,7 @@ namespace TelemetryDevices.Services.Kafka.Producers
             string topicName,
             int partition,
             string messageKey,
-            Dictionary<TelemetryFields, double> data
+            IEnumerable <KeyValuePair<TelemetryFields, double>> telemetryData
         );
     }
 }

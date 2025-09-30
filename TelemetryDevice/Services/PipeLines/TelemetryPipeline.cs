@@ -7,7 +7,7 @@ using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 
 namespace TelemetryDevices.Services.PipeLines
 {
-    public class TelemetryPipeline : IPipeLine
+    public class TelemetryPipeline : ITelemetryPipeLine
     {
         private readonly TransformBlock<byte[], ValidationResult> _pipelineValidatorBlock;
         private readonly TransformBlock<ValidationResult, DecodingResult> _pipelineDecoderBlock;
@@ -15,12 +15,12 @@ namespace TelemetryDevices.Services.PipeLines
         private readonly CancellationTokenSource _cancellationTokenSource;
         private bool _isDisposed;
 
-        public TelemetryPipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
+        public TelemetryPipeline(ITelemetryValidatorBlock telemetryValidatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, ITelemetryOutputBlock telemetryOutputBlock, ICD telemetryIcd)
         {
             _cancellationTokenSource = new CancellationTokenSource();
 
             _pipelineValidatorBlock = new TransformBlock<byte[], ValidationResult>(
-                data => validatorBlock.ValidateTelemetryData(data, telemetryIcd),
+                data => telemetryValidatorBlock.ValidateTelemetryData(data, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
@@ -34,12 +34,11 @@ namespace TelemetryDevices.Services.PipeLines
                 });
 
             _pipelineOutputBlock = new ActionBlock<DecodingResult>(
-                decodingResult => outputBlock.HandleOutput(decodingResult, telemetryIcd),
+                decodingResult => telemetryOutputBlock.OutputTelemetryData(decodingResult, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
                 });
-
 
             LinkTelemetryPipelineBlocks();
         }

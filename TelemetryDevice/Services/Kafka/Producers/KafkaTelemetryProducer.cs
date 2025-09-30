@@ -19,7 +19,7 @@ namespace TelemetryDevices.Services.Kafka.Producers
             string topicName,
             int partition,
             string messageKey,
-            Dictionary<TelemetryFields, double> telemetryData
+            IEnumerable<KeyValuePair<TelemetryFields, double>> telemetryData
         )
         {
             string serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);

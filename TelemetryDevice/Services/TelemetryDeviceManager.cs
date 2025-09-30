@@ -18,25 +18,25 @@ namespace TelemetryDevices.Services
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly IKafkaTopicManager _kafkaTopicManager;
-        private readonly IValidatorBlock _validatorBlock;
+        private readonly ITelemetryValidatorBlock _telemetryValidatorBlock;
         private readonly ITelemetryDecoderBlock _telemetryDecoderBlock;
-        private readonly IOutputBlock _outputBlock;
+        private readonly ITelemetryOutputBlock _telemetryOutputBlock;
         
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
             IKafkaTopicManager kafkaTopicManager,
-            IValidatorBlock validatorBlock,
+            ITelemetryValidatorBlock telemetryValidatorBlock,
             ITelemetryDecoderBlock telemetryDecoderBlock,
-            IOutputBlock outputBlock
+            ITelemetryOutputBlock telemetryOutputBlock
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _kafkaTopicManager = kafkaTopicManager;
-            _validatorBlock = validatorBlock;
+            _telemetryValidatorBlock = telemetryValidatorBlock;
             _telemetryDecoderBlock = telemetryDecoderBlock;
-            _outputBlock = outputBlock;
+            _telemetryOutputBlock = telemetryOutputBlock;
         }
 
         public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
@@ -78,9 +78,9 @@ namespace TelemetryDevices.Services
                 Channel channel = new Channel(
                     portNumbers[channelIndex],
                     currentTelemetryIcd,
-                    _validatorBlock,
+                    _telemetryValidatorBlock,
                     _telemetryDecoderBlock,
-                    _outputBlock
+                    _telemetryOutputBlock
                 );
 
                 newTelemetryDevice.Channels.Add(channel);
@@ -97,7 +97,7 @@ namespace TelemetryDevices.Services
             foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
             {
                 _portManager.RemovePort(telemetryDeviceChannel.PortNumber);
-                telemetryDeviceChannel.PipeLine.Dispose();
+                telemetryDeviceChannel.TelemetryPipeLine.Dispose();
             }
             return _telemetryDevicesByTailId.Remove(tailId);
         }
