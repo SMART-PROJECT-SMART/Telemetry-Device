@@ -14,29 +14,27 @@ namespace TelemetryDevices.Services.PipeLines
         private readonly ActionBlock<DecodingResult> _pipelineOutputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private bool _disposed;
-        public ICD TelemetryICD { get;}
 
         public Pipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
         {
-            TelemetryICD = telemetryIcd;
             _cancellationTokenSource = new CancellationTokenSource();
 
             _pipelineValidatorBlock = new TransformBlock<byte[], ValidationResult>(
-                data => validatorBlock.ValidateTelemetryData(data, TelemetryICD),
+                data => validatorBlock.ValidateTelemetryData(data, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
                 });
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
-                validationResult => telemetryDecoderBlock.DecodeTelemetryData(validationResult, TelemetryICD),
+                validationResult => telemetryDecoderBlock.DecodeTelemetryData(validationResult, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
                 });
 
             _pipelineOutputBlock = new ActionBlock<DecodingResult>(
-                decodingResult => outputBlock.HandleOutput(decodingResult, TelemetryICD),
+                decodingResult => outputBlock.HandleOutput(decodingResult, telemetryIcd),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
@@ -78,8 +76,6 @@ namespace TelemetryDevices.Services.PipeLines
 
             _cancellationTokenSource.Cancel();
             _pipelineValidatorBlock.Complete();
-            _pipelineDecoderBlock.Complete();
-            _pipelineOutputBlock.Complete();
             _cancellationTokenSource.Dispose();
             _disposed = true;
         }

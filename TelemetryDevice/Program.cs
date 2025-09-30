@@ -8,11 +8,8 @@ using TelemetryDevices.Services.Sniffer;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi();
-
 builder.Services.AddAppConfiguration(builder.Configuration);
-
 builder.Services.AddPacketSniffer();
-
 builder.Services.AddTelemetryDeviceManager();
 builder.Services.AddIcdDirectory();
 builder.Services.AddICDConfiguration(builder.Configuration);
