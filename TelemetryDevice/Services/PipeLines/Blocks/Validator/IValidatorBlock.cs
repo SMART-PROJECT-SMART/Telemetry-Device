@@ -5,6 +5,6 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
     public interface IValidatorBlock
     {
-        ValidationResult Validate(byte[] compressedTelemetryData, ICD icd);
+        ValidationResult ValidateTelemetryData(byte[] compressedTelemetryData, ICD icd);
     }
 }

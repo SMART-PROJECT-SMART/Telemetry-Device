@@ -9,15 +9,9 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
 {
     public class ChecksumValidatorBlock : IValidatorBlock
     {
-
-        public ChecksumValidatorBlock()
+        public ValidationResult ValidateTelemetryData(byte[] compressedTelemetryData, ICD icd)
         {
-            
-        }
-
-        public ValidationResult Validate(byte[] compressedTelemetryData, ICD icd)
-        {
-            var isValid = PerformValidation(compressedTelemetryData, icd);
+            bool isValid = PerformValidation(compressedTelemetryData, icd);
             return new ValidationResult(isValid, compressedTelemetryData);
         }
 

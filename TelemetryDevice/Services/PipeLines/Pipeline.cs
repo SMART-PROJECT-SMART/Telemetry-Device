@@ -28,7 +28,7 @@ namespace TelemetryDevices.Services.PipeLines
             _cancellationTokenSource = new CancellationTokenSource();
 
             _pipelineValidatorBlock = new TransformBlock<byte[], ValidationResult>(
-                data => _validatorBlock.Validate(data, TelemetryICD),
+                data => _validatorBlock.ValidateTelemetryData(data, TelemetryICD),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
