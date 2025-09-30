@@ -97,6 +97,7 @@ namespace TelemetryDevices.Services
             foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
             {
                 _portManager.RemovePort(telemetryDeviceChannel.PortNumber);
+                telemetryDeviceChannel.PipeLine.Dispose();
             }
             return _telemetryDevicesByTailId.Remove(tailId);
         }

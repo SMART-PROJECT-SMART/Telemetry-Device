@@ -9,9 +9,6 @@ namespace TelemetryDevices.Services.PipeLines
 {
     public class Pipeline : IPipeLine
     {
-        private readonly IValidatorBlock _validatorBlock;
-        private readonly ITelemetryDecoderBlock _telemetryDecoderBlock;
-        private readonly IOutputBlock _outputBlock;
         private readonly TransformBlock<byte[], ValidationResult> _pipelineValidatorBlock;
         private readonly TransformBlock<ValidationResult, DecodingResult> _pipelineDecoderBlock;
         private readonly ActionBlock<DecodingResult> _pipelineOutputBlock;
@@ -19,30 +16,27 @@ namespace TelemetryDevices.Services.PipeLines
         private bool _disposed;
         public ICD TelemetryICD { get;}
 
-        public Pipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock decoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
+        public Pipeline(IValidatorBlock validatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, IOutputBlock outputBlock, ICD telemetryIcd)
         {
-            _validatorBlock = validatorBlock;
-            _telemetryDecoderBlock = decoderBlock;
-            _outputBlock = outputBlock;
             TelemetryICD = telemetryIcd;
             _cancellationTokenSource = new CancellationTokenSource();
 
             _pipelineValidatorBlock = new TransformBlock<byte[], ValidationResult>(
-                data => _validatorBlock.ValidateTelemetryData(data, TelemetryICD),
+                data => validatorBlock.ValidateTelemetryData(data, TelemetryICD),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
                 });
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
-                validationResult => _telemetryDecoderBlock.DecodeTelemetryData(validationResult, TelemetryICD),
+                validationResult => telemetryDecoderBlock.DecodeTelemetryData(validationResult, TelemetryICD),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
                 });
 
             _pipelineOutputBlock = new ActionBlock<DecodingResult>(
-                decodingResult => _outputBlock.HandleOutput(decodingResult, TelemetryICD),
+                decodingResult => outputBlock.HandleOutput(decodingResult, TelemetryICD),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token
@@ -56,7 +50,7 @@ namespace TelemetryDevices.Services.PipeLines
             if (_disposed)
                 throw new ObjectDisposedException(nameof(Pipeline));
 
-            var posted = await _pipelineValidatorBlock.SendAsync(
+            bool posted = await _pipelineValidatorBlock.SendAsync(
                 telemetryData,
                 _cancellationTokenSource.Token
             );
