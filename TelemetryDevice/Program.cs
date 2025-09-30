@@ -5,7 +5,7 @@ using TelemetryDevices.Services;
 using TelemetryDevices.Services.Extensions;
 using TelemetryDevices.Services.Sniffer;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi();
 builder.Services.AddAppConfiguration(builder.Configuration);
@@ -17,9 +17,9 @@ builder.Services.AddPortManager();
 builder.Services.AddKafkaServices(builder.Configuration);
 builder.Services.AddKafkaTelemetryProducer();
 builder.Services.AddKafkaTopicManager();
-builder.Services.AddPipelineBlocks();
+builder.Services.AddTelemetryPipelineServices();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
@@ -28,12 +28,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 app.MapControllers();
-var sniffer = app.Services.GetRequiredService<IPacketSniffer>();
+
+IPacketSniffer sniffer = app.Services.GetRequiredService<IPacketSniffer>();
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1);
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2);
 
-var tdManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
-await tdManager.AddTelemetryDeviceAsync(
+TelemetryDeviceManager telemetryDeviceManager = app.Services.GetRequiredService<TelemetryDeviceManager>();
+await telemetryDeviceManager.AddTelemetryDeviceAsync(
     TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID,
     [
         TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,

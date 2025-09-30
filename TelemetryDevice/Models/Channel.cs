@@ -1,30 +1,29 @@
-﻿using Core.Common.Enums;
-using Core.Models.ICDModels;
+﻿using Core.Models.ICDModels;
 using TelemetryDevices.Services.PipeLines;
-using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
-using TelemetryDevices.Services.PipeLines.Blocks.Output;
-using TelemetryDevices.Services.PipeLines.Blocks.Validator;
-using TelemetryDevices.Services.Kafka.Producers;
 
 namespace TelemetryDevices.Models
 {
-    public class Channel
+    public class Channel : IDisposable
     {
         public int PortNumber { get; set; }
         public ITelemetryPipeLine TelemetryPipeLine { get; set; }
         public ICD ICD { get; set; }
 
-        public Channel(int portNumber, ICD icd, ITelemetryValidatorBlock telemetryValidatorBlock, ITelemetryDecoderBlock telemetryDecoderBlock, ITelemetryOutputBlock telemetryOutputBlock)
+        public Channel(int portNumber, ICD icd, ITelemetryPipeLine telemetryPipeline)
         {
             PortNumber = portNumber;
             ICD = icd;
-            TelemetryPipeLine = new TelemetryPipeline(telemetryValidatorBlock, telemetryDecoderBlock, telemetryOutputBlock, icd);
+            TelemetryPipeLine = telemetryPipeline;
         }
-
 
         public void ProcessTelemetryData(byte[] telemetryData)
         {
             _ = TelemetryPipeLine.ProcessTelemetryDataAsync(telemetryData);
+        }
+
+        public void Dispose()
+        {
+            TelemetryPipeLine?.Dispose();
         }
     }
 }

@@ -3,40 +3,30 @@ using Core.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PortsManager;
-using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
-using TelemetryDevices.Services.PipeLines.Blocks.Validator;
-using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
-using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Services
 {
     public class TelemetryDeviceManager
     {
-        private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId =
-            new Dictionary<int, TelemetryDevice>();
+        private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId = new();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly IKafkaTopicManager _kafkaTopicManager;
-        private readonly ITelemetryValidatorBlock _telemetryValidatorBlock;
-        private readonly ITelemetryDecoderBlock _telemetryDecoderBlock;
-        private readonly ITelemetryOutputBlock _telemetryOutputBlock;
+        private readonly IServiceProvider _serviceProvider;
         
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
             IKafkaTopicManager kafkaTopicManager,
-            ITelemetryValidatorBlock telemetryValidatorBlock,
-            ITelemetryDecoderBlock telemetryDecoderBlock,
-            ITelemetryOutputBlock telemetryOutputBlock
+            IServiceProvider serviceProvider
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _kafkaTopicManager = kafkaTopicManager;
-            _telemetryValidatorBlock = telemetryValidatorBlock;
-            _telemetryDecoderBlock = telemetryDecoderBlock;
-            _telemetryOutputBlock = telemetryOutputBlock;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task AddTelemetryDeviceAsync(int tailId, List<int> portNumbers, Location location)
@@ -45,7 +35,7 @@ namespace TelemetryDevices.Services
             TelemetryDevice newTelemetryDevice = new TelemetryDevice(location);
             _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
 
-            List<ICD> availableIcds = _icdDirectory.GetAllICDs().ToList();
+            List<ICD> availableIcds = _icdDirectory.GetAllICDs();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
             await _kafkaTopicManager.EnsureTopicExistsAsync(
                 $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{tailId}"
@@ -75,12 +65,16 @@ namespace TelemetryDevices.Services
             )
             {
                 ICD currentTelemetryIcd = availableIcds[channelIndex];
-                Channel channel = new Channel(
+                
+                ITelemetryPipeLine telemetryPipeline = ActivatorUtilities.CreateInstance<TelemetryPipeline>(
+                    _serviceProvider, 
+                    currentTelemetryIcd
+                );
+                
+                Channel channel = new(
                     portNumbers[channelIndex],
                     currentTelemetryIcd,
-                    _telemetryValidatorBlock,
-                    _telemetryDecoderBlock,
-                    _telemetryOutputBlock
+                    telemetryPipeline
                 );
 
                 newTelemetryDevice.Channels.Add(channel);
@@ -94,11 +88,13 @@ namespace TelemetryDevices.Services
             {
                 return false;
             }
+            
             foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
             {
                 _portManager.RemovePort(telemetryDeviceChannel.PortNumber);
                 telemetryDeviceChannel.TelemetryPipeLine.Dispose();
             }
+            
             return _telemetryDevicesByTailId.Remove(tailId);
         }
     }

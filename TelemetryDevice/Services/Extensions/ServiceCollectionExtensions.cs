@@ -43,13 +43,13 @@ namespace TelemetryDevices.Services.Extensions
                 appConfiguration.GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
             );
 
-            var kafkaSettings = appConfiguration
+            KafkaConfiguration? kafkaSettings = appConfiguration
                 .GetSection(TelemetryDeviceConstants.Configuration.KAFKA)
-                .Get<KafkaConfiguration>()!;
+                .Get<KafkaConfiguration>();
 
-            var kafkaProducerConfig = new ProducerConfig
+            ProducerConfig kafkaProducerConfig = new()
             {
-                BootstrapServers = kafkaSettings.BootstrapServers,
+                BootstrapServers = kafkaSettings?.BootstrapServers,
                 Acks = Acks.All,
                 EnableIdempotence = true,
                 CompressionType = CompressionType.Gzip,
@@ -65,7 +65,7 @@ namespace TelemetryDevices.Services.Extensions
             return services;
         }
 
-        public static IServiceCollection AddPipelineBlocks(this IServiceCollection services)
+        public static IServiceCollection AddTelemetryPipelineServices(this IServiceCollection services)
         {
             services.AddSingleton<ITelemetryValidatorBlock, ChecksumTelemetryValidatorBlock>();
             services.AddSingleton<ITelemetryDecoderBlock, TelemetryDecoderBlock>();
@@ -101,20 +101,20 @@ namespace TelemetryDevices.Services.Extensions
             );
             return services;
         }
+
         public static IServiceCollection AddKafkaTopicManager(this IServiceCollection services)
         {
             services.AddSingleton<IAdminClient>(provider =>
             {
-                var kafkaConfig = provider.GetService<IOptions<KafkaConfiguration>>()?.Value;
-                var adminConfig = new AdminClientConfig
+                IOptions<KafkaConfiguration>? kafkaConfig = provider.GetService<IOptions<KafkaConfiguration>>();
+                AdminClientConfig adminConfig = new()
                 {
-                    BootstrapServers = kafkaConfig?.BootstrapServers
+                    BootstrapServers = kafkaConfig?.Value?.BootstrapServers
                 };
                 return new AdminClientBuilder(adminConfig).Build();
             });
 
             services.AddSingleton<IKafkaTopicManager, KafkaTopicManager>();
-
             return services;
         }
     }
