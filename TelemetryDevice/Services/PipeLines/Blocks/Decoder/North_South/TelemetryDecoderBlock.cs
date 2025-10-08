@@ -6,7 +6,7 @@ using TelemetryDevices.Models;
 using TelemetryDevices.Services.Extensions;
 using TelemetryDevices.Services.Helpers;
 
-namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder
+namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder.North_South
 {
     public class TelemetryDecoderBlock : ITelemetryDecoderBlock
     {

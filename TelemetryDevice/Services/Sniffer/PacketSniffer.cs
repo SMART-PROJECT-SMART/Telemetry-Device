@@ -7,7 +7,7 @@ using TelemetryDevices.Services.Helpers;
 
 namespace TelemetryDevices.Services.Sniffer
 {
-    public class PacketSniffer : IDisposable, IPacketSniffer
+    public class PacketSniffer : IPacketSniffer
     {
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
         private readonly List<ICaptureDevice> _devices;

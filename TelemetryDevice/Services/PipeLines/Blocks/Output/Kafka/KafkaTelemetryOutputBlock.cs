@@ -5,7 +5,7 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Kafka.Producers;
 
-namespace TelemetryDevices.Services.PipeLines.Blocks.Output
+namespace TelemetryDevices.Services.PipeLines.Blocks.Output.Kafka
 {
     public class KafkaTelemetryOutputBlock : ITelemetryOutputBlock
     {

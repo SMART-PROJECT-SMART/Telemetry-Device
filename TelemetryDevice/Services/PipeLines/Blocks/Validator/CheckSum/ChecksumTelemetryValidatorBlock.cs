@@ -5,7 +5,7 @@ using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Extensions;
 
-namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
+namespace TelemetryDevices.Services.PipeLines.Blocks.Validator.CheckSum
 {
     public class ChecksumTelemetryValidatorBlock : ITelemetryValidatorBlock
     {
@@ -29,10 +29,10 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator
             int paddingBitsLength =
                 (
                     TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                    - (
+                    - 
                         dataPlusChecksumBits
                         % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                    )
+                    
                 ) % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT;
             int expectedTotalBits = dataBitsLength + checksumBitsLength + paddingBitsLength;
 

@@ -7,8 +7,11 @@ using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
+using TelemetryDevices.Services.PipeLines.Blocks.Decoder.North_South;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
+using TelemetryDevices.Services.PipeLines.Blocks.Output.Kafka;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
+using TelemetryDevices.Services.PipeLines.Blocks.Validator.CheckSum;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
 
