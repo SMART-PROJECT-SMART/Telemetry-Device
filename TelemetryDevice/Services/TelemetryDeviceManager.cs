@@ -37,14 +37,11 @@ namespace TelemetryDevices.Services
         )
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
-            TelemetryDevice newTelemetryDevice = new TelemetryDevice(location);
+            TelemetryDevice newTelemetryDevice = new TelemetryDevice(location,tailId);
             _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
 
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
-            await _kafkaTopicManager.EnsureTopicExistsAsync(
-                $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{tailId}"
-            );
         }
 
         private void ValidateTelemetryDeviceDoesNotExist(int tailId)

@@ -18,11 +18,11 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
 
         public void OutputTelemetryData(DecodingResult decodingResult, ICD telemetryIcd)
         {
-            double? tailIdValue = decodingResult.GetValue(TelemetryFields.TailId);
+            int tailIdValue = (int)decodingResult.GetValue(TelemetryFields.TailId)!;
 
             string kafkaMessageKey = tailIdValue.ToString()!;
             string kafkaTopicName =
-                $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{(int)tailIdValue!}";
+                $"{TelemetryDeviceConstants.Kafka.BASE_TOPIC_NAME}{tailIdValue!}";
             int kafkaPartition = telemetryIcd.Id;
 
             Dictionary<TelemetryFields, double> decodedTelemetryData =
@@ -32,6 +32,7 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Output
                 kafkaTopicName,
                 kafkaPartition,
                 kafkaMessageKey,
+                tailIdValue,
                 decodedTelemetryData
             );
         }

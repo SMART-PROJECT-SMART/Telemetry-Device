@@ -1,5 +1,6 @@
 using System.Threading.Tasks.Dataflow;
 using Core.Models.ICDModels;
+using KafkaFlow;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;

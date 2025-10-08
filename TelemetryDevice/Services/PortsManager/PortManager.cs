@@ -42,10 +42,10 @@ namespace TelemetryDevices.Services.PortsManager
 
         public void SwitchPorts(int sourcePort, int destinationPort)
         {
-            var sourceChannel = GetChannelByPort(sourcePort);
+            Channel? sourceChannel = GetChannelByPort(sourcePort);
             ValidateSourceChannelExists(sourcePort, sourceChannel);
 
-            var destinationChannel = GetChannelByPort(destinationPort);
+            Channel? destinationChannel = GetChannelByPort(destinationPort);
 
             if (destinationChannel != null)
             {
@@ -132,7 +132,7 @@ namespace TelemetryDevices.Services.PortsManager
             _packetSniffer.RemovePort(sourcePort);
             _packetSniffer.RemovePort(destinationPort);
 
-            foreach (var portNumber in assignedPortNumbers)
+            foreach (int portNumber in assignedPortNumbers)
             {
                 _packetSniffer.AddPort(portNumber);
             }
@@ -145,7 +145,7 @@ namespace TelemetryDevices.Services.PortsManager
 
         public void ProcessPacketOnPort(int portNumber, byte[] packetPayload)
         {
-            var assignedChannel = GetChannelByPort(portNumber);
+            Channel? assignedChannel = GetChannelByPort(portNumber);
 
             assignedChannel?.ProcessTelemetryData(packetPayload);
         }

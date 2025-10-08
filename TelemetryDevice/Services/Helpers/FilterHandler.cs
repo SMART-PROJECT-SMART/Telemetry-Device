@@ -24,7 +24,7 @@ namespace TelemetryDevices.Services.Helpers
             if (monitoredPorts.Count == 0)
                 return baseProtocolFilter;
 
-            var portFilters = monitoredPorts
+            IEnumerable<string> portFilters = monitoredPorts
                 .OrderBy(port => port)
                 .Select(port =>
                     string.Format(TelemetryDeviceConstants.Network.DESTINATION_PORT_FILTER, port)
