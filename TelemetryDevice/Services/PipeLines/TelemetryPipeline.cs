@@ -1,6 +1,6 @@
 using System.Threading.Tasks.Dataflow;
+using Core.Common.Enums;
 using Core.Models.ICDModels;
-using KafkaFlow;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
@@ -17,6 +17,7 @@ namespace TelemetryDevices.Services.PipeLines
         private TransformBlock<ValidationResult, DecodingResult> _pipelineDecoderBlock;
         private ActionBlock<DecodingResult> _pipelineOutputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private int? _currentTailId;
         private bool _isDisposed;
 
         public TelemetryPipeline(
@@ -31,7 +32,7 @@ namespace TelemetryDevices.Services.PipeLines
             _telemetryOutputBlock = telemetryOutputBlock;
         }
 
-        public void BuildPipelineBlocks(ICD telemetryIcd)
+        public void BuildPipelineBlocks(ICD telemetryIcd, Action<int> onTailIdChanged)
         {
             _pipelineValidatorBlock = new TransformBlock<byte[], ValidationResult>(
                 data => _telemetryValidatorBlock.ValidateTelemetryData(data, telemetryIcd),
@@ -42,8 +43,7 @@ namespace TelemetryDevices.Services.PipeLines
             );
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
-                validationResult =>
-                    _telemetryDecoderBlock.DecodeTelemetryData(validationResult, telemetryIcd),
+                validationResult => DecodeAndNotifyTailIdChange(validationResult, telemetryIcd, onTailIdChanged),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token,
@@ -59,6 +59,29 @@ namespace TelemetryDevices.Services.PipeLines
                 }
             );
             LinkTelemetryPipelineBlocks();
+        }
+
+        private DecodingResult DecodeAndNotifyTailIdChange(
+            ValidationResult validationResult,
+            ICD telemetryIcd,
+            Action<int> onTailIdDecoded)
+        {
+            DecodingResult result = _telemetryDecoderBlock.DecodeTelemetryData(validationResult, telemetryIcd);
+            int decodedTailId = ExtractTailId(result);
+            NotifyTailIdChangeIfNeeded(decodedTailId, onTailIdDecoded);
+            return result;
+        }
+
+        private int ExtractTailId(DecodingResult result)
+        {
+            return (int)result.GetValue(TelemetryFields.TailId)!.Value;
+        }
+
+        private void NotifyTailIdChangeIfNeeded(int decodedTailId, Action<int> onTailIdDecoded)
+        {
+            if (_currentTailId == decodedTailId) return;
+            _currentTailId = decodedTailId;
+            onTailIdDecoded(decodedTailId);
         }
 
         public async Task ProcessTelemetryDataAsync(byte[] telemetryData)

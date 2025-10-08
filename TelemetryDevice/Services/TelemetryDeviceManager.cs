@@ -13,19 +13,16 @@ namespace TelemetryDevices.Services
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId;
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
-        private readonly IKafkaTopicManager _kafkaTopicManager;
         private readonly IServiceProvider _serviceProvider;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
-            IKafkaTopicManager kafkaTopicManager,
             IServiceProvider serviceProvider
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
-            _kafkaTopicManager = kafkaTopicManager;
             _serviceProvider = serviceProvider;
             _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
         }
@@ -37,7 +34,7 @@ namespace TelemetryDevices.Services
         )
         {
             ValidateTelemetryDeviceDoesNotExist(tailId);
-            TelemetryDevice newTelemetryDevice = new TelemetryDevice(location,tailId);
+            TelemetryDevice newTelemetryDevice = new TelemetryDevice(location, tailId);
             _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
 
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
@@ -72,7 +69,10 @@ namespace TelemetryDevices.Services
                     _serviceProvider.GetRequiredService<ITelemetryPipeLine>();
 
                 Channel channel = new(portNumbers[channelIndex], telemetryPipeLine);
-                channel.TelemetryPipeLine.BuildPipelineBlocks(currentTelemetryIcd);
+                channel.TelemetryPipeLine.BuildPipelineBlocks(
+                    currentTelemetryIcd,
+                    decodedTailId => newTelemetryDevice.TailId = decodedTailId
+                );
                 newTelemetryDevice.Channels.Add(channel);
                 _portManager.AddPort(portNumbers[channelIndex], channel);
             }

@@ -8,6 +8,7 @@ namespace TelemetryDevices.Models
     {
         public Location Location { get; set; }
         public List<Channel> Channels { get; set; }
+        public int TailId { get; set; }
 
         public TelemetryDevice(Location location, List<Channel> channels)
         {
@@ -15,10 +16,11 @@ namespace TelemetryDevices.Models
             Channels = channels;
         }
 
-        public TelemetryDevice(Location location)
+        public TelemetryDevice(Location location, int tailId)
         {
             Location = location;
             Channels = new List<Channel>();
+            TailId = tailId;
         }
     }
 }
