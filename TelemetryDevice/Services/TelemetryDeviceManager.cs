@@ -71,11 +71,18 @@ namespace TelemetryDevices.Services
                 Channel channel = new(portNumbers[channelIndex], telemetryPipeLine);
                 channel.TelemetryPipeLine.BuildPipelineBlocks(
                     currentTelemetryIcd,
-                    decodedTailId => newTelemetryDevice.TailId = decodedTailId
+                    decodedTailId => UpdateDeviceTailId(newTelemetryDevice, decodedTailId)
                 );
                 newTelemetryDevice.Channels.Add(channel);
                 _portManager.AddPort(portNumbers[channelIndex], channel);
             }
+        }
+
+        private void UpdateDeviceTailId(TelemetryDevice device, int decodedTailId)
+        {
+            _telemetryDevicesByTailId.Remove(device.TailId);
+            device.TailId = decodedTailId;
+            _telemetryDevicesByTailId[decodedTailId] = device;
         }
 
         public bool RemoveTelemetryDevice(int tailId)
