@@ -6,9 +6,9 @@ using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
 
-namespace TelemetryDevices.Services
+namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
-    public class TelemetryDeviceManager
+    public class TelemetryDeviceManager : ITelemetryDeviceManager
     {
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId;
         private readonly IICDDirectory _icdDirectory;
@@ -104,6 +104,11 @@ namespace TelemetryDevices.Services
             }
 
             return _telemetryDevicesByTailId.Remove(tailId);
+        }
+
+        public IEnumerable<TelemetryDevice> GetAllTelemetryDevices()
+        {
+            return _telemetryDevicesByTailId.Values.ToList();
         }
     }
 }

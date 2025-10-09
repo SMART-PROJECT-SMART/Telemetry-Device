@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using TelemetryDevices.Common;
 
-namespace TelemetryDevices.Services.Helpers
+namespace TelemetryDevices.Helpers
 {
     public static class FilterHandler
     {

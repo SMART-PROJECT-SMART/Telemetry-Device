@@ -14,8 +14,9 @@ using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator.CheckSum;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Sniffer;
+using TelemetryDevices.Services.TelemetryDevicesManager;
 
-namespace TelemetryDevices.Services.Extensions
+namespace TelemetryDevices.Extensions
 {
     public static class ServiceCollectionExtensions
     {
@@ -113,7 +114,7 @@ namespace TelemetryDevices.Services.Extensions
 
         public static IServiceCollection AddKafkaTopicManager(this IServiceCollection services)
         {
-            services.AddSingleton<IAdminClient>(provider =>
+            services.AddSingleton(provider =>
             {
                 IOptions<KafkaConfiguration>? kafkaConfig = provider.GetService<
                     IOptions<KafkaConfiguration>

@@ -1,7 +1,7 @@
 using System.Collections;
 using TelemetryDevices.Common;
 
-namespace TelemetryDevices.Services.Extensions
+namespace TelemetryDevices.Extensions
 {
     public static class ByteArrayExtensions
     {
@@ -20,15 +20,15 @@ namespace TelemetryDevices.Services.Extensions
                 )
                 {
                     int absoluteBitPosition =
-                        (byteIndex * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE)
+                        byteIndex * TelemetryDeviceConstants.TelemetryCompression.BITS_PER_BYTE
                         + bitPositionInByte;
                     bitArray[absoluteBitPosition] =
                         (
                             bytes[byteIndex]
-                            & (
+                            & 
                                 TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
                                 << bitPositionInByte
-                            )
+                            
                         ) != 0;
                 }
             }

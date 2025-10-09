@@ -1,9 +1,9 @@
 using Core.Services;
 using TelemetryDevices.Common;
+using TelemetryDevices.Extensions;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services;
-using TelemetryDevices.Services.Extensions;
 using TelemetryDevices.Services.Sniffer;
+using TelemetryDevices.Services.TelemetryDevicesManager;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

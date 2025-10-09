@@ -1,7 +1,7 @@
 using System.Collections;
 using TelemetryDevices.Common;
 
-namespace TelemetryDevices.Services.Helpers
+namespace TelemetryDevices.Helpers
 {
     public static class BitManipulationHelper
     {
@@ -102,10 +102,10 @@ namespace TelemetryDevices.Services.Helpers
             int exponentBias =
                 (
                     TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                    << (
+                    << 
                         exponentBitsCount
                         - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                    )
+                    
                 ) - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE;
             return storedExponentValue - exponentBias;
         }

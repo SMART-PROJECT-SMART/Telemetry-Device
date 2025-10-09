@@ -3,7 +3,7 @@ using PacketDotNet;
 using SharpPcap;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Helpers;
+using TelemetryDevices.Helpers;
 
 namespace TelemetryDevices.Services.Sniffer
 {
