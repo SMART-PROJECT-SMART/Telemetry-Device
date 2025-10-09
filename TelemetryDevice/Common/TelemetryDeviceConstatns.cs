@@ -31,6 +31,7 @@
         {
             public const string BASE_TOPIC_NAME = "telemetry-tailId-";
             public const int REPLICATION_FACTOR = 1;
+            public const string TELEMETRY_DEVICE_STATUS_TOPIC = "telemetry-devices-status";
         }
 
         public static class TelemetryCompression

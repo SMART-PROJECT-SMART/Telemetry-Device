@@ -1,9 +1,10 @@
 ﻿using Confluent.Kafka;
 using Core.Configuration;
 using Microsoft.Extensions.Options;
+using Quartz;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Services.Kafka.Producers.TelemetryProducer;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
@@ -97,7 +98,7 @@ namespace TelemetryDevices.Extensions
 
         public static IServiceCollection AddTelemetryDeviceManager(this IServiceCollection services)
         {
-            services.AddSingleton<TelemetryDeviceManager>();
+            services.AddSingleton<ITelemetryDeviceManager,TelemetryDeviceManager>();
             return services;
         }
 
@@ -127,6 +128,16 @@ namespace TelemetryDevices.Extensions
             });
 
             services.AddSingleton<IKafkaTopicManager, KafkaTopicManager>();
+            return services;
+        }
+
+        public static IServiceCollection AddQuartzServices(this IServiceCollection services)
+        {
+            services.AddQuartz();
+            services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+            services.AddSingleton(provider =>
+                provider.GetRequiredService<ISchedulerFactory>()
+                    .GetScheduler().GetAwaiter().GetResult());
             return services;
         }
     }
