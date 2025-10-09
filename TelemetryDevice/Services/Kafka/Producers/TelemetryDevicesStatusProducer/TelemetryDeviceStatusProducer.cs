@@ -16,8 +16,10 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProduc
             _kafkaTopicManager = kafkaTopicManager;
         }
 
-        public Task ProduceAsync(IEnumerable<TelemetryDevice> telemetryDevices)
+        public async Task ProduceAsync(IEnumerable<TelemetryDevice> telemetryDevices)
         {
+            await _kafkaTopicManager.EnsureTopicExistsAsync(TelemetryDeviceConstants.Kafka.TELEMETRY_DEVICE_STATUS_TOPIC);
+
             string fullStatusMessage = string.Join(
                 TelemetryDeviceConstants.TextHelpers.LINE_DOWN_SEPARATOR,
                 telemetryDevices.Select(td => td.GetStatus())
@@ -27,9 +29,8 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProduc
                 Key = Guid.NewGuid().ToString(),
                 Value = System.Text.Encoding.UTF8.GetBytes(fullStatusMessage),
             };
-            _kafkaTopicManager.EnsureTopicExistsAsync(TelemetryDeviceConstants.Kafka.TELEMETRY_DEVICE_STATUS_TOPIC);
 
-            return _producer.ProduceAsync(
+            await _producer.ProduceAsync(
                 TelemetryDeviceConstants.Kafka.TELEMETRY_DEVICE_STATUS_TOPIC,
                 kafkaMessage
             );
