@@ -22,5 +22,10 @@ namespace TelemetryDevices.Models
             Channels = new List<Channel>();
             TailId = tailId;
         }
+
+        public string GetStatus()
+        {
+            return $"Telemetry Device With Tail Id {TailId} located at {Location}";
+        }
     }
 }

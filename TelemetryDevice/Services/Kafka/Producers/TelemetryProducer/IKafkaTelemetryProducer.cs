@@ -1,6 +1,6 @@
 ﻿using Core.Common.Enums;
 
-namespace TelemetryDevices.Services.Kafka.Producers
+namespace TelemetryDevices.Services.Kafka.Producers.TelemetryProducer
 {
     public interface IKafkaTelemetryProducer
     {

@@ -3,7 +3,7 @@ using Core.Common.Enums;
 using Core.Models.ICDModels;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.Kafka.Producers;
+using TelemetryDevices.Services.Kafka.Producers.TelemetryProducer;
 
 namespace TelemetryDevices.Services.PipeLines.Blocks.Output.Kafka
 {

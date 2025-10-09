@@ -5,7 +5,7 @@ using System.Text;
 using TelemetryDevices.Common;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 
-namespace TelemetryDevices.Services.Kafka.Producers
+namespace TelemetryDevices.Services.Kafka.Producers.TelemetryProducer
 {
     public class KafkaTelemetryProducer : IKafkaTelemetryProducer
     {
