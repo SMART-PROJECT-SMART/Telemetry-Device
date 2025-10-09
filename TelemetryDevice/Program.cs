@@ -16,8 +16,10 @@ builder.Services.AddICDConfiguration(builder.Configuration);
 builder.Services.AddPortManager();
 builder.Services.AddKafkaServices(builder.Configuration);
 builder.Services.AddKafkaTelemetryProducer();
+builder.Services.AddKafkaTelemetryDeviceStatusProducer();
 builder.Services.AddKafkaTopicManager();
 builder.Services.AddTelemetryPipelineServices();
+builder.Services.AddQuartzServices();
 
 WebApplication app = builder.Build();
 
@@ -33,8 +35,8 @@ IPacketSniffer sniffer = app.Services.GetRequiredService<IPacketSniffer>();
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1);
 sniffer.AddPort(TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2);
 
-TelemetryDeviceManager telemetryDeviceManager =
-    app.Services.GetRequiredService<TelemetryDeviceManager>();
+ITelemetryDeviceManager telemetryDeviceManager =
+    app.Services.GetRequiredService<ITelemetryDeviceManager>();
 await telemetryDeviceManager.AddTelemetryDeviceAsync(
     TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID,
     [

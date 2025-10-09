@@ -25,7 +25,7 @@ namespace TelemetryDevices.Models
 
         public string GetStatus()
         {
-            return $"Telemetry Device With Tail Id {TailId} located at {Location}";
+            return $"Telemetry Device With Tail Id {TailId} located at {Location.ToString()}";
         }
     }
 }

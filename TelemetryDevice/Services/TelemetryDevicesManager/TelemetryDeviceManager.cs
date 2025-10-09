@@ -2,9 +2,9 @@
 using Core.Services.ICDsDirectory;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
+using TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager;
 
 namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
@@ -14,17 +14,22 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IQuartzTelemetryDeviceStatusManager _quartzTelemetryDeviceStatusManager;
+        private bool _isSchedulerStarted;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
-            IServiceProvider serviceProvider
+            IServiceProvider serviceProvider,
+            IQuartzTelemetryDeviceStatusManager quartzTelemetryDeviceStatusManager
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _serviceProvider = serviceProvider;
+            _quartzTelemetryDeviceStatusManager = quartzTelemetryDeviceStatusManager;
             _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
+            _isSchedulerStarted = false;
         }
 
         public async Task AddTelemetryDeviceAsync(
@@ -39,6 +44,19 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
+
+            await StartSchedulerIfNeeded();
+        }
+
+        private async Task StartSchedulerIfNeeded()
+        {
+            if (!_isSchedulerStarted)
+            {
+                await _quartzTelemetryDeviceStatusManager.StartSchedular(
+                    TelemetryDeviceConstants.Quartz.TELEMETRY_DEVICE_STATUS_UPDATE_JOB_INTERVAL
+                );
+                _isSchedulerStarted = true;
+            }
         }
 
         private void ValidateTelemetryDeviceDoesNotExist(int tailId)

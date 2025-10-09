@@ -5,6 +5,7 @@ using Quartz;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
 using TelemetryDevices.Services.Kafka.Producers.TelemetryProducer;
+using TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProducer;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
@@ -14,6 +15,7 @@ using TelemetryDevices.Services.PipeLines.Blocks.Output.Kafka;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator;
 using TelemetryDevices.Services.PipeLines.Blocks.Validator.CheckSum;
 using TelemetryDevices.Services.PortsManager;
+using TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager;
 using TelemetryDevices.Services.Sniffer;
 using TelemetryDevices.Services.TelemetryDevicesManager;
 
@@ -62,12 +64,26 @@ namespace TelemetryDevices.Extensions
             };
 
             services.AddSingleton(kafkaProducerConfig);
+            services.AddSingleton<IProducer<string, byte[]>>(provider =>
+            {
+                ProducerConfig config = provider.GetRequiredService<ProducerConfig>();
+                return new ProducerBuilder<string, byte[]>(config).Build();
+            });
+            
             return services;
         }
 
         public static IServiceCollection AddKafkaTelemetryProducer(this IServiceCollection services)
         {
             services.AddSingleton<IKafkaTelemetryProducer, KafkaTelemetryProducer>();
+            return services;
+        }
+
+        public static IServiceCollection AddKafkaTelemetryDeviceStatusProducer(
+            this IServiceCollection services
+        )
+        {
+            services.AddSingleton<ITelemetryDeviceStatusProducer, TelemetryDeviceStatusProducer>();
             return services;
         }
 
@@ -142,6 +158,7 @@ namespace TelemetryDevices.Extensions
                     .GetAwaiter()
                     .GetResult()
             );
+            services.AddSingleton<IQuartzTelemetryDeviceStatusManager, QuartzTelemetryDeviceStatusManager>();
             return services;
         }
     }
