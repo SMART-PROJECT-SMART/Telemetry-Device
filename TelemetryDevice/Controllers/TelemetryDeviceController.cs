@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.Common.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TelemetryDevices.Common;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services;
 using TelemetryDevices.Services.PortsManager;
+using TelemetryDevices.Services.TelemetryDevicesManager;
 
 namespace TelemetryDevices.Controllers
 {
@@ -24,10 +26,14 @@ namespace TelemetryDevices.Controllers
         }
 
         [HttpPost("add-telemetry-device")]
-        public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto dto)
+        public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto deviceDto)
         {
-            _telemetryDeviceManager.AddTelemetryDevice(dto.TailId, dto.PortNumbers, dto.Location);
-            return Ok($"Telemetry device with tail ID {dto.TailId} added successfully.");
+            _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
+                deviceDto.TailId,
+                deviceDto.PortNumbers,
+                deviceDto.Location
+            );
+            return Ok($"Telemetry device with tail ID {deviceDto.TailId} added successfully.");
         }
 
         [HttpPost("remove-telemetry-device")]
@@ -40,12 +46,23 @@ namespace TelemetryDevices.Controllers
         [HttpGet("run")]
         public IActionResult Run()
         {
-            int tailId = 1;
-            List<int> portNumbers = new List<int> { 8000, 8001 };
-            Location location = new Location(0, 0);
-            _telemetryDeviceManager.AddTelemetryDevice(tailId, portNumbers, location);
+            int defaultTailId = TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID;
+            var defaultPortNumbers = new List<int>
+            {
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2,
+            };
+            Location defaultLocation = new Location(
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT,
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON
+            );
+            _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
+                defaultTailId,
+                defaultPortNumbers,
+                defaultLocation
+            );
             return Ok(
-                $"Telemetry device with tail ID {tailId} started with ports {string.Join(", ", portNumbers)}."
+                $"Telemetry device with tail ID {defaultTailId} started with ports {string.Join(", ", defaultPortNumbers)}."
             );
         }
 

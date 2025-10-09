@@ -6,33 +6,25 @@ namespace TelemetryDevices.Services.PortsManager
 {
     public class PortManager : IPortManager
     {
-        private readonly Dictionary<int, Channel> _portToChannel = new();
+        private readonly Dictionary<int, Channel> _portToChannel;
         private readonly IPacketSniffer _packetSniffer;
-        private readonly ILogger<PortManager> _logger;
 
-        public PortManager(IPacketSniffer packetSniffer, ILogger<PortManager> logger)
+        public PortManager(IPacketSniffer packetSniffer)
         {
             _packetSniffer = packetSniffer;
-            _logger = logger;
             _packetSniffer.PacketReceived += OnPacketReceived;
+            _portToChannel = new Dictionary<int, Channel>();
         }
 
-        private void OnPacketReceived(byte[] payload, int destinationPort)
+        private void OnPacketReceived(byte[] packetPayload, int destinationPort)
         {
-            ProcessPacketOnPort(destinationPort, payload);
+            ProcessPacketOnPort(destinationPort, packetPayload);
         }
 
-        public void AddPort(int portNumber, Channel channel)
+        public void AddPort(int portNumber, Channel assignedChannel)
         {
-            if (_portToChannel.ContainsKey(portNumber))
-            {
-                _logger.LogWarning("Port {PortNumber} already exists", portNumber);
-                return;
-            }
-
-            _portToChannel[portNumber] = channel;
+            _portToChannel[portNumber] = assignedChannel;
             _packetSniffer.AddPort(portNumber);
-            _logger.LogInformation("Added port {PortNumber}", portNumber);
         }
 
         public void RemovePort(int portNumber)
@@ -40,11 +32,6 @@ namespace TelemetryDevices.Services.PortsManager
             if (_portToChannel.Remove(portNumber))
             {
                 _packetSniffer.RemovePort(portNumber);
-                _logger.LogInformation("Removed port {PortNumber}", portNumber);
-            }
-            else
-            {
-                _logger.LogWarning("Port {PortNumber} not found for removal", portNumber);
             }
         }
 
@@ -55,10 +42,10 @@ namespace TelemetryDevices.Services.PortsManager
 
         public void SwitchPorts(int sourcePort, int destinationPort)
         {
-            var sourceChannel = GetChannelByPort(sourcePort);
+            Channel? sourceChannel = GetChannelByPort(sourcePort);
             ValidateSourceChannelExists(sourcePort, sourceChannel);
 
-            var destinationChannel = GetChannelByPort(destinationPort);
+            Channel? destinationChannel = GetChannelByPort(destinationPort);
 
             if (destinationChannel != null)
             {
@@ -74,7 +61,6 @@ namespace TelemetryDevices.Services.PortsManager
         {
             if (sourceChannel == null)
             {
-                _logger.LogWarning("Source port {SourcePort} not found", sourcePort);
                 throw new InvalidOperationException($"Source port {sourcePort} not found");
             }
         }
@@ -86,12 +72,6 @@ namespace TelemetryDevices.Services.PortsManager
             Channel destinationChannel
         )
         {
-            _logger.LogInformation(
-                "Swapping ports {SourcePort} and {DestinationPort}",
-                sourcePort,
-                destinationPort
-            );
-
             UpdatePortMappings(sourcePort, destinationPort, sourceChannel, destinationChannel);
             UpdateChannelPortNumbers(
                 sourceChannel,
@@ -113,12 +93,6 @@ namespace TelemetryDevices.Services.PortsManager
             Channel sourceChannel
         )
         {
-            _logger.LogInformation(
-                "Changing port {SourcePort} to {DestinationPort}",
-                sourcePort,
-                destinationPort
-            );
-
             _portToChannel.Remove(sourcePort);
             _portToChannel[destinationPort] = sourceChannel;
 
@@ -149,14 +123,18 @@ namespace TelemetryDevices.Services.PortsManager
             destinationChannel.PortNumber = sourcePort;
         }
 
-        private void UpdateSnifferPorts(int sourcePort, int destinationPort, params int[] newPorts)
+        private void UpdateSnifferPorts(
+            int sourcePort,
+            int destinationPort,
+            params int[] assignedPortNumbers
+        )
         {
             _packetSniffer.RemovePort(sourcePort);
             _packetSniffer.RemovePort(destinationPort);
 
-            foreach (var port in newPorts)
+            foreach (int portNumber in assignedPortNumbers)
             {
-                _packetSniffer.AddPort(port);
+                _packetSniffer.AddPort(portNumber);
             }
         }
 
@@ -165,21 +143,11 @@ namespace TelemetryDevices.Services.PortsManager
             return _portToChannel.Keys;
         }
 
-        public void ProcessPacketOnPort(int portNumber, byte[] payload)
+        public void ProcessPacketOnPort(int portNumber, byte[] packetPayload)
         {
-            var channel = GetChannelByPort(portNumber);
+            Channel? assignedChannel = GetChannelByPort(portNumber);
 
-            int? tailId = TailIdExtractor.GetTailIdByICD(payload, channel.ICD);
-            if (!tailId.HasValue)
-            {
-                _logger.LogWarning(
-                    "Could not extract tail ID from payload on port {Port}",
-                    portNumber
-                );
-                return;
-            }
-
-            channel.PipeLine.ProcessDataAsync(payload);
+            assignedChannel?.ProcessTelemetryData(packetPayload);
         }
     }
 }

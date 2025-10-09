@@ -1,32 +1,27 @@
-﻿using Shared.Models.ICDModels;
-using TelemetryDevices.Services.Helpers.Validator;
+﻿using Core.Models.ICDModels;
 using TelemetryDevices.Services.PipeLines;
 
 namespace TelemetryDevices.Models
 {
-    public class Channel
+    public class Channel : IDisposable
     {
         public int PortNumber { get; set; }
-        public IPipeLine PipeLine { get; set; }
-        public ICD ICD { get; set; }
+        public ITelemetryPipeLine TelemetryPipeLine { get; set; }
 
-        public Channel() { }
-
-        public Channel(int portNumber, ICD icd)
+        public Channel(int portNumber, ITelemetryPipeLine telemetryPipeline)
         {
             PortNumber = portNumber;
-            ICD = icd;
+            TelemetryPipeLine = telemetryPipeline;
         }
 
-        public Channel(int portNumber, IPipeLine pipeLine, ICD icd)
+        public void ProcessTelemetryData(byte[] telemetryData)
         {
-            PortNumber = portNumber;
-            PipeLine = pipeLine;
-            ICD = icd;
-            if (pipeLine != null && icd != null)
-            {
-                pipeLine.SetICD(icd);
-            }
+            _ = TelemetryPipeLine.ProcessTelemetryDataAsync(telemetryData);
+        }
+
+        public void Dispose()
+        {
+            TelemetryPipeLine?.Dispose();
         }
     }
 }

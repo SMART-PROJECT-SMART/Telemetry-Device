@@ -1,155 +1,158 @@
-using System.Text;
 using Microsoft.Extensions.Options;
 using PacketDotNet;
 using SharpPcap;
 using TelemetryDevices.Common;
 using TelemetryDevices.Config;
-using TelemetryDevices.Services.Factories.PacketHandler;
-using TelemetryDevices.Services.Factories.PacketHandler.Handlers;
-using TelemetryDevices.Services.Helpers;
+using TelemetryDevices.Helpers;
 
 namespace TelemetryDevices.Services.Sniffer
 {
-    public class PacketSniffer : IDisposable, IPacketSniffer
+    public class PacketSniffer : IPacketSniffer
     {
-        private readonly ILogger<PacketSniffer> _logger;
         private readonly IOptions<NetworkingConfiguration> _networkingConfig;
-        private readonly List<ICaptureDevice> _devices = new();
-        private readonly HashSet<int> _ports = new();
-        private readonly IPacketHandlerFactory _packetHandlerFactory;
+        private readonly List<ICaptureDevice> _devices;
+        private readonly HashSet<int> _sniffedPorts;
         public event Action<byte[], int> PacketReceived;
 
-        public PacketSniffer(
-            ILogger<PacketSniffer> logger,
-            IOptions<NetworkingConfiguration> networkingConfig,
-            IPacketHandlerFactory packetHandlerFactory
-        )
+        public PacketSniffer(IOptions<NetworkingConfiguration> networkingConfig)
         {
-            _logger = logger;
             _networkingConfig = networkingConfig;
-            _packetHandlerFactory = packetHandlerFactory;
-            var availableDevices = CaptureDeviceList.Instance;
+            CaptureDeviceList availableDevices = CaptureDeviceList.Instance;
+            _devices = new List<ICaptureDevice>();
+            _sniffedPorts = new HashSet<int>();
             InitializeDevices(availableDevices);
         }
 
         private void InitializeDevices(CaptureDeviceList availableDevices)
         {
-            var config = _networkingConfig.Value;
+            if (availableDevices.Count == 0)
+            {
+                throw new InvalidOperationException("No network capture devices available");
+            }
+
+            NetworkingConfiguration networkingConfig = _networkingConfig.Value;
 
             foreach (
-                var matchedDevice in config
-                    .Interfaces.Select(interfaceName =>
-                        GetCaptureDevice(availableDevices, interfaceName)
+                ICaptureDevice matchedCaptureDevice in networkingConfig
+                    .Interfaces.Select(configuredInterfaceName =>
+                        GetCaptureDevice(availableDevices, configuredInterfaceName)
                     )
                     .OfType<ICaptureDevice>()
             )
             {
-                InitializeDevice(matchedDevice);
-                _devices.Add(matchedDevice);
+                InitializeDevice(matchedCaptureDevice);
+                _devices.Add(matchedCaptureDevice);
             }
 
-            if (_devices.Count != 0)
-                return;
-            _logger.LogWarning(
-                "No devices found for configured interfaces, using first available device"
-            );
-            var fallbackDevice = availableDevices.First();
-            InitializeDevice(fallbackDevice);
-            _devices.Add(fallbackDevice);
+            if (_devices.Count == 0)
+            {
+                ICaptureDevice fallbackCaptureDevice = availableDevices.First();
+                InitializeDevice(fallbackCaptureDevice);
+                _devices.Add(fallbackCaptureDevice);
+            }
         }
 
         private ICaptureDevice? GetCaptureDevice(
             CaptureDeviceList availableDevices,
-            string interfaceName
+            string configuredInterfaceName
         )
         {
-            return availableDevices.FirstOrDefault(d =>
-                d.Description.Contains(interfaceName, StringComparison.OrdinalIgnoreCase)
-                || d.Name.Contains(interfaceName, StringComparison.OrdinalIgnoreCase)
+            return availableDevices.FirstOrDefault(captureDevice =>
+                captureDevice.Description.Contains(
+                    configuredInterfaceName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+                || captureDevice.Name.Contains(
+                    configuredInterfaceName,
+                    StringComparison.OrdinalIgnoreCase
+                )
             );
         }
 
-        private void InitializeDevice(ICaptureDevice device)
+        private void InitializeDevice(ICaptureDevice captureDevice)
         {
-            device.Open();
-            device.OnPacketArrival += OnPacketArrival;
-            ApplyFilterToDevice(device);
-            device.StartCapture();
-            _logger.LogInformation("Started capture on device: {DeviceName}", device.Description);
+            captureDevice.Open();
+            captureDevice.OnPacketArrival += OnPacketArrival;
+            ApplyFilterToDevice(captureDevice);
+            captureDevice.StartCapture();
         }
 
         public void AddPort(int port)
         {
-            if (!_ports.Add(port))
-                return;
-            _logger.LogInformation($"Added port {port} to monitoring. Total ports: {_ports.Count}");
+            _sniffedPorts.Add(port);
             ApplyFilterToAllDevices();
         }
 
         public void RemovePort(int port)
         {
-            if (!_ports.Remove(port))
-                return;
-            ApplyFilterToAllDevices();
-        }
-
-        public void ClearPorts()
-        {
-            _ports.Clear();
+            _sniffedPorts.Remove(port);
             ApplyFilterToAllDevices();
         }
 
         public List<int> GetPorts()
         {
-            return _ports.ToList();
+            return _sniffedPorts.ToList();
+        }
+
+        private void ApplyFilterToDevice(ICaptureDevice captureDevice, string? deviceFilter = null)
+        {
+            deviceFilter ??= BuildCurrentFilter();
+            captureDevice.Filter = deviceFilter;
+        }
+
+        private string BuildCurrentFilter()
+        {
+            var networkingConfig = _networkingConfig.Value;
+            string baseProtocolFilter = FilterHandler.BuildProtocolFilter(
+                networkingConfig.Protocols
+            );
+            return FilterHandler.BuildFilterFromPorts(_sniffedPorts, baseProtocolFilter);
         }
 
         private void ApplyFilterToAllDevices()
         {
-            var config = _networkingConfig.Value;
-            string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
-            string newFilter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
+            string compositePortFilter = BuildCurrentFilter();
 
-            foreach (var device in _devices)
+            foreach (var captureDevice in _devices)
             {
-                ApplyFilterToDevice(device, newFilter);
+                ApplyFilterToDevice(captureDevice, compositePortFilter);
             }
-
-            _logger.LogInformation($"Applied filter to {_devices.Count} devices: {newFilter}");
         }
 
-        private void ApplyFilterToDevice(ICaptureDevice device, string? filter = null)
+        private void OnPacketArrival(object sender, PacketCapture captureArgs)
         {
-            if (filter == null)
-            {
-                var config = _networkingConfig.Value;
-                string baseFilter = FilterHandler.BuildProtocolFilter(config.Protocols);
-                filter = FilterHandler.BuildFilterFromPorts(_ports, baseFilter);
-            }
+            TransportPacket? transportPacket = ExtractTransportPacket(captureArgs);
+            if (transportPacket == null)
+                return;
 
-            device.Filter = filter;
+            PacketReceived?.Invoke(transportPacket.PayloadData, transportPacket.DestinationPort);
         }
 
-        private void OnPacketArrival(object sender, PacketCapture e)
+        private TransportPacket? ExtractTransportPacket(PacketCapture captureArgs)
         {
-            RawCapture raw = e.GetPacket();
-            Packet packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
-            HandlePacket(packet);
-        }
+            RawCapture rawCapture = captureArgs.GetPacket();
+            Packet parsedPacket = Packet.ParsePacket(rawCapture.LinkLayerType, rawCapture.Data);
 
-        private void HandlePacket(Packet packet)
-        {
-            IPacketHandler handler = _packetHandlerFactory.GetHandler(packet);
-            handler.Handle(packet, PacketReceived);
+            if (parsedPacket?.PayloadPacket is not IPv4Packet ipv4Packet)
+                return null;
+            if (ipv4Packet.PayloadPacket is not TransportPacket transportPacket)
+                return null;
+            if (
+                transportPacket.PayloadData?.Length
+                <= TelemetryDeviceConstants.PacketProcessing.MINIMUM_PAYLOAD_LENGTH
+            )
+                return null;
+
+            return transportPacket;
         }
 
         public void Dispose()
         {
-            foreach (var device in _devices)
+            foreach (var captureDevice in _devices)
             {
-                device.OnPacketArrival -= OnPacketArrival;
-                device.StopCapture();
-                device.Close();
+                captureDevice.OnPacketArrival -= OnPacketArrival;
+                captureDevice.StopCapture();
+                captureDevice.Close();
             }
             _devices.Clear();
         }
