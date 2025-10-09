@@ -1,7 +1,7 @@
-﻿using Confluent.Kafka;
+﻿using System.Text;
+using Confluent.Kafka;
 using Core.Common.Enums;
 using Newtonsoft.Json;
-using System.Text;
 using TelemetryDevices.Common;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 
@@ -12,7 +12,10 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryProducer
         private readonly IProducer<string, byte[]> _producer;
         private readonly IKafkaTopicManager _kafkaTopicManager;
 
-        public KafkaTelemetryProducer(ProducerConfig producerConfig,IKafkaTopicManager kafkaTopicManager)
+        public KafkaTelemetryProducer(
+            ProducerConfig producerConfig,
+            IKafkaTopicManager kafkaTopicManager
+        )
         {
             _producer = new ProducerBuilder<string, byte[]>(producerConfig).Build();
             _kafkaTopicManager = kafkaTopicManager;

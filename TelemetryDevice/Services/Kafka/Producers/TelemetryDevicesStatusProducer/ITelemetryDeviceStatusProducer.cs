@@ -5,7 +5,6 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProduc
 {
     public interface ITelemetryDeviceStatusProducer
     {
-        public Task ProduceAsync(
-            IEnumerable<TelemetryDevice> telemetryDevices);
+        public Task ProduceAsync(IEnumerable<TelemetryDevice> telemetryDevices);
     }
 }

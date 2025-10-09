@@ -7,9 +7,7 @@ namespace TelemetryDevices.Services.Quartz.Jobs
     public class TelemetryDeviceStatusJob : IJob
     {
         private readonly ITelemetryDeviceManager _telemetryDeviceManager;
-        public Task Execute(IJobExecutionContext context)
-        {
-            
-        }
+
+        public Task Execute(IJobExecutionContext context) { }
     }
 }

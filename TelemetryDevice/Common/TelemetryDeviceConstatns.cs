@@ -11,6 +11,11 @@
             public const string AND_SEPERATOR_END = ")";
         }
 
+        public static class TextHelpers
+        {
+            public const string LINE_DOWN_SEPARATOR = "\n";
+        }
+
         public static class Config
         {
             public const string ICD_DIRECTORY = "ICD";

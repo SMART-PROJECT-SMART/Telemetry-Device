@@ -102,10 +102,8 @@ namespace TelemetryDevices.Helpers
             int exponentBias =
                 (
                     TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                    << 
-                        exponentBitsCount
+                    << exponentBitsCount
                         - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE
-                    
                 ) - TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_ONE;
             return storedExponentValue - exponentBias;
         }

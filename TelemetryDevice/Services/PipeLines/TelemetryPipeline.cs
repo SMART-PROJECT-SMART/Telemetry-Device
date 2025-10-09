@@ -43,7 +43,8 @@ namespace TelemetryDevices.Services.PipeLines
             );
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
-                validationResult => DecodeAndNotifyTailIdChange(validationResult, telemetryIcd, onTailIdChanged),
+                validationResult =>
+                    DecodeAndNotifyTailIdChange(validationResult, telemetryIcd, onTailIdChanged),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token,
@@ -64,9 +65,13 @@ namespace TelemetryDevices.Services.PipeLines
         private DecodingResult DecodeAndNotifyTailIdChange(
             ValidationResult validationResult,
             ICD telemetryIcd,
-            Action<int> onTailIdDecoded)
+            Action<int> onTailIdDecoded
+        )
         {
-            DecodingResult result = _telemetryDecoderBlock.DecodeTelemetryData(validationResult, telemetryIcd);
+            DecodingResult result = _telemetryDecoderBlock.DecodeTelemetryData(
+                validationResult,
+                telemetryIcd
+            );
             int decodedTailId = ExtractTailId(result);
             NotifyTailIdChangeIfNeeded(decodedTailId, onTailIdDecoded);
             return result;
@@ -79,7 +84,8 @@ namespace TelemetryDevices.Services.PipeLines
 
         private void NotifyTailIdChangeIfNeeded(int decodedTailId, Action<int> onTailIdDecoded)
         {
-            if (_currentTailId == decodedTailId) return;
+            if (_currentTailId == decodedTailId)
+                return;
             _currentTailId = decodedTailId;
             onTailIdDecoded(decodedTailId);
         }

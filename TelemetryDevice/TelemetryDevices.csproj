@@ -22,7 +22,10 @@
     <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.15.0" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.0" />
     <PackageReference Include="SharpPcap" Version="6.3.1" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="10.0.0-preview.6.25358.103" />
+    <PackageReference
+      Include="System.Threading.Tasks.Dataflow"
+      Version="10.0.0-preview.6.25358.103"
+    />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />

@@ -98,7 +98,7 @@ namespace TelemetryDevices.Extensions
 
         public static IServiceCollection AddTelemetryDeviceManager(this IServiceCollection services)
         {
-            services.AddSingleton<ITelemetryDeviceManager,TelemetryDeviceManager>();
+            services.AddSingleton<ITelemetryDeviceManager, TelemetryDeviceManager>();
             return services;
         }
 
@@ -136,8 +136,12 @@ namespace TelemetryDevices.Extensions
             services.AddQuartz();
             services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
             services.AddSingleton(provider =>
-                provider.GetRequiredService<ISchedulerFactory>()
-                    .GetScheduler().GetAwaiter().GetResult());
+                provider
+                    .GetRequiredService<ISchedulerFactory>()
+                    .GetScheduler()
+                    .GetAwaiter()
+                    .GetResult()
+            );
             return services;
         }
     }

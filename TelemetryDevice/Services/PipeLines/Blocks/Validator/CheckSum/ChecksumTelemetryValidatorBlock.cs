@@ -29,10 +29,8 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Validator.CheckSum
             int paddingBitsLength =
                 (
                     TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                    - 
-                        dataPlusChecksumBits
+                    - dataPlusChecksumBits
                         % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT
-                    
                 ) % TelemetryDeviceConstants.TelemetryCompression.BYTE_ALIGNMENT;
             int expectedTotalBits = dataBitsLength + checksumBitsLength + paddingBitsLength;
 
