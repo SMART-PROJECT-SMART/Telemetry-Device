@@ -1,4 +1,4 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using TelemetryDevices.Common;
 using TelemetryDevices.Models;
 
