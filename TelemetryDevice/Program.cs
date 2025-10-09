@@ -15,9 +15,6 @@ builder.Services.AddIcdDirectory();
 builder.Services.AddICDConfiguration(builder.Configuration);
 builder.Services.AddPortManager();
 builder.Services.AddKafkaServices(builder.Configuration);
-builder.Services.AddKafkaTelemetryProducer();
-builder.Services.AddKafkaTelemetryDeviceStatusProducer();
-builder.Services.AddKafkaTopicManager();
 builder.Services.AddTelemetryPipelineServices();
 builder.Services.AddQuartzServices();
 

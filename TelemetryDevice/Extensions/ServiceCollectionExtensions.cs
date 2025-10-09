@@ -69,7 +69,9 @@ namespace TelemetryDevices.Extensions
                 ProducerConfig config = provider.GetRequiredService<ProducerConfig>();
                 return new ProducerBuilder<string, byte[]>(config).Build();
             });
-            
+            AddKafkaTelemetryProducer(services);
+            AddKafkaTelemetryDeviceStatusProducer(services);
+            AddKafkaTopicManager(services);
             return services;
         }
 
