@@ -18,7 +18,6 @@ namespace TelemetryDevices.Services.PipeLines
         private ActionBlock<DecodingResult> _pipelineOutputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private int? _currentTailId;
-        private bool _isDisposed;
 
         public TelemetryPipeline(
             ITelemetryValidatorBlock telemetryValidatorBlock,
@@ -92,9 +91,6 @@ namespace TelemetryDevices.Services.PipeLines
 
         public async Task ProcessTelemetryDataAsync(byte[] telemetryData)
         {
-            if (_isDisposed)
-                throw new ObjectDisposedException(nameof(TelemetryPipeline));
-
             bool posted = await _pipelineValidatorBlock.SendAsync(
                 telemetryData,
                 _cancellationTokenSource.Token
@@ -121,13 +117,9 @@ namespace TelemetryDevices.Services.PipeLines
 
         public void Dispose()
         {
-            if (_isDisposed)
-                return;
-
             _cancellationTokenSource.Cancel();
             _pipelineValidatorBlock.Complete();
             _cancellationTokenSource.Dispose();
-            _isDisposed = true;
         }
     }
 }
