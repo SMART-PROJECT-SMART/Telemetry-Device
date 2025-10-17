@@ -1,5 +1,7 @@
 using Confluent.Kafka;
+using Newtonsoft.Json;
 using TelemetryDevices.Common;
+using TelemetryDevices.Dto;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Kafka.Topic_Manager;
 
@@ -20,13 +22,15 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProduc
         {
             await _kafkaTopicManager.EnsureTopicExistsAsync(TelemetryDeviceConstants.Kafka.TELEMETRY_DEVICE_STATUS_TOPIC);
 
-            string fullStatusMessage = string.Join(
-                TelemetryDeviceConstants.TextHelpers.LINE_DOWN_SEPARATOR,
-                telemetryDevices.Select(td => td.GetStatus())
-            );
+            List<TelemetryDeviceStatusDto> statusDtos = telemetryDevices
+                .Select(td => new TelemetryDeviceStatusDto(td))
+                .ToList();
+
+            string jsonMessage = JsonConvert.SerializeObject(statusDtos);
+            
             var kafkaMessage = new Message<string, byte[]>
             {
-                Value = System.Text.Encoding.UTF8.GetBytes(fullStatusMessage),
+                Value = System.Text.Encoding.UTF8.GetBytes(jsonMessage),
             };
 
             await _producer.ProduceAsync(
