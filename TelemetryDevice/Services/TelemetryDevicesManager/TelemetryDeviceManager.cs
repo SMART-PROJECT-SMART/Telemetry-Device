@@ -16,7 +16,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         private readonly IPortManager _portManager;
         private readonly IServiceProvider _serviceProvider;
         private readonly IQuartzTelemetryDeviceStatusManager _quartzTelemetryDeviceStatusManager;
-        private readonly TelemetryDeviceStatusConfiguration _configuration;
+        private readonly TelemetryDeviceStatusConfiguration _telemetryDeviceStatusConfiguration;
         private bool _isSchedulerStarted;
 
         public TelemetryDeviceManager(
@@ -31,7 +31,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             _portManager = portManager;
             _serviceProvider = serviceProvider;
             _quartzTelemetryDeviceStatusManager = quartzTelemetryDeviceStatusManager;
-            _configuration = configuration.Value;
+            _telemetryDeviceStatusConfiguration = configuration.Value;
             _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
             _isSchedulerStarted = false;
         }
@@ -57,7 +57,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             if (!_isSchedulerStarted)
             {
                 await _quartzTelemetryDeviceStatusManager.StartSchedular(
-                    _configuration.JobInterval
+                    _telemetryDeviceStatusConfiguration.JobInterval
                 );
                 _isSchedulerStarted = true;
             }
