@@ -11,6 +11,11 @@
             public const string AND_SEPERATOR_END = ")";
         }
 
+        public static class TextHelpers
+        {
+            public const string LINE_DOWN_SEPARATOR = "\n";
+        }
+
         public static class Config
         {
             public const string ICD_DIRECTORY = "ICD";
@@ -25,12 +30,14 @@
         {
             public const string NETWORKING_SECTION = "Networking";
             public const string KAFKA = "Kafka";
+            public const string TELEMETRY_DEVICE_STATUS_SECTION = "TelemetryDeviceStatusUpdate";
         }
 
         public static class Kafka
         {
             public const string BASE_TOPIC_NAME = "telemetry-tailId-";
             public const int REPLICATION_FACTOR = 1;
+            public const string TELEMETRY_DEVICE_STATUS_TOPIC = "telemetry-devices-status";
         }
 
         public static class TelemetryCompression
@@ -61,6 +68,14 @@
             public const int DEFAULT_PORT_2 = 8001;
             public const double DEFAULT_LOCATION_LAT = 0.0;
             public const double DEFAULT_LOCATION_LON = 0.0;
+        }
+
+        public static class Quartz
+        {
+            public const int TELEMETRY_DEVICE_STATUS_UPDATE_JOB_INTERVAL = 5;
+            public const string TELEMETRY_DEVICE_STATUS_UPDATE_JOB_KEY = "TelemetryDeviceStatusJob";
+            public const string TELEMETRY_DEVICE_STATUS_UPDATE_TRIGGER_KEY = "TelemetryDeviceStatusTrigger";
+            public const string TELEMETRY_DEVICE_STATUS_UPDATE_GROUP_NAME = "TelemetryDeviceStatusGroup";
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Core.Models.ICDModels;
 using Core.Services.ICDsDirectory;
-using TelemetryDevices.Common;
+using Microsoft.Extensions.Options;
+using TelemetryDevices.Config;
 using TelemetryDevices.Models;
-using TelemetryDevices.Services.Kafka.Topic_Manager;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
+using TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager;
 
 namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
@@ -14,17 +15,25 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IQuartzTelemetryDeviceStatusManager _quartzTelemetryDeviceStatusManager;
+        private readonly TelemetryDeviceStatusConfiguration _telemetryDeviceStatusConfiguration;
+        private bool _isSchedulerStarted;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
-            IServiceProvider serviceProvider
+            IServiceProvider serviceProvider,
+            IQuartzTelemetryDeviceStatusManager quartzTelemetryDeviceStatusManager,
+            IOptions<TelemetryDeviceStatusConfiguration> configuration
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _serviceProvider = serviceProvider;
+            _quartzTelemetryDeviceStatusManager = quartzTelemetryDeviceStatusManager;
+            _telemetryDeviceStatusConfiguration = configuration.Value;
             _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
+            _isSchedulerStarted = false;
         }
 
         public async Task AddTelemetryDeviceAsync(
@@ -39,6 +48,19 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
+
+            await StartSchedulerIfNeeded();
+        }
+
+        private async Task StartSchedulerIfNeeded()
+        {
+            if (!_isSchedulerStarted)
+            {
+                await _quartzTelemetryDeviceStatusManager.StartSchedular(
+                    _telemetryDeviceStatusConfiguration.JobInterval
+                );
+                _isSchedulerStarted = true;
+            }
         }
 
         private void ValidateTelemetryDeviceDoesNotExist(int tailId)

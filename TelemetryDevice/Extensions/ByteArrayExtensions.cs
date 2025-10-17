@@ -25,10 +25,8 @@ namespace TelemetryDevices.Extensions
                     bitArray[absoluteBitPosition] =
                         (
                             bytes[byteIndex]
-                            & 
-                                TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
+                            & TelemetryDeviceConstants.TelemetryCompression.BIT_SHIFT_BASE
                                 << bitPositionInByte
-                            
                         ) != 0;
                 }
             }
