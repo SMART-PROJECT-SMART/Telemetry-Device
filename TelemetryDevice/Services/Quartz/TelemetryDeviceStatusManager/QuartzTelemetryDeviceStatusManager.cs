@@ -15,8 +15,8 @@ namespace TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager
 
         public async Task<bool> StartSchedular(int intervalSeconds)
         {
-            IJobDetail job = CreateJob();
-            ITrigger trigger = CreateTrigger(intervalSeconds);
+            IJobDetail job = CreateTelemetryDeviceStatusJob();
+            ITrigger trigger = CreateTelemetryDeviceStatusTrigger(intervalSeconds);
 
             await _scheduler.ScheduleJob(job, trigger);
             await _scheduler.Start();
@@ -44,7 +44,7 @@ namespace TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager
             return true;
         }
 
-        private IJobDetail CreateJob()
+        private IJobDetail CreateTelemetryDeviceStatusJob()
         {
             return JobBuilder.Create<TelemetryDeviceStatusJob>()
                 .WithIdentity(
@@ -54,7 +54,7 @@ namespace TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager
                 .Build();
         }
 
-        private ITrigger CreateTrigger(int intervalSeconds)
+        private ITrigger CreateTelemetryDeviceStatusTrigger(int intervalSeconds)
         {
             return TriggerBuilder.Create()
                 .WithIdentity(
