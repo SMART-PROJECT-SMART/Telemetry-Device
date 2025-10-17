@@ -26,7 +26,6 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProduc
             );
             var kafkaMessage = new Message<string, byte[]>
             {
-                Key = null,
                 Value = System.Text.Encoding.UTF8.GetBytes(fullStatusMessage),
             };
 
