@@ -42,6 +42,16 @@ namespace TelemetryDevices.Extensions
             );
         }
 
+        public static IServiceCollection AddTelemetryDevicesUpdateJobConfiguration(this IServiceCollection services,
+            IConfiguration appConfiguration)
+        {
+            return services.Configure<TelemetryDeviceStatusConfiguration>(
+                appConfiguration.GetSection(
+                    TelemetryDeviceConstants.Configuration.TELEMETRY_DEVICE_STATUS_SECTION
+                )
+            );
+        }
+
         public static IServiceCollection AddKafkaServices(
             this IServiceCollection services,
             IConfiguration appConfiguration

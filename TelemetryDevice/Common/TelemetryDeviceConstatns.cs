@@ -30,6 +30,7 @@
         {
             public const string NETWORKING_SECTION = "Networking";
             public const string KAFKA = "Kafka";
+            public const string TELEMETRY_DEVICE_STATUS_SECTION = "TelemetryDeviceStatusUpdate";
         }
 
         public static class Kafka

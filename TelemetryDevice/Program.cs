@@ -9,6 +9,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi();
 builder.Services.AddAppConfiguration(builder.Configuration);
+builder.Services.AddTelemetryDevicesUpdateJobConfiguration(builder.Configuration);
 builder.Services.AddPacketSniffer();
 builder.Services.AddTelemetryDeviceManager();
 builder.Services.AddIcdDirectory();

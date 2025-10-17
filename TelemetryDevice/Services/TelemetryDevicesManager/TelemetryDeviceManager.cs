@@ -1,6 +1,7 @@
 ﻿using Core.Models.ICDModels;
 using Core.Services.ICDsDirectory;
-using TelemetryDevices.Common;
+using Microsoft.Extensions.Options;
+using TelemetryDevices.Config;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines;
 using TelemetryDevices.Services.PortsManager;
@@ -15,19 +16,22 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         private readonly IPortManager _portManager;
         private readonly IServiceProvider _serviceProvider;
         private readonly IQuartzTelemetryDeviceStatusManager _quartzTelemetryDeviceStatusManager;
+        private readonly TelemetryDeviceStatusConfiguration _configuration;
         private bool _isSchedulerStarted;
 
         public TelemetryDeviceManager(
             IICDDirectory icdDirectory,
             IPortManager portManager,
             IServiceProvider serviceProvider,
-            IQuartzTelemetryDeviceStatusManager quartzTelemetryDeviceStatusManager
+            IQuartzTelemetryDeviceStatusManager quartzTelemetryDeviceStatusManager,
+            IOptions<TelemetryDeviceStatusConfiguration> configuration
         )
         {
             _icdDirectory = icdDirectory;
             _portManager = portManager;
             _serviceProvider = serviceProvider;
             _quartzTelemetryDeviceStatusManager = quartzTelemetryDeviceStatusManager;
+            _configuration = configuration.Value;
             _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
             _isSchedulerStarted = false;
         }
@@ -53,7 +57,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             if (!_isSchedulerStarted)
             {
                 await _quartzTelemetryDeviceStatusManager.StartSchedular(
-                    TelemetryDeviceConstants.Quartz.TELEMETRY_DEVICE_STATUS_UPDATE_JOB_INTERVAL
+                    _configuration.JobInterval
                 );
                 _isSchedulerStarted = true;
             }
