@@ -1,9 +1,6 @@
-﻿using Core.Common.Enums;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TelemetryDevices.Common;
 using TelemetryDevices.Dto;
-using TelemetryDevices.Models;
 using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.TelemetryDevicesManager;
 
