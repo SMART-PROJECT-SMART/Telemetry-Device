@@ -13,11 +13,11 @@ namespace TelemetryDevices.Controllers
     [ApiController]
     public class TelemetryDeviceController : ControllerBase
     {
-        private readonly TelemetryDeviceManager _telemetryDeviceManager;
+        private readonly ITelemetryDeviceManager _telemetryDeviceManager;
         private readonly IPortManager _portManager;
 
         public TelemetryDeviceController(
-            TelemetryDeviceManager telemetryDeviceManager,
+            ITelemetryDeviceManager telemetryDeviceManager,
             IPortManager portManager
         )
         {
