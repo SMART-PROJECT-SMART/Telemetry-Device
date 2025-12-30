@@ -1,3 +1,4 @@
+using Core.Models;
 using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Dto
