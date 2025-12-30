@@ -13,6 +13,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
     public class TelemetryDeviceManager : ITelemetryDeviceManager
     {
         private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId;
+        private readonly object _lockObject = new object();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
         private readonly IServiceProvider _serviceProvider;
@@ -39,16 +40,20 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 
         public async Task AddTelemetryDeviceAsync(
             int tailId,
-            List<int> portNumbers,
+            IEnumerable<int> portNumbers,
             Location location
         )
         {
-            ValidateTelemetryDeviceDoesNotExist(tailId);
-            TelemetryDevice newTelemetryDevice = new TelemetryDevice(location, tailId);
-            _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
+            TelemetryDevice newTelemetryDevice;
+            lock (_lockObject)
+            {
+                ValidateTelemetryDeviceDoesNotExist(tailId);
+                newTelemetryDevice = new TelemetryDevice(location, tailId);
+                _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
+            }
 
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
-            CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers, availableIcds);
+            CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers.ToList(), availableIcds);
 
             await StartSchedulerIfNeeded();
         }
@@ -103,21 +108,30 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 
         private void UpdateDeviceTailId(TelemetryDevice device, int decodedTailId)
         {
-            _telemetryDevicesByTailId.Remove(device.TailId);
-            device.TailId = decodedTailId;
-            _telemetryDevicesByTailId[decodedTailId] = device;
+            lock (_lockObject)
+            {
+                _telemetryDevicesByTailId.Remove(device.TailId);
+                device.TailId = decodedTailId;
+                _telemetryDevicesByTailId[decodedTailId] = device;
+            }
         }
 
         public bool RemoveTelemetryDevice(int tailId)
         {
-            if (
-                !_telemetryDevicesByTailId.TryGetValue(
-                    tailId,
-                    out TelemetryDevice? targetTelemetryDevice
-                )
-            )
+            TelemetryDevice? targetTelemetryDevice;
+            lock (_lockObject)
             {
-                return false;
+                if (
+                    !_telemetryDevicesByTailId.TryGetValue(
+                        tailId,
+                        out targetTelemetryDevice
+                    )
+                )
+                {
+                    return false;
+                }
+
+                _telemetryDevicesByTailId.Remove(tailId);
             }
 
             foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
@@ -126,12 +140,15 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
                 telemetryDeviceChannel.TelemetryPipeLine.Dispose();
             }
 
-            return _telemetryDevicesByTailId.Remove(tailId);
+            return true;
         }
 
         public IEnumerable<TelemetryDevice> GetAllTelemetryDevices()
         {
-            return _telemetryDevicesByTailId.Values.ToList();
+            lock (_lockObject)
+            {
+                return _telemetryDevicesByTailId.Values.ToList();
+            }
         }
     }
 }
