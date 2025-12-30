@@ -74,8 +74,10 @@
         {
             public const int TELEMETRY_DEVICE_STATUS_UPDATE_JOB_INTERVAL = 5;
             public const string TELEMETRY_DEVICE_STATUS_UPDATE_JOB_KEY = "TelemetryDeviceStatusJob";
-            public const string TELEMETRY_DEVICE_STATUS_UPDATE_TRIGGER_KEY = "TelemetryDeviceStatusTrigger";
-            public const string TELEMETRY_DEVICE_STATUS_UPDATE_GROUP_NAME = "TelemetryDeviceStatusGroup";
+            public const string TELEMETRY_DEVICE_STATUS_UPDATE_TRIGGER_KEY =
+                "TelemetryDeviceStatusTrigger";
+            public const string TELEMETRY_DEVICE_STATUS_UPDATE_GROUP_NAME =
+                "TelemetryDeviceStatusGroup";
         }
     }
 }
