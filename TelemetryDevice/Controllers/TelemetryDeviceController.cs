@@ -47,14 +47,15 @@ namespace TelemetryDevices.Controllers
         public IActionResult Run()
         {
             int defaultTailId = TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID;
-            var defaultPortNumbers = new List<int>
+            List<int> defaultPortNumbers = new List<int>
             {
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_2,
             };
-            Location defaultLocation = new Location(
+            Core.Models.Location defaultLocation = new Core.Models.Location(
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT,
-                TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON
+                TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON,
+                0.0
             );
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
                 defaultTailId,

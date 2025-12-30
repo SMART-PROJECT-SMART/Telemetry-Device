@@ -1,7 +1,7 @@
+using Core.Models;
 using Core.Services;
 using TelemetryDevices.Common;
 using TelemetryDevices.Extensions;
-using TelemetryDevices.Models;
 using TelemetryDevices.Services.Sniffer;
 using TelemetryDevices.Services.TelemetryDevicesManager;
 
@@ -43,7 +43,8 @@ await telemetryDeviceManager.AddTelemetryDeviceAsync(
     ],
     new Location(
         TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LAT,
-        TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON
+        TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON,
+        0.0
     )
 );
 

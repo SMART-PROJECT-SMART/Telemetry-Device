@@ -1,4 +1,5 @@
-﻿using Core.Models.ICDModels;
+﻿using Core.Models;
+using Core.Models.ICDModels;
 using TelemetryDevices.Common;
 using TelemetryDevices.Services.PipeLines;
 
@@ -25,7 +26,7 @@ namespace TelemetryDevices.Models
 
         public string GetStatus()
         {
-            return $"Telemetry Device With Tail Id {TailId} located at {Location.ToString()}";
+            return $"Telemetry Device With Tail Id {TailId} located at Lat: {Location.Latitude}, Lon: {Location.Longitude}";
         }
     }
 }
