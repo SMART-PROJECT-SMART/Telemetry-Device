@@ -9,7 +9,7 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryProducer
 {
     public class KafkaTelemetryProducer : IKafkaTelemetryProducer
     {
-        private readonly IProducer<string, byte[]> _producer;
+        private readonly IProducer<string, string> _producer;
         private readonly IKafkaTopicManager _kafkaTopicManager;
 
         public KafkaTelemetryProducer(
@@ -17,7 +17,9 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryProducer
             IKafkaTopicManager kafkaTopicManager
         )
         {
-            _producer = new ProducerBuilder<string, byte[]>(producerConfig).Build();
+            _producer = new ProducerBuilder<string, string>(producerConfig)
+                .SetValueSerializer(Serializers.Utf8)
+                .Build();
             _kafkaTopicManager = kafkaTopicManager;
         }
 
@@ -34,10 +36,10 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryProducer
             );
 
             string serializedTelemetryData = JsonConvert.SerializeObject(telemetryData);
-            var kafkaMessage = new Message<string, byte[]>
+            var kafkaMessage = new Message<string, string>
             {
                 Key = messageKey,
-                Value = Encoding.UTF8.GetBytes(serializedTelemetryData),
+                Value = serializedTelemetryData,
             };
 
             var topicPartition = new TopicPartition(topicName, new Partition(partition));
