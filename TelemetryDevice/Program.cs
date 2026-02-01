@@ -18,6 +18,8 @@ builder.Services.AddPortManager();
 builder.Services.AddKafkaServices(builder.Configuration);
 builder.Services.AddTelemetryPipelineServices();
 builder.Services.AddQuartzServices();
+builder.Services.AddDeviceManagerHttpClient(builder.Configuration);
+builder.Services.AddDeviceManagerServices();
 
 WebApplication app = builder.Build();
 
