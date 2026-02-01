@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using Core.Common.Enums;
 using Newtonsoft.Json;
 using TelemetryDevices.Common;

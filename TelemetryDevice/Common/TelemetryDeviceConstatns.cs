@@ -31,6 +31,18 @@
             public const string NETWORKING_SECTION = "Networking";
             public const string KAFKA = "Kafka";
             public const string TELEMETRY_DEVICE_STATUS_SECTION = "TelemetryDeviceStatusUpdate";
+            public const string DEVICE_MANAGER_SECTION = "DeviceManager";
+        }
+
+        public static class HttpClients
+        {
+            public const string DEVICE_MANAGER_HTTP_CLIENT = "DeviceManagerHttpClient";
+        }
+
+        public static class DeviceManagerApiEndpoints
+        {
+            public const string GET_ALL_SLEEVES = "api/sleeve";
+            public const string GET_SLEEVE_BY_NAME = "api/sleeve/{0}";
         }
 
         public static class Kafka
