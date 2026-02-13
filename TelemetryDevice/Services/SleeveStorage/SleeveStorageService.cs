@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using TelemetryDevices.Dto.DeviceManager;
 using TelemetryDevices.Services.DeviceManagerClient;
-using TelemetryDevices.Services.Sniffer;
+using TelemetryDevices.Services.TelemetryDevicesManager;
 
 namespace TelemetryDevices.Services.SleeveStorage
 {
@@ -9,13 +9,15 @@ namespace TelemetryDevices.Services.SleeveStorage
     {
         private readonly ConcurrentDictionary<string, DeviceManagerSleeveDto> _sleeves;
         private readonly IDeviceManagerClient _deviceManagerClient;
-        private readonly IPacketSniffer _packetSniffer;
+        private readonly ITelemetryDeviceManager _telemetryDeviceManager;
 
-        public SleeveStorageService(IDeviceManagerClient deviceManagerClient, IPacketSniffer packetSniffer)
+        public SleeveStorageService(
+            IDeviceManagerClient deviceManagerClient,
+            ITelemetryDeviceManager telemetryDeviceManager)
         {
             _sleeves = new ConcurrentDictionary<string, DeviceManagerSleeveDto>();
             _deviceManagerClient = deviceManagerClient;
-            _packetSniffer = packetSniffer;
+            _telemetryDeviceManager = telemetryDeviceManager;
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken = default)
@@ -25,39 +27,40 @@ namespace TelemetryDevices.Services.SleeveStorage
             foreach (DeviceManagerSleeveDto sleeve in sleeves)
             {
                 _sleeves.TryAdd(sleeve.Name, sleeve);
-                foreach (int port in sleeve.PortNumbers)
-                {
-                    _packetSniffer.AddPort(port);
-                }
+
+                await _telemetryDeviceManager.AddTelemetryDeviceAsync(
+                    sleeve.Name,
+                    null,
+                    sleeve.PortNumbers,
+                    sleeve.Location);
             }
         }
 
-        public void AddOrUpdateSleeve(DeviceManagerSleeveDto sleeve)
+        public async Task AddOrUpdateSleeveAsync(DeviceManagerSleeveDto sleeve)
         {
-            if (_sleeves.TryGetValue(sleeve.Name, out DeviceManagerSleeveDto existingSleeve))
-            {
-                foreach (int port in existingSleeve.PortNumbers)
-                {
-                    _packetSniffer.RemovePort(port);
-                }
-            }
+            bool exists = _sleeves.ContainsKey(sleeve.Name);
 
             _sleeves.AddOrUpdate(sleeve.Name, sleeve, (key, existing) => sleeve);
 
-            foreach (int port in sleeve.PortNumbers)
+            if (exists)
             {
-                _packetSniffer.AddPort(port);
+                _telemetryDeviceManager.UpdatePortsForSleeve(sleeve.Name, sleeve.PortNumbers);
+            }
+            else
+            {
+                await _telemetryDeviceManager.AddTelemetryDeviceAsync(
+                    sleeve.Name,
+                    null,
+                    sleeve.PortNumbers,
+                    sleeve.Location);
             }
         }
 
         public void RemoveSleeve(string name)
         {
-            if (_sleeves.TryRemove(name, out DeviceManagerSleeveDto removedSleeve))
+            if (_sleeves.TryRemove(name, out _))
             {
-                foreach (int port in removedSleeve.PortNumbers)
-                {
-                    _packetSniffer.RemovePort(port);
-                }
+                _telemetryDeviceManager.RemoveTelemetryDevice(name);
             }
         }
 

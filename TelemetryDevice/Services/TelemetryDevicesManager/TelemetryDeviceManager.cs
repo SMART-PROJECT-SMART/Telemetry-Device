@@ -1,4 +1,4 @@
-﻿using Core.Models;
+using Core.Models;
 using Core.Models.ICDModels;
 using Core.Services.ICDsDirectory;
 using Microsoft.Extensions.Options;
@@ -12,7 +12,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
     public class TelemetryDeviceManager : ITelemetryDeviceManager
     {
-        private readonly Dictionary<int, TelemetryDevice> _telemetryDevicesByTailId;
+        private readonly Dictionary<string, TelemetryDevice> _telemetryDevicesBySleeveName;
         private readonly object _lockObject = new object();
         private readonly IICDDirectory _icdDirectory;
         private readonly IPortManager _portManager;
@@ -34,12 +34,13 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             _serviceProvider = serviceProvider;
             _quartzTelemetryDeviceStatusManager = quartzTelemetryDeviceStatusManager;
             _telemetryDeviceStatusConfiguration = configuration.Value;
-            _telemetryDevicesByTailId = new Dictionary<int, TelemetryDevice>();
+            _telemetryDevicesBySleeveName = new Dictionary<string, TelemetryDevice>();
             _isSchedulerStarted = false;
         }
 
         public async Task AddTelemetryDeviceAsync(
-            int tailId,
+            string sleeveName,
+            int? tailId,
             IEnumerable<int> portNumbers,
             Location location
         )
@@ -47,9 +48,9 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             TelemetryDevice newTelemetryDevice;
             lock (_lockObject)
             {
-                ValidateTelemetryDeviceDoesNotExist(tailId);
-                newTelemetryDevice = new TelemetryDevice(location, tailId);
-                _telemetryDevicesByTailId[tailId] = newTelemetryDevice;
+                ValidateTelemetryDeviceDoesNotExist(sleeveName);
+                newTelemetryDevice = new TelemetryDevice(sleeveName, location, tailId);
+                _telemetryDevicesBySleeveName[sleeveName] = newTelemetryDevice;
             }
 
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
@@ -69,12 +70,12 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             }
         }
 
-        private void ValidateTelemetryDeviceDoesNotExist(int tailId)
+        private void ValidateTelemetryDeviceDoesNotExist(string sleeveName)
         {
-            if (_telemetryDevicesByTailId.ContainsKey(tailId))
+            if (_telemetryDevicesBySleeveName.ContainsKey(sleeveName))
             {
                 throw new ArgumentException(
-                    $"Telemetry device with tail ID {tailId} already exists."
+                    $"Telemetry device for sleeve '{sleeveName}' already exists."
                 );
             }
         }
@@ -110,28 +111,21 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         {
             lock (_lockObject)
             {
-                _telemetryDevicesByTailId.Remove(device.TailId);
                 device.TailId = decodedTailId;
-                _telemetryDevicesByTailId[decodedTailId] = device;
             }
         }
 
-        public bool RemoveTelemetryDevice(int tailId)
+        public bool RemoveTelemetryDevice(string sleeveName)
         {
             TelemetryDevice? targetTelemetryDevice;
             lock (_lockObject)
             {
-                if (
-                    !_telemetryDevicesByTailId.TryGetValue(
-                        tailId,
-                        out targetTelemetryDevice
-                    )
-                )
+                if (!_telemetryDevicesBySleeveName.TryGetValue(sleeveName, out targetTelemetryDevice))
                 {
                     return false;
                 }
 
-                _telemetryDevicesByTailId.Remove(tailId);
+                _telemetryDevicesBySleeveName.Remove(sleeveName);
             }
 
             foreach (Channel telemetryDeviceChannel in targetTelemetryDevice.Channels)
@@ -143,11 +137,31 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             return true;
         }
 
+        public void UpdatePortsForSleeve(string sleeveName, IEnumerable<int> newPorts)
+        {
+            TelemetryDevice device;
+            lock (_lockObject)
+            {
+                if (!_telemetryDevicesBySleeveName.TryGetValue(sleeveName, out device))
+                {
+                    return;
+                }
+            }
+
+            List<Channel> channels = device.Channels;
+            List<int> portList = newPorts.ToList();
+
+            for (int i = 0; i < channels.Count && i < portList.Count; i++)
+            {
+                _portManager.SwitchPorts(channels[i].PortNumber, portList[i]);
+            }
+        }
+
         public IEnumerable<TelemetryDevice> GetAllTelemetryDevices()
         {
             lock (_lockObject)
             {
-                return _telemetryDevicesByTailId.Values.ToList();
+                return _telemetryDevicesBySleeveName.Values.ToList();
             }
         }
     }

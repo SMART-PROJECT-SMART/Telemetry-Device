@@ -5,7 +5,7 @@ namespace TelemetryDevices.Dto
 {
     public class TelemetryDeviceStatusDto
     {
-        public int TailId { get; set; }
+        public int? TailId { get; set; }
         public Location Location { get; set; }
 
         public TelemetryDeviceStatusDto() { }

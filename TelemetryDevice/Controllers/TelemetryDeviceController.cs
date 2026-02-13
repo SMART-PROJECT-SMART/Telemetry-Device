@@ -26,24 +26,25 @@ namespace TelemetryDevices.Controllers
         public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto deviceDto)
         {
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
+                deviceDto.SleeveName,
                 deviceDto.TailId,
                 deviceDto.PortNumbers,
                 deviceDto.Location
             );
-            return Ok($"Telemetry device with tail ID {deviceDto.TailId} added successfully.");
+            return Ok($"Telemetry device for sleeve '{deviceDto.SleeveName}' added successfully.");
         }
 
         [HttpPost("remove-telemetry-device")]
-        public IActionResult RemoveTelemetryDevice(int tailId)
+        public IActionResult RemoveTelemetryDevice(string sleeveName)
         {
-            _telemetryDeviceManager.RemoveTelemetryDevice(tailId);
-            return Ok($"Telemetry device with tail ID {tailId} removed successfully.");
+            _telemetryDeviceManager.RemoveTelemetryDevice(sleeveName);
+            return Ok($"Telemetry device for sleeve '{sleeveName}' removed successfully.");
         }
 
         [HttpGet("run")]
         public IActionResult Run()
         {
-            int defaultTailId = TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID;
+            string defaultSleeveName = "default-sleeve";
             List<int> defaultPortNumbers = new List<int>
             {
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,
@@ -55,12 +56,13 @@ namespace TelemetryDevices.Controllers
                 0.0
             );
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
-                defaultTailId,
+                defaultSleeveName,
+                null,
                 defaultPortNumbers,
                 defaultLocation
             );
             return Ok(
-                $"Telemetry device with tail ID {defaultTailId} started with ports {string.Join(", ", defaultPortNumbers)}."
+                $"Telemetry device for sleeve '{defaultSleeveName}' started with ports {string.Join(", ", defaultPortNumbers)}."
             );
         }
 

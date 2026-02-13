@@ -7,18 +7,14 @@ namespace TelemetryDevices.Models
 {
     public class TelemetryDevice
     {
+        public string SleeveName { get; set; }
         public Location Location { get; set; }
         public List<Channel> Channels { get; set; }
-        public int TailId { get; set; }
+        public int? TailId { get; set; }
 
-        public TelemetryDevice(Location location, List<Channel> channels)
+        public TelemetryDevice(string sleeveName, Location location, int? tailId = null)
         {
-            Location = location;
-            Channels = channels;
-        }
-
-        public TelemetryDevice(Location location, int tailId)
-        {
+            SleeveName = sleeveName;
             Location = location;
             Channels = new List<Channel>();
             TailId = tailId;

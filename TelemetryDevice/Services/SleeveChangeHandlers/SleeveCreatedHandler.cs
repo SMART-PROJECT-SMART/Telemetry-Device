@@ -22,7 +22,7 @@ namespace TelemetryDevices.Services.SleeveChangeHandlers
 
             if (sleeve != null)
             {
-                _sleeveStorageService.AddOrUpdateSleeve(sleeve);
+                await _sleeveStorageService.AddOrUpdateSleeveAsync(sleeve);
             }
         }
     }

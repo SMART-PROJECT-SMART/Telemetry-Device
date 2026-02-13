@@ -5,10 +5,12 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
     public interface ITelemetryDeviceManager
     {
-        public Task AddTelemetryDeviceAsync(int tailId, IEnumerable<int> portNumbers, Location location);
+        Task AddTelemetryDeviceAsync(string sleeveName, int? tailId, IEnumerable<int> portNumbers, Location location);
 
-        public bool RemoveTelemetryDevice(int tailId);
+        bool RemoveTelemetryDevice(string sleeveName);
 
-        public IEnumerable<TelemetryDevice> GetAllTelemetryDevices();
+        void UpdatePortsForSleeve(string sleeveName, IEnumerable<int> newPorts);
+
+        IEnumerable<TelemetryDevice> GetAllTelemetryDevices();
     }
 }
