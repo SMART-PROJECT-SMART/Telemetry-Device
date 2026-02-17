@@ -1,6 +1,7 @@
 using Core.Models;
 using Core.Models.ICDModels;
 using Core.Services.ICDsDirectory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TelemetryDevices.Config;
 using TelemetryDevices.Models;
@@ -19,6 +20,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         private readonly IServiceProvider _serviceProvider;
         private readonly IQuartzTelemetryDeviceStatusManager _quartzTelemetryDeviceStatusManager;
         private readonly TelemetryDeviceStatusConfiguration _telemetryDeviceStatusConfiguration;
+        private readonly ILogger<TelemetryDeviceManager> _logger;
         private bool _isSchedulerStarted;
 
         public TelemetryDeviceManager(
@@ -26,7 +28,8 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             IPortManager portManager,
             IServiceProvider serviceProvider,
             IQuartzTelemetryDeviceStatusManager quartzTelemetryDeviceStatusManager,
-            IOptions<TelemetryDeviceStatusConfiguration> configuration
+            IOptions<TelemetryDeviceStatusConfiguration> configuration,
+            ILogger<TelemetryDeviceManager> logger
         )
         {
             _icdDirectory = icdDirectory;
@@ -34,6 +37,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             _serviceProvider = serviceProvider;
             _quartzTelemetryDeviceStatusManager = quartzTelemetryDeviceStatusManager;
             _telemetryDeviceStatusConfiguration = configuration.Value;
+            _logger = logger;
             _telemetryDevicesBySleeveName = new Dictionary<string, TelemetryDevice>();
             _isSchedulerStarted = false;
         }
@@ -53,6 +57,8 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
                 _telemetryDevicesBySleeveName[sleeveName] = newTelemetryDevice;
             }
 
+            _logger.LogInformation("Adding telemetry device for sleeve {SleeveName}", sleeveName);
+
             List<ICD> availableIcds = _icdDirectory.GetAllICDs();
             CreateTelemetryChannelsForDevice(newTelemetryDevice, portNumbers.ToList(), availableIcds);
 
@@ -63,6 +69,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         {
             if (!_isSchedulerStarted)
             {
+                _logger.LogInformation("Starting Quartz scheduler for telemetry device status (interval: {IntervalSeconds}s)", _telemetryDeviceStatusConfiguration.JobInterval);
                 await _quartzTelemetryDeviceStatusManager.StartSchedular(
                     _telemetryDeviceStatusConfiguration.JobInterval
                 );
@@ -100,18 +107,19 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
                 Channel channel = new(portNumbers[channelIndex], telemetryPipeLine);
                 channel.TelemetryPipeLine.BuildPipelineBlocks(
                     currentTelemetryIcd,
-                    decodedTailId => UpdateDeviceTailId(newTelemetryDevice, decodedTailId)
+                    (decodedTailId, location) => UpdateDeviceFromTelemetry(newTelemetryDevice, decodedTailId, location)
                 );
                 newTelemetryDevice.Channels.Add(channel);
                 _portManager.AddPort(portNumbers[channelIndex], channel);
             }
         }
 
-        private void UpdateDeviceTailId(TelemetryDevice device, int decodedTailId)
+        private void UpdateDeviceFromTelemetry(TelemetryDevice device, int decodedTailId, Location location)
         {
             lock (_lockObject)
             {
                 device.TailId = decodedTailId;
+                device.TransmittingUavLocation = location;
             }
         }
 
@@ -161,7 +169,9 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         {
             lock (_lockObject)
             {
-                return _telemetryDevicesBySleeveName.Values.ToList();
+                List<TelemetryDevice> devices = _telemetryDevicesBySleeveName.Values.ToList();
+                _logger.LogInformation("GetAllTelemetryDevices called, returning {DeviceCount} devices", devices.Count);
+                return devices;
             }
         }
     }

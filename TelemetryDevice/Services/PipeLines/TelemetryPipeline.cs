@@ -1,6 +1,8 @@
 using System.Threading.Tasks.Dataflow;
 using Core.Common.Enums;
+using Core.Models;
 using Core.Models.ICDModels;
+using Microsoft.Extensions.Logging;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.PipeLines.Blocks.Decoder;
 using TelemetryDevices.Services.PipeLines.Blocks.Output;
@@ -13,25 +15,29 @@ namespace TelemetryDevices.Services.PipeLines
         private readonly ITelemetryValidatorBlock _telemetryValidatorBlock;
         private readonly ITelemetryDecoderBlock _telemetryDecoderBlock;
         private readonly ITelemetryOutputBlock _telemetryOutputBlock;
+        private readonly ILogger<TelemetryPipeline> _logger;
         private TransformBlock<byte[], ValidationResult> _pipelineValidatorBlock;
         private TransformBlock<ValidationResult, DecodingResult> _pipelineDecoderBlock;
         private ActionBlock<DecodingResult> _pipelineOutputBlock;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private int? _currentTailId;
+        private bool _hasLoggedFirstDecode;
 
         public TelemetryPipeline(
             ITelemetryValidatorBlock telemetryValidatorBlock,
             ITelemetryDecoderBlock telemetryDecoderBlock,
-            ITelemetryOutputBlock telemetryOutputBlock
+            ITelemetryOutputBlock telemetryOutputBlock,
+            ILogger<TelemetryPipeline> logger
         )
         {
             _cancellationTokenSource = new CancellationTokenSource();
             _telemetryValidatorBlock = telemetryValidatorBlock;
             _telemetryDecoderBlock = telemetryDecoderBlock;
             _telemetryOutputBlock = telemetryOutputBlock;
+            _logger = logger;
         }
 
-        public void BuildPipelineBlocks(ICD telemetryIcd, Action<int> onTailIdChanged)
+        public void BuildPipelineBlocks(ICD telemetryIcd, Action<int, Location> onTelemetryDecoded)
         {
             _pipelineValidatorBlock = new TransformBlock<byte[], ValidationResult>(
                 data => _telemetryValidatorBlock.ValidateTelemetryData(data, telemetryIcd),
@@ -43,7 +49,7 @@ namespace TelemetryDevices.Services.PipeLines
 
             _pipelineDecoderBlock = new TransformBlock<ValidationResult, DecodingResult>(
                 validationResult =>
-                    DecodeAndNotifyTailIdChange(validationResult, telemetryIcd, onTailIdChanged),
+                    DecodeAndNotify(validationResult, telemetryIcd, onTelemetryDecoded),
                 new ExecutionDataflowBlockOptions
                 {
                     CancellationToken = _cancellationTokenSource.Token,
@@ -61,10 +67,10 @@ namespace TelemetryDevices.Services.PipeLines
             LinkTelemetryPipelineBlocks();
         }
 
-        private DecodingResult DecodeAndNotifyTailIdChange(
+        private DecodingResult DecodeAndNotify(
             ValidationResult validationResult,
             ICD telemetryIcd,
-            Action<int> onTailIdDecoded
+            Action<int, Location> onTelemetryDecoded
         )
         {
             DecodingResult result = _telemetryDecoderBlock.DecodeTelemetryData(
@@ -72,7 +78,16 @@ namespace TelemetryDevices.Services.PipeLines
                 telemetryIcd
             );
             int decodedTailId = ExtractTailId(result);
-            NotifyTailIdChangeIfNeeded(decodedTailId, onTailIdDecoded);
+            Location location = ExtractLocation(result);
+            _currentTailId = decodedTailId;
+
+            if (!_hasLoggedFirstDecode)
+            {
+                _logger.LogInformation("First telemetry decoded for tailId {TailId}", decodedTailId);
+                _hasLoggedFirstDecode = true;
+            }
+
+            onTelemetryDecoded(decodedTailId, location);
             return result;
         }
 
@@ -81,12 +96,12 @@ namespace TelemetryDevices.Services.PipeLines
             return (int)result.GetValue(TelemetryFields.TailId)!.Value;
         }
 
-        private void NotifyTailIdChangeIfNeeded(int decodedTailId, Action<int> onTailIdDecoded)
+        private Location ExtractLocation(DecodingResult result)
         {
-            if (_currentTailId == decodedTailId)
-                return;
-            _currentTailId = decodedTailId;
-            onTailIdDecoded(decodedTailId);
+            double latitude = result.GetValue(TelemetryFields.Latitude) ?? 0;
+            double longitude = result.GetValue(TelemetryFields.Longitude) ?? 0;
+            double altitude = result.GetValue(TelemetryFields.Altitude) ?? 0;
+            return new Location(latitude, longitude, altitude);
         }
 
         public async Task ProcessTelemetryDataAsync(byte[] telemetryData)

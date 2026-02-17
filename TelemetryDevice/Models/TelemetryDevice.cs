@@ -9,6 +9,7 @@ namespace TelemetryDevices.Models
     {
         public string SleeveName { get; set; }
         public Location Location { get; set; }
+        public Location? TransmittingUavLocation { get; set; }
         public List<Channel> Channels { get; set; }
         public int? TailId { get; set; }
 
@@ -16,6 +17,7 @@ namespace TelemetryDevices.Models
         {
             SleeveName = sleeveName;
             Location = location;
+            TransmittingUavLocation = null;
             Channels = new List<Channel>();
             TailId = tailId;
         }

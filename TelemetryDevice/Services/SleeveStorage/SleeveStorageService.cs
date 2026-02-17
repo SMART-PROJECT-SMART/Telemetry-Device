@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using TelemetryDevices.Dto.DeviceManager;
 using TelemetryDevices.Services.DeviceManagerClient;
 using TelemetryDevices.Services.TelemetryDevicesManager;
@@ -10,23 +11,29 @@ namespace TelemetryDevices.Services.SleeveStorage
         private readonly ConcurrentDictionary<string, DeviceManagerSleeveDto> _sleeves;
         private readonly IDeviceManagerClient _deviceManagerClient;
         private readonly ITelemetryDeviceManager _telemetryDeviceManager;
+        private readonly ILogger<SleeveStorageService> _logger;
 
         public SleeveStorageService(
             IDeviceManagerClient deviceManagerClient,
-            ITelemetryDeviceManager telemetryDeviceManager)
+            ITelemetryDeviceManager telemetryDeviceManager,
+            ILogger<SleeveStorageService> logger)
         {
             _sleeves = new ConcurrentDictionary<string, DeviceManagerSleeveDto>();
             _deviceManagerClient = deviceManagerClient;
             _telemetryDeviceManager = telemetryDeviceManager;
+            _logger = logger;
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken = default)
         {
             IEnumerable<DeviceManagerSleeveDto> sleeves = await _deviceManagerClient.GetAllSleevesAsync(cancellationToken);
+            int sleeveCount = sleeves.Count();
+            _logger.LogInformation("InitializeAsync: fetched {SleeveCount} sleeves from DeviceManager", sleeveCount);
 
             foreach (DeviceManagerSleeveDto sleeve in sleeves)
             {
                 _sleeves.TryAdd(sleeve.Name, sleeve);
+                _logger.LogInformation("Adding device for sleeve {SleeveName} on startup", sleeve.Name);
 
                 await _telemetryDeviceManager.AddTelemetryDeviceAsync(
                     sleeve.Name,

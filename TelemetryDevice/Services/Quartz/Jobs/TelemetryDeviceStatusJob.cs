@@ -1,4 +1,5 @@
-﻿using Quartz;
+using Microsoft.Extensions.Logging;
+using Quartz;
 using TelemetryDevices.Models;
 using TelemetryDevices.Services.Kafka.Producers;
 using TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProducer;
@@ -10,18 +11,24 @@ namespace TelemetryDevices.Services.Quartz.Jobs
     {
         private readonly ITelemetryDeviceManager _telemetryDeviceManager;
         private readonly ITelemetryDeviceStatusProducer _telemetryDeviceStatusProducer;
+        private readonly ILogger<TelemetryDeviceStatusJob> _logger;
 
-        public TelemetryDeviceStatusJob(ITelemetryDeviceManager telemetryDeviceManager,ITelemetryDeviceStatusProducer telemetryDeviceStatusProducer)
+        public TelemetryDeviceStatusJob(
+            ITelemetryDeviceManager telemetryDeviceManager,
+            ITelemetryDeviceStatusProducer telemetryDeviceStatusProducer,
+            ILogger<TelemetryDeviceStatusJob> logger)
         {
             _telemetryDeviceManager = telemetryDeviceManager;
             _telemetryDeviceStatusProducer = telemetryDeviceStatusProducer;
+            _logger = logger;
         }
 
-        public Task Execute(IJobExecutionContext context)
+        public async Task Execute(IJobExecutionContext context)
         {
             IEnumerable<TelemetryDevice> telemetryDevices = _telemetryDeviceManager.GetAllTelemetryDevices();
-            _telemetryDeviceStatusProducer.ProduceAsync(telemetryDevices);
-            return Task.CompletedTask;
+            int count = telemetryDevices.Count();
+            _logger.LogInformation("TelemetryDeviceStatusJob executed, producing {DeviceCount} devices to Kafka", count);
+            await _telemetryDeviceStatusProducer.ProduceAsync(telemetryDevices);
         }
     }
 }
