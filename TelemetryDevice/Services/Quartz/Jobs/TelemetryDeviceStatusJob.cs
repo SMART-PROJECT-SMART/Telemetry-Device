@@ -16,7 +16,8 @@ namespace TelemetryDevices.Services.Quartz.Jobs
         public TelemetryDeviceStatusJob(
             ITelemetryDeviceManager telemetryDeviceManager,
             ITelemetryDeviceStatusProducer telemetryDeviceStatusProducer,
-            ILogger<TelemetryDeviceStatusJob> logger)
+            ILogger<TelemetryDeviceStatusJob> logger
+        )
         {
             _telemetryDeviceManager = telemetryDeviceManager;
             _telemetryDeviceStatusProducer = telemetryDeviceStatusProducer;
@@ -25,9 +26,8 @@ namespace TelemetryDevices.Services.Quartz.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            IEnumerable<TelemetryDevice> telemetryDevices = _telemetryDeviceManager.GetAllTelemetryDevices();
-            int count = telemetryDevices.Count();
-            _logger.LogInformation("TelemetryDeviceStatusJob executed, producing {DeviceCount} devices to Kafka", count);
+            IEnumerable<TelemetryDevice> telemetryDevices =
+                _telemetryDeviceManager.GetAllTelemetryDevices();
             await _telemetryDeviceStatusProducer.ProduceAsync(telemetryDevices);
         }
     }

@@ -44,6 +44,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
 
         public async Task AddTelemetryDeviceAsync(
             string sleeveName,
+            int sleeveId,
             int? tailId,
             IEnumerable<int> portNumbers,
             Location location
@@ -53,7 +54,7 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
             lock (_lockObject)
             {
                 ValidateTelemetryDeviceDoesNotExist(sleeveName);
-                newTelemetryDevice = new TelemetryDevice(sleeveName, location, tailId);
+                newTelemetryDevice = new TelemetryDevice(sleeveName, sleeveId, location, tailId);
                 _telemetryDevicesBySleeveName[sleeveName] = newTelemetryDevice;
             }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TelemetryDevices.Common;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Services.PortsManager;
@@ -27,6 +27,7 @@ namespace TelemetryDevices.Controllers
         {
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
                 deviceDto.SleeveName,
+                deviceDto.SleeveId,
                 deviceDto.TailId,
                 deviceDto.PortNumbers,
                 deviceDto.Location
@@ -55,8 +56,10 @@ namespace TelemetryDevices.Controllers
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON,
                 0.0
             );
+            const int defaultSleeveId = 1;
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
                 defaultSleeveName,
+                defaultSleeveId,
                 null,
                 defaultPortNumbers,
                 defaultLocation

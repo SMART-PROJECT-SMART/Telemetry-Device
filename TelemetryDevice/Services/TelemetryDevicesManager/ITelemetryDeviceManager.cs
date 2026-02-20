@@ -1,11 +1,11 @@
-﻿using Core.Models;
+using Core.Models;
 using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
     public interface ITelemetryDeviceManager
     {
-        Task AddTelemetryDeviceAsync(string sleeveName, int? tailId, IEnumerable<int> portNumbers, Location location);
+        Task AddTelemetryDeviceAsync(string sleeveName, int sleeveId, int? tailId, IEnumerable<int> portNumbers, Location location);
 
         bool RemoveTelemetryDevice(string sleeveName);
 

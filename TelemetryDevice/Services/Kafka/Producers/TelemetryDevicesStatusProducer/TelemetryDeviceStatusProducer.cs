@@ -38,8 +38,8 @@ namespace TelemetryDevices.Services.Kafka.Producers.TelemetryDevicesStatusProduc
                 .ToList();
 
             string jsonMessage = JsonConvert.SerializeObject(statusDtos);
-            
-            var kafkaMessage = new Message<string, byte[]>
+
+            Message<string, byte[]> kafkaMessage = new Message<string, byte[]>
             {
                 Value = System.Text.Encoding.UTF8.GetBytes(jsonMessage),
             };

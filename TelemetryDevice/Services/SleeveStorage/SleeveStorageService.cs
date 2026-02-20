@@ -37,6 +37,7 @@ namespace TelemetryDevices.Services.SleeveStorage
 
                 await _telemetryDeviceManager.AddTelemetryDeviceAsync(
                     sleeve.Name,
+                    sleeve.Id,
                     null,
                     sleeve.PortNumbers,
                     sleeve.Location);
@@ -57,6 +58,7 @@ namespace TelemetryDevices.Services.SleeveStorage
             {
                 await _telemetryDeviceManager.AddTelemetryDeviceAsync(
                     sleeve.Name,
+                    sleeve.Id,
                     null,
                     sleeve.PortNumbers,
                     sleeve.Location);
