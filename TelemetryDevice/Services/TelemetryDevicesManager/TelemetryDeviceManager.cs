@@ -119,6 +119,15 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
         {
             lock (_lockObject)
             {
+                foreach (TelemetryDevice otherDevice in _telemetryDevicesBySleeveName.Values)
+                {
+                    if (otherDevice != device && otherDevice.TailId == decodedTailId)
+                    {
+                        otherDevice.TailId = null;
+                        otherDevice.TransmittingUavLocation = null;
+                    }
+                }
+
                 device.TailId = decodedTailId;
                 device.TransmittingUavLocation = location;
             }
@@ -155,6 +164,9 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
                 {
                     return;
                 }
+
+                device.TailId = null;
+                device.TransmittingUavLocation = null;
             }
 
             List<Channel> channels = device.Channels;
