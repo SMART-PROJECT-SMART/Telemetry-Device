@@ -15,10 +15,10 @@ namespace TelemetryDevices.Services.SleeveChangeHandlers
             _deviceManagerClient = deviceManagerClient;
         }
 
-        public async Task HandleSleeveChangeAsync(string name, CancellationToken cancellationToken = default)
+        public async Task HandleSleeveChangeAsync(int id, CancellationToken cancellationToken = default)
         {
             IEnumerable<DeviceManagerSleeveDto> allSleeves = await _deviceManagerClient.GetAllSleevesAsync(cancellationToken);
-            DeviceManagerSleeveDto sleeve = allSleeves.FirstOrDefault(s => s.Name == name);
+            DeviceManagerSleeveDto sleeve = allSleeves.FirstOrDefault(s => s.Id == id);
 
             if (sleeve != null)
             {

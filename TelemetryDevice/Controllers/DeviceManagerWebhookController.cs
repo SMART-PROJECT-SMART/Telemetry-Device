@@ -19,7 +19,7 @@ namespace TelemetryDevices.Controllers
         public async Task<ActionResult> SleeveChanged([FromBody] SleeveChangedNotificationDto notification, CancellationToken cancellationToken)
         {
             ISleeveChangeHandler handler = _handlerFactory.CreateHandler(notification.Operation);
-            await handler.HandleSleeveChangeAsync(notification.Name, cancellationToken);
+            await handler.HandleSleeveChangeAsync(notification.Id, cancellationToken);
             return Ok();
         }
     }

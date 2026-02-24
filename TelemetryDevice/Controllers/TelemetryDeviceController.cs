@@ -36,10 +36,10 @@ namespace TelemetryDevices.Controllers
         }
 
         [HttpPost("remove-telemetry-device")]
-        public IActionResult RemoveTelemetryDevice(string sleeveName)
+        public IActionResult RemoveTelemetryDevice(int sleeveId)
         {
-            _telemetryDeviceManager.RemoveTelemetryDevice(sleeveName);
-            return Ok($"Telemetry device for sleeve '{sleeveName}' removed successfully.");
+            _telemetryDeviceManager.RemoveTelemetryDevice(sleeveId);
+            return Ok($"Telemetry device for sleeve Id '{sleeveId}' removed successfully.");
         }
 
         [HttpGet("run")]

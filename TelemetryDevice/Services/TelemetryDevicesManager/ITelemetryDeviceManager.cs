@@ -7,9 +7,9 @@ namespace TelemetryDevices.Services.TelemetryDevicesManager
     {
         Task AddTelemetryDeviceAsync(string sleeveName, int sleeveId, int? tailId, IEnumerable<int> portNumbers, Location location);
 
-        bool RemoveTelemetryDevice(string sleeveName);
+        bool RemoveTelemetryDevice(int sleeveId);
 
-        void UpdatePortsForSleeve(string sleeveName, IEnumerable<int> newPorts);
+        void UpdatePortsForSleeve(int sleeveId, IEnumerable<int> newPorts);
 
         IEnumerable<TelemetryDevice> GetAllTelemetryDevices();
     }

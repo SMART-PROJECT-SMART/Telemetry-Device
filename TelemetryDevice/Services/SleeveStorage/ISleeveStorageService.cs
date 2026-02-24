@@ -6,8 +6,8 @@ namespace TelemetryDevices.Services.SleeveStorage
     {
         Task InitializeAsync(CancellationToken cancellationToken = default);
         Task AddOrUpdateSleeveAsync(DeviceManagerSleeveDto sleeve);
-        void RemoveSleeve(string name);
-        DeviceManagerSleeveDto GetSleeve(string name);
+        void RemoveSleeve(int id);
+        DeviceManagerSleeveDto GetSleeve(int id);
         IEnumerable<DeviceManagerSleeveDto> GetAllSleeves();
     }
 }

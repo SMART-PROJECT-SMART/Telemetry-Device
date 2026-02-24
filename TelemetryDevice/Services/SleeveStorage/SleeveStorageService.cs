@@ -8,7 +8,7 @@ namespace TelemetryDevices.Services.SleeveStorage
 {
     public class SleeveStorageService : ISleeveStorageService, IHostedService
     {
-        private readonly ConcurrentDictionary<string, DeviceManagerSleeveDto> _sleeves;
+        private readonly ConcurrentDictionary<int, DeviceManagerSleeveDto> _sleeves;
         private readonly IDeviceManagerClient _deviceManagerClient;
         private readonly ITelemetryDeviceManager _telemetryDeviceManager;
         private readonly ILogger<SleeveStorageService> _logger;
@@ -18,7 +18,7 @@ namespace TelemetryDevices.Services.SleeveStorage
             ITelemetryDeviceManager telemetryDeviceManager,
             ILogger<SleeveStorageService> logger)
         {
-            _sleeves = new ConcurrentDictionary<string, DeviceManagerSleeveDto>();
+            _sleeves = new ConcurrentDictionary<int, DeviceManagerSleeveDto>();
             _deviceManagerClient = deviceManagerClient;
             _telemetryDeviceManager = telemetryDeviceManager;
             _logger = logger;
@@ -32,8 +32,8 @@ namespace TelemetryDevices.Services.SleeveStorage
 
             foreach (DeviceManagerSleeveDto sleeve in sleeves)
             {
-                _sleeves.TryAdd(sleeve.Name, sleeve);
-                _logger.LogInformation("Adding device for sleeve {SleeveName} on startup", sleeve.Name);
+                _sleeves.TryAdd(sleeve.Id, sleeve);
+                _logger.LogInformation("Adding device for sleeve {SleeveName} (Id={SleeveId}) on startup", sleeve.Name, sleeve.Id);
 
                 await _telemetryDeviceManager.AddTelemetryDeviceAsync(
                     sleeve.Name,
@@ -46,13 +46,13 @@ namespace TelemetryDevices.Services.SleeveStorage
 
         public async Task AddOrUpdateSleeveAsync(DeviceManagerSleeveDto sleeve)
         {
-            bool exists = _sleeves.ContainsKey(sleeve.Name);
+            bool exists = _sleeves.ContainsKey(sleeve.Id);
 
-            _sleeves.AddOrUpdate(sleeve.Name, sleeve, (key, existing) => sleeve);
+            _sleeves.AddOrUpdate(sleeve.Id, sleeve, (key, existing) => sleeve);
 
             if (exists)
             {
-                _telemetryDeviceManager.UpdatePortsForSleeve(sleeve.Name, sleeve.PortNumbers);
+                _telemetryDeviceManager.UpdatePortsForSleeve(sleeve.Id, sleeve.PortNumbers);
             }
             else
             {
@@ -65,17 +65,17 @@ namespace TelemetryDevices.Services.SleeveStorage
             }
         }
 
-        public void RemoveSleeve(string name)
+        public void RemoveSleeve(int id)
         {
-            if (_sleeves.TryRemove(name, out _))
+            if (_sleeves.TryRemove(id, out _))
             {
-                _telemetryDeviceManager.RemoveTelemetryDevice(name);
+                _telemetryDeviceManager.RemoveTelemetryDevice(id);
             }
         }
 
-        public DeviceManagerSleeveDto GetSleeve(string name)
+        public DeviceManagerSleeveDto GetSleeve(int id)
         {
-            _sleeves.TryGetValue(name, out DeviceManagerSleeveDto sleeve);
+            _sleeves.TryGetValue(id, out DeviceManagerSleeveDto sleeve);
             return sleeve;
         }
 

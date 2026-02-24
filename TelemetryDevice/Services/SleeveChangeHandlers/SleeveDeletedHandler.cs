@@ -11,9 +11,9 @@ namespace TelemetryDevices.Services.SleeveChangeHandlers
             _sleeveStorageService = sleeveStorageService;
         }
 
-        public Task HandleSleeveChangeAsync(string name, CancellationToken cancellationToken = default)
+        public Task HandleSleeveChangeAsync(int id, CancellationToken cancellationToken = default)
         {
-            _sleeveStorageService.RemoveSleeve(name);
+            _sleeveStorageService.RemoveSleeve(id);
             return Task.CompletedTask;
         }
     }
