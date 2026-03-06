@@ -18,6 +18,9 @@ using TelemetryDevices.Services.PortsManager;
 using TelemetryDevices.Services.Quartz.TelemetryDeviceStatusManager;
 using TelemetryDevices.Services.Sniffer;
 using TelemetryDevices.Services.TelemetryDevicesManager;
+using TelemetryDevices.Services.DeviceManagerClient;
+using TelemetryDevices.Services.SleeveStorage;
+using TelemetryDevices.Services.SleeveChangeHandlers;
 
 namespace TelemetryDevices.Extensions
 {
@@ -171,6 +174,31 @@ namespace TelemetryDevices.Extensions
                     .GetResult()
             );
             services.AddSingleton<IQuartzTelemetryDeviceStatusManager, QuartzTelemetryDeviceStatusManager>();
+            return services;
+        }
+
+        public static IServiceCollection AddDeviceManagerHttpClient(this IServiceCollection services, IConfiguration configuration)
+        {
+            string deviceManagerBaseUrl = configuration[$"{TelemetryDeviceConstants.Configuration.DEVICE_MANAGER_SECTION}:BaseUrl"];
+
+            services.AddHttpClient(
+                TelemetryDeviceConstants.HttpClients.DEVICE_MANAGER_HTTP_CLIENT,
+                client =>
+                {
+                    client.BaseAddress = new Uri(deviceManagerBaseUrl);
+                }
+            );
+
+            return services;
+        }
+
+        public static IServiceCollection AddDeviceManagerServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IDeviceManagerClient, DeviceManagerClient>();
+            services.AddSingleton<SleeveStorageService>();
+            services.AddSingleton<ISleeveStorageService>(sp => sp.GetRequiredService<SleeveStorageService>());
+            services.AddHostedService(sp => sp.GetRequiredService<SleeveStorageService>());
+            services.AddSingleton<ISleeveChangeHandlerFactory, SleeveChangeHandlerFactory>();
             return services;
         }
     }

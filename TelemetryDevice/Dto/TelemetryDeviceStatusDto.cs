@@ -5,6 +5,7 @@ namespace TelemetryDevices.Dto
 {
     public class TelemetryDeviceStatusDto
     {
+        public int SleeveId { get; set; }
         public int TailId { get; set; }
         public Location Location { get; set; }
 
@@ -12,8 +13,9 @@ namespace TelemetryDevices.Dto
 
         public TelemetryDeviceStatusDto(TelemetryDevice telemetryDevice)
         {
-            TailId = telemetryDevice.TailId;
-            Location = telemetryDevice.Location;
+            SleeveId = telemetryDevice.SleeveId;
+            TailId = telemetryDevice.TailId!.Value;
+            Location = telemetryDevice.TransmittingUavLocation ?? telemetryDevice.Location;
         }
     }
 }

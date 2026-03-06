@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TelemetryDevices.Common;
 using TelemetryDevices.Dto;
 using TelemetryDevices.Services.PortsManager;
@@ -26,24 +26,26 @@ namespace TelemetryDevices.Controllers
         public IActionResult AddTelemetryDevice(CreateTelemetryDeviceDto deviceDto)
         {
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
+                deviceDto.SleeveName,
+                deviceDto.SleeveId,
                 deviceDto.TailId,
                 deviceDto.PortNumbers,
                 deviceDto.Location
             );
-            return Ok($"Telemetry device with tail ID {deviceDto.TailId} added successfully.");
+            return Ok($"Telemetry device for sleeve '{deviceDto.SleeveName}' added successfully.");
         }
 
         [HttpPost("remove-telemetry-device")]
-        public IActionResult RemoveTelemetryDevice(int tailId)
+        public IActionResult RemoveTelemetryDevice(int sleeveId)
         {
-            _telemetryDeviceManager.RemoveTelemetryDevice(tailId);
-            return Ok($"Telemetry device with tail ID {tailId} removed successfully.");
+            _telemetryDeviceManager.RemoveTelemetryDevice(sleeveId);
+            return Ok($"Telemetry device for sleeve Id '{sleeveId}' removed successfully.");
         }
 
         [HttpGet("run")]
         public IActionResult Run()
         {
-            int defaultTailId = TelemetryDeviceConstants.DefaultValues.DEFAULT_TAIL_ID;
+            string defaultSleeveName = "default-sleeve";
             List<int> defaultPortNumbers = new List<int>
             {
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_PORT_1,
@@ -54,13 +56,16 @@ namespace TelemetryDevices.Controllers
                 TelemetryDeviceConstants.DefaultValues.DEFAULT_LOCATION_LON,
                 0.0
             );
+            const int defaultSleeveId = 1;
             _ = _telemetryDeviceManager.AddTelemetryDeviceAsync(
-                defaultTailId,
+                defaultSleeveName,
+                defaultSleeveId,
+                null,
                 defaultPortNumbers,
                 defaultLocation
             );
             return Ok(
-                $"Telemetry device with tail ID {defaultTailId} started with ports {string.Join(", ", defaultPortNumbers)}."
+                $"Telemetry device for sleeve '{defaultSleeveName}' started with ports {string.Join(", ", defaultPortNumbers)}."
             );
         }
 

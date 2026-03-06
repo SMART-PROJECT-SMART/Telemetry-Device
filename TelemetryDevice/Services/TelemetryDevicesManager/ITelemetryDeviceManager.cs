@@ -1,14 +1,16 @@
-﻿using Core.Models;
+using Core.Models;
 using TelemetryDevices.Models;
 
 namespace TelemetryDevices.Services.TelemetryDevicesManager
 {
     public interface ITelemetryDeviceManager
     {
-        public Task AddTelemetryDeviceAsync(int tailId, IEnumerable<int> portNumbers, Location location);
+        Task AddTelemetryDeviceAsync(string sleeveName, int sleeveId, int? tailId, IEnumerable<int> portNumbers, Location location);
 
-        public bool RemoveTelemetryDevice(int tailId);
+        bool RemoveTelemetryDevice(int sleeveId);
 
-        public IEnumerable<TelemetryDevice> GetAllTelemetryDevices();
+        void UpdatePortsForSleeve(int sleeveId, IEnumerable<int> newPorts);
+
+        IEnumerable<TelemetryDevice> GetAllTelemetryDevices();
     }
 }
