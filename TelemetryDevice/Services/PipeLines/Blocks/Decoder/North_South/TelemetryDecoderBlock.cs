@@ -79,11 +79,21 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder.North_South
                     telemetryParameter.StartBitArrayIndex,
                     telemetryParameter.BitLength
                 );
-                double reconstructedParameterValue =
-                    BitManipulationHelper.ConvertFromMeaningfulBits(
+                double reconstructedParameterValue = telemetryParameter.Name switch
+                {
+                    TelemetryFields.FuelAmount => ConvertLinearBitsToPercent(
                         extractedBitValue,
                         telemetryParameter.BitLength
-                    );
+                    ),
+                    TelemetryFields.AmmoPercentage => ConvertLinearBitsToPercent(
+                        extractedBitValue,
+                        telemetryParameter.BitLength
+                    ),
+                    _ => BitManipulationHelper.ConvertFromMeaningfulBits(
+                        extractedBitValue,
+                        telemetryParameter.BitLength
+                    )
+                };
 
                 if (signBitSection[telemetryFieldIndex])
                     reconstructedParameterValue = -reconstructedParameterValue;
@@ -93,6 +103,13 @@ namespace TelemetryDevices.Services.PipeLines.Blocks.Decoder.North_South
             }
 
             return reconstructedTelemetryData;
+        }
+
+        private static double ConvertLinearBitsToPercent(ulong encodedValue, int bitLength)
+        {
+            ulong maxEncoded = (1UL << bitLength) - 1;
+            if (maxEncoded == 0) return 0.0;
+            return encodedValue * 100.0 / maxEncoded;
         }
     }
 }
